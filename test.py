@@ -88,7 +88,7 @@ the test runner script (see the list of global variables in process_args().).
 --skip-unit
     Run functional tests but not unit tests.
     Note that functional tests will be skipped if the module
-    zope.app.tests.functional cannot be imported.
+    zope.app.testing.functional cannot be imported.
     Functional tests also expect to find the file ftesting.zcml,
     which is used to configure the functional-test run.
 
@@ -96,7 +96,7 @@ the test runner script (see the list of global variables in process_args().).
     DEPRECATED. Run both unit and functional tests.
     This option is deprecated, because this is the new default mode.
     Note that functional tests will be skipped if the module
-    zope.app.tests.functional cannot be imported.
+    zope.app.testing.functional cannot be imported.
 
 -g threshold
 --gc-threshold threshold
@@ -853,7 +853,7 @@ def main(module_filter, test_filter, libdir):
             # parent directory
             config_file = os.path.join('..', FTESTING)
         print "Parsing %s" % config_file
-        from zope.app.tests.functional import FunctionalTestSetup
+        from zope.app.testing.functional import FunctionalTestSetup
         FunctionalTestSetup(config_file)
 
     numbad = 0
@@ -1173,11 +1173,11 @@ def process_args(argv=None):
 # work right.
 ##         if functional:
 ##             try:
-##                 from zope.app.tests.functional import FunctionalTestSetup
+##                 from zope.app.testing.functional import FunctionalTestSetup
 ##             except ImportError:
 ##                 raise
 ##                 print ('Skipping functional tests: could not import '
-##                        'zope.app.tests.functional')
+##                        'zope.app.testing.functional')
 ##                 continue
 
         # XXX We want to change *visible* warnings into errors.  The next

@@ -90,7 +90,7 @@ class ResponseWrapper(object):
 
 def _getDefaultSkin():
     """Returns the current default skin as an interface."""
-    adapters = zapi.getService(zapi.servicenames.Adapters)
+    adapters = zapi.getSiteManager().adapters
     skin = adapters.lookup((IBrowserRequest,), IDefaultSkin, '')
     return skin or IDefaultBrowserLayer
 
@@ -122,8 +122,8 @@ class FunctionalTestSetup(object):
         if not self._init:
 
             # Make sure unit tests are cleaned up
-            zope.app.tests.setup.placefulSetUp()
-            zope.app.tests.setup.placefulTearDown()
+            zope.app.testing.setup.placefulSetUp()
+            zope.app.testing.setup.placefulTearDown()
 
             if not config_file:
                 config_file = 'ftesting.zcml'
@@ -143,7 +143,17 @@ class FunctionalTestSetup(object):
             # strang FunctionalTestSetup is.  Later, when we
             # have time, we should clean up this (perhaps with an
             # event) and clean up FunctionalTestSetup.
+
             response = http(grant_request, handle_errors=False)
+
+            # XXX: Remove?
+            #from zope.app.securitypolicy.interfaces import IPrincipalRoleManager
+            #root = self.db.open().root()[ZopePublication.root_name]
+            #principal_roles = IPrincipalRoleManager(root)
+            #principal_roles.assignRoleToPrincipal('zope.Manager', 'zope.mgr')
+            #commit()
+            #self.db.close()
+
             FunctionalTestSetup().connection = None
             
         elif config_file and config_file != self._config_file:
@@ -191,7 +201,6 @@ class FunctionalTestCase(unittest.TestCase):
 
     def tearDown(self):
         """Cleans up after a functional test case."""
-
         FunctionalTestSetup().tearDown()
         super(FunctionalTestCase, self).tearDown()
 
