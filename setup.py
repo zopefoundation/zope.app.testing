@@ -65,6 +65,16 @@ def setUpDependable():
                          Dependable)
 
 #------------------------------------------------------------------------
+# Registrations
+
+from zope.app.component.interfaces.registration import IComponentRegistration
+from zope.app.component.interfaces.registration import IRegistrationEvent
+from zope.app.component.registration import componentRegistrationEventNotify
+def setUpRegistered():
+    ztapi.subscribe((IComponentRegistration, IRegistrationEvent), None,
+                     componentRegistrationEventNotify)
+
+#------------------------------------------------------------------------
 # Traversal
 from zope.app.traversing.browser.interfaces import IAbsoluteURL
 from zope.app.container.traversal import ContainerTraversable
@@ -120,6 +130,7 @@ def placefulSetUp(site=False):
     zope.app.component.hooks.setHooks()
     setUpAnnotations()
     setUpDependable()
+    setUpRegistered()
     setUpTraversal()
     setUpSiteManagerLookup()
 
