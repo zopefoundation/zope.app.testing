@@ -583,7 +583,7 @@ class HTTPCaller(CookieHandler):
         is_xml = content_type.startswith('text/xml')
 
         if method in ('GET', 'POST', 'HEAD'):
-            if (method == 'POST' and environment.get('HTTP_SOAPACTION', None)
+            if (method == 'POST' and environment.get('HTTP_SOAPACTION')
                 and is_xml):
                 factory = zapi.queryUtility(ISOAPRequestFactory)
                 if factory is not None:
