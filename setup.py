@@ -161,6 +161,6 @@ def addUtility(sitemanager, name, iface, utility, suffix=''):
     default = zapi.traverse(sitemanager, 'default')
     default[folder_name] = utility
     registration = UtilityRegistration(name, iface, default[folder_name])
-    key = default.getRegistrationManager().addRegistration(registration)
-    zapi.traverse(default.getRegistrationManager(), key).status = ActiveStatus
+    key = default.registrationManager.addRegistration(registration)
+    zapi.traverse(default.registrationManager, key).status = ActiveStatus
     return default[folder_name]
