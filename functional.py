@@ -646,7 +646,10 @@ def FunctionalDocFileSuite(*paths, **kw):
         FunctionalTestSetup().tearDown()
     kw['tearDown'] = tearDown
 
-    kw['optionflags'] = doctest.ELLIPSIS | doctest.REPORT_NDIFF
+    if 'optionflags' not in kw:
+        kw['optionflags'] = (doctest.ELLIPSIS
+                             | doctest.REPORT_NDIFF
+                             | doctest.NORMALIZE_WHITESPACE)
 
     return doctest.DocFileSuite(*paths, **kw)
 
