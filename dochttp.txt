@@ -19,13 +19,13 @@ Steps to get started:
 
 6. Shut down tcpwatch.
 
-7. Run the script src/zope/app/tests/dochttp.py:
-   python2.3 src/zope/app/tests/dochttp.py tmpdir > somefile.txt
+7. Run the script src/zope/app/testing/dochttp.py:
+   python2.3 src/zope/app/testing/dochttp.py tmpdir > somefile.txt
 
 8. Edit the generated text file to add explanations and elide
    uninteresting portions of the output.
 
 9. In a functional test module (usually ftests.py), import
-   FunctionalDocFileSuite from zope.app.tests.functional and
+   FunctionalDocFileSuite from zope.app.testing.functional and
    instantiate it, passing the name of the text file containing the
    test.

@@ -93,10 +93,16 @@ def provideNamespaceHandler(name, handler):
     provideAdapter(None, ITraversable, handler, name=name)
     provideView(None, None, ITraversable, name, handler)
 
-# XXX: Deprecate
+
+# BBB: Deprecated. Gone in X3.3.
+from zope.deprecation import deprecated
+
 def provideService(name, service, interface=None):
     services = zapi.getGlobalServices()
     if interface is not None:
         services.defineService(name, interface)
     services.provideService(name, service)
     
+deprecated('provideService',
+           'The concept of services has been removed. Use utilities instead. '
+           'The reference will be gone in X3.3.')
