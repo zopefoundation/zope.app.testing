@@ -988,7 +988,7 @@ def process_args(argv=None):
 
 
     try:
-        opts, args = getopt.getopt(argv[1:],
+        opts, args = getopt.gnu_getopt(argv[1:],
                                    "a:bBcdDfFg:G:hkl:LmMPprs:tTuUvN:1",
                                    ["all", "help", "libdir=", "times=",
                                     "keepbytecode", "dir=", "build",
