@@ -15,7 +15,6 @@
 
 $Id$
 """
-
 import zope.component
 import zope.interface
 from zope.app import zapi
@@ -78,26 +77,12 @@ def setUpTraversal():
 
 
 #------------------------------------------------------------------------
-# Use registration
-from zope.app.registration.interfaces import IAttributeRegisterable
-from zope.app.registration.interfaces import IRegistered
-from zope.app.registration.registration import Registered
-def setUpRegistered():
-    ztapi.provideAdapter(IAttributeRegisterable, IRegistered,
-                         Registered)
-
-#------------------------------------------------------------------------
-# Service service lookup
-from zope.app.component.localservice import serviceServiceAdapter
-from zope.app.registration.interfaces import IRegistrationActivatedEvent
-from zope.app.registration.interfaces import IRegistrationDeactivatedEvent
-from zope.app.site.service import handleActivated, handleDeactivated
-from zope.component.interfaces import IServiceService
+# ISiteManager lookup
+from zope.app.component.site import SiteManagerAdapter
+from zope.component.interfaces import ISiteManager
 from zope.interface import Interface
-def setUpServiceService():
-    ztapi.subscribe((IRegistrationActivatedEvent,), None, handleActivated)
-    ztapi.subscribe((IRegistrationDeactivatedEvent,), None, handleDeactivated)
-    ztapi.provideAdapter(Interface, IServiceService, serviceServiceAdapter)
+def setUpSiteManagerLookup():
+    ztapi.provideAdapter(Interface, ISiteManager, SiteManagerAdapter)
 
 #------------------------------------------------------------------------
 # Placeful setup
@@ -110,12 +95,11 @@ def placefulSetUp(site=False):
     setUpAnnotations()
     setUpDependable()
     setUpTraversal()
-    setUpRegistered()
-    setUpServiceService()
+    setUpSiteManagerLookup()
 
     if site:
         site = rootFolder()
-        createServiceManager(site, setsite=True)
+        createSiteManager(site, setsite=True)
         return site
 
 from zope.app.component.hooks import setSite
@@ -124,9 +108,9 @@ def placefulTearDown():
     zope.app.component.hooks.resetHooks()
     setSite()
 
-
+#------------------------------------------------------------------------
+# Sample Folder Creation
 from zope.app.folder import Folder, rootFolder
-
 def buildSampleFolderTree():
     # set up a reasonably complex folder structure
     #
@@ -152,56 +136,31 @@ def buildSampleFolderTree():
     return root
 
 
-from zope.app.site.service import ServiceManager
+#------------------------------------------------------------------------
+# Sample Folder Creation
+from zope.app.component.site import LocalSiteManager
 from zope.app.site.interfaces import ISite
-def createServiceManager(folder, setsite=False):
+def createSiteManager(folder, setsite=False):
     if not ISite.providedBy(folder):
-        folder.setSiteManager(ServiceManager(folder))
+        folder.setSiteManager(LocalSiteManager(folder))
     if setsite:
         setSite(folder)
     return zapi.traverse(folder, "++etc++site")
 
-from zope.app.site.service import ServiceRegistration
-from zope.app.site.interfaces import ISimpleService
+
+#------------------------------------------------------------------------
+# Local Utility Addition
+from zope.app.component.site import UtilityRegistration
 from zope.app.registration.interfaces import ActiveStatus
-
-def addService(servicemanager, name, service, suffix=''):
-    """Add a service to a service manager
-
-    This utility is useful for tests that need to set up services.
-    """
-    # Most local services implement ISimpleService in ZCML; therefore make
-    # sure we got it here as well.
-    zope.interface.directlyProvides(service, ISimpleService)
-
-    default = zapi.traverse(servicemanager, 'default')
-    default[name+suffix] = service
-    registration = ServiceRegistration(name, service, default)
-    key = default.getRegistrationManager().addRegistration(registration)
-    zapi.traverse(default.getRegistrationManager(), key).status = ActiveStatus
-    return default[name+suffix]
-
-from zope.app.utility import UtilityRegistration
-
-def addUtility(servicemanager, name, iface, utility, suffix=''):
-    """Add a utility to a service manager
+def addUtility(sitemanager, name, iface, utility, suffix=''):
+    """Add a utility to a site manager
 
     This utility is useful for tests that need to set up utilities.
-    """
-    
+    """    
     folder_name = (name or (iface.__name__ + 'Utility')) + suffix
-    default = zapi.traverse(servicemanager, 'default')
+    default = zapi.traverse(sitemanager, 'default')
     default[folder_name] = utility
     registration = UtilityRegistration(name, iface, default[folder_name])
     key = default.getRegistrationManager().addRegistration(registration)
     zapi.traverse(default.getRegistrationManager(), key).status = ActiveStatus
     return default[folder_name]
-
-def createStandardServices(folder):
-    '''Create a bunch of standard placeful services
-
-    Well, uh, 0
-    '''
-    sm = createServiceManager(folder)
-
-
