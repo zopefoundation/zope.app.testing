@@ -98,7 +98,7 @@ class IManagerSetup(zope.interface.Interface):
 
     XXX This is an interim solution.  It tries to break the dependence
     on a particular security policy, however, we need a much better
-    way of managing functional-testing configurations.    
+    way of managing functional-testing configurations.
     """
 
     def setUpManager():
@@ -139,9 +139,9 @@ class FunctionalTestSetup(object):
             setup = component.queryUtility(IManagerSetup)
             if setup is not None:
                 setup.setUpManager()
-            
+
             FunctionalTestSetup().connection = None
-            
+
         elif config_file and config_file != self._config_file:
             # Running different tests with different configurations is not
             # supported at the moment
@@ -228,7 +228,7 @@ class CookieHandler(object):
             if self.cookies[k].has_key('Path'):
                 self.cookies[k]['Path'] = v['Path']
 
-                 
+
 class BrowserTestCase(CookieHandler, FunctionalTestCase):
     """Functional test case for Browser requests."""
 
@@ -436,7 +436,7 @@ class HTTPHeaderOutput:
         self.headersl = []
         self.protocol = protocol
         self.omit = omit
-    
+
     def setResponseStatus(self, status, reason):
         self.status, self.reason = status, reason
 
@@ -575,9 +575,37 @@ class HTTPCaller(CookieHandler):
 
         old_site = getSite()
         setSite(None)
+
+        request_cls, publication_cls = self.chooseRequestClass(method, path,
+                                                               environment)
+
         app = FunctionalTestSetup().getApplication()
+
+        request = app._request(
+            path, instream, outstream,
+            environment=environment,
+            request=request_cls, publication=publication_cls)
+        if request_cls is BrowserRequest:
+            # Only browser requests have skins
+            interface.directlyProvides(request, _getDefaultSkin())
+
         header_output = HTTPHeaderOutput(
             protocol, ('x-content-type-warning', 'x-powered-by'))
+        request.response.setHeaderOutput(header_output)
+        response = DocResponseWrapper(
+            request.response, outstream, path, header_output)
+
+        publish(request, handle_errors=handle_errors)
+        self.saveCookies(response)
+        setSite(old_site)
+
+        # sync Python connection:
+        getRootFolder()._p_jar.sync()
+
+        return response
+
+    def chooseRequestClass(self, method, path, environment):
+        """Choose and return a request class and a publication class"""
 
         content_type = environment.get('CONTENT_TYPE', '')
         is_xml = content_type.startswith('text/xml')
@@ -598,30 +626,13 @@ class HTTPCaller(CookieHandler):
             else:
                 request_cls = BrowserRequest
                 publication_cls = BrowserPublication
-            
+
         else:
             request_cls = HTTPRequest
             publication_cls = HTTPPublication
 
-        request = app._request(
-            path, instream, outstream,
-            environment=environment,
-            request=request_cls, publication=publication_cls)
-        if request_cls is BrowserRequest:
-            # Only browser requests have skins
-            interface.directlyProvides(request, _getDefaultSkin())
-        request.response.setHeaderOutput(header_output)
-        response = DocResponseWrapper(
-            request.response, outstream, path, header_output)
+        return request_cls, publication_cls
 
-        publish(request, handle_errors=handle_errors)
-        self.saveCookies(response)
-        setSite(old_site)
-
-        # sync Python connection:
-        getRootFolder()._p_jar.sync()
-
-        return response
 
 def FunctionalDocFileSuite(*paths, **kw):
     globs = kw.setdefault('globs', {})
@@ -634,7 +645,7 @@ def FunctionalDocFileSuite(*paths, **kw):
     kwsetUp = kw.get('setUp')
     def setUp(test):
         FunctionalTestSetup().setUp()
-        
+
         if kwsetUp is not None:
             kwsetUp(test)
     kw['setUp'] = setUp
