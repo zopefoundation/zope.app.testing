@@ -256,7 +256,6 @@ Extreme (yet useful) examples:
 $Id$
 """
 import gc
-import hotshot, hotshot.stats
 import logging
 import os
 import re
@@ -451,6 +450,7 @@ class ImmediateTestRunner(unittest.TextTestRunner):
     def run(self, test):
         self.result.count = test.countTestCases()
         if self._profile:
+            import hotshot, hotshot.stats
             prof = hotshot.Profile("tests_profile.prof")
             args = (self, test)
             r = prof.runcall(unittest.TextTestRunner.run, *args)
