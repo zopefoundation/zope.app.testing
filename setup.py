@@ -197,8 +197,8 @@ from zope.app.component.interfaces.registration import ActiveStatus
 def addUtility(sitemanager, name, iface, utility, suffix=''):
     """Add a utility to a site manager
 
-    This utility is useful for tests that need to set up utilities.
-    """    
+    This helper function is useful for tests that need to set up utilities.
+    """
     folder_name = (name or (iface.__name__ + 'Utility')) + suffix
     default = zapi.traverse(sitemanager, 'default')
     default[folder_name] = utility
