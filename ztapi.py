@@ -93,6 +93,7 @@ def provideNamespaceHandler(name, handler):
     provideAdapter(None, ITraversable, handler, name=name)
     provideView(None, None, ITraversable, name, handler)
 
+# XXX: Deprecate
 def provideService(name, service, interface=None):
     services = zapi.getGlobalServices()
     if interface is not None:

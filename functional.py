@@ -229,11 +229,11 @@ class BrowserTestCase(FunctionalTestCase):
         super(BrowserTestCase, self).tearDown()
 
     def setSite(self, site):
-        """Set the site which will be used to look up local services"""
+        """Set the site which will be used to look up local components"""
         setSite(site)
 
     def getSite(self):
-        """Returns the site which is used to look up local services"""
+        """Returns the site which is used to look up local components"""
         return getSite()
 
     def makeRequest(self, path='', basic=None, form=None, env={},
