@@ -139,7 +139,7 @@ def buildSampleFolderTree():
 #------------------------------------------------------------------------
 # Sample Folder Creation
 from zope.app.component.site import LocalSiteManager
-from zope.app.site.interfaces import ISite
+from zope.app.component.interfaces import ISite
 def createSiteManager(folder, setsite=False):
     if not ISite.providedBy(folder):
         folder.setSiteManager(LocalSiteManager(folder))
@@ -151,7 +151,7 @@ def createSiteManager(folder, setsite=False):
 #------------------------------------------------------------------------
 # Local Utility Addition
 from zope.app.component.site import UtilityRegistration
-from zope.app.registration.interfaces import ActiveStatus
+from zope.app.component.interfaces.registration import ActiveStatus
 def addUtility(sitemanager, name, iface, utility, suffix=''):
     """Add a utility to a site manager
 
