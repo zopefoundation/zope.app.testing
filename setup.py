@@ -206,3 +206,43 @@ def addUtility(sitemanager, name, iface, utility, suffix=''):
     key = default.registrationManager.addRegistration(registration)
     zapi.traverse(default.registrationManager, key).status = ActiveStatus
     return default[folder_name]
+
+
+#------------------------------------------------------------------------
+# Setup of test text files as modules
+import sys
+
+# Evil hack to make pickling work with classes defined in doc tests
+class NoCopyDict(dict):
+    def copy(self):
+        return self
+
+class FakeModule:
+    """A fake module."""
+    
+    def __init__(self, dict):
+        self.__dict = dict
+
+    def __getattr__(self, name):
+        try:
+            return self.__dict[name]
+        except KeyError:
+            raise AttributeError, name
+
+
+def setUpTestAsModule(test, name=None):
+    if name is None:
+        if test.globs.haskey('__name__'):
+            name = test.globs['__name__']
+        else:
+            name = test.globs.name
+
+    test.globs['__name__'] = name 
+    test.globs = NoCopyDict(test.globs)
+    sys.modules[name] = FakeModule(test.globs)
+
+
+def tearDownTestAsModule(test):
+    del sys.modules[test.globs['__name__']]
+    test.globs.clear()
+
