@@ -25,8 +25,13 @@ from zope.interface import classImplements
 #############################################################################
 # BBB: Goes away in 3.3
 
+import zope.deprecation
+
+zope.deprecation.__show__.off()
 from zope.component.bbb.service import IService
 from zope.app.site.interfaces import ISimpleService
+zope.deprecation.__show__.on()
+
 from zope.app.component.site import UtilityRegistration
 
 def addService(servicemanager, name, service, suffix=''):
