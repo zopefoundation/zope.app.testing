@@ -581,7 +581,7 @@ def walk_with_symlinks(top, func, arg):
         names = os.listdir(top)
     except os.error:
         return
-    exceptions = ('.', '..', '{arch}', '.arch-ids')
+    exceptions = ('.', '..', '{arch}', '.arch-ids', '_darcs')
     names = [name for name in names
              if name not in exceptions
              if not name.startswith(',,')]
