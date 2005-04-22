@@ -604,6 +604,29 @@ class HTTPCaller(CookieHandler):
 
         return response
 
+    def post(self, request_string, form_fields={}, handle_errors=True):
+        """Encode and perform a POST request.
+
+        This always creates multipart/form-data submissions.
+        """
+        request_string = request_string.strip()
+        if not request_string.startswith("POST "):
+            raise TypeError("request must be a POST")
+        boundary = "--------------------------------------455234523"
+        if form_fields:
+            request_string += "\nContent-Type: multipart/form-data; boundary="
+            request_string += boundary
+        request_string += "\n\n"
+        if form_fields:
+            for name, value in form_fields.iteritems():
+                request_string += "--" + boundary + "\n"
+                request_string += 'Content-Disposition: form-data; name="'
+                request_string += name + '"\n\n'
+                request_string += value + "\n"
+            request_string += "--" + boundary + "--\n"
+        return self.__call__(request_string, handle_errors)
+        
+
     def chooseRequestClass(self, method, path, environment):
         """Choose and return a request class and a publication class"""
 
@@ -637,6 +660,7 @@ class HTTPCaller(CookieHandler):
 def FunctionalDocFileSuite(*paths, **kw):
     globs = kw.setdefault('globs', {})
     globs['http'] = HTTPCaller()
+    globs['post'] = globs['http'].post
     globs['getRootFolder'] = getRootFolder
     globs['sync'] = sync
 
