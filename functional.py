@@ -537,7 +537,7 @@ def sample_test_suite():
 class HTTPCaller(CookieHandler):
     """Execute an HTTP request string via the publisher"""
 
-    def __call__(self, request_string, handle_errors=True):
+    def __call__(self, request_string, handle_errors=True, form=None):
         # Commit work done by previous python code.
         commit()
 
@@ -589,6 +589,11 @@ class HTTPCaller(CookieHandler):
             # Only browser requests have skins
             interface.directlyProvides(request, _getDefaultSkin())
 
+        if form is not None:
+            if request.form:
+                raise ValueError("only one set of form values can be provided")
+            request.form = form
+
         header_output = HTTPHeaderOutput(
             protocol, ('x-content-type-warning', 'x-powered-by'))
         request.response.setHeaderOutput(header_output)
@@ -603,29 +608,6 @@ class HTTPCaller(CookieHandler):
         getRootFolder()._p_jar.sync()
 
         return response
-
-    def post(self, request_string, form_fields={}, handle_errors=True):
-        """Encode and perform a POST request.
-
-        This always creates multipart/form-data submissions.
-        """
-        request_string = request_string.strip()
-        if not request_string.startswith("POST "):
-            raise TypeError("request must be a POST")
-        boundary = "--------------------------------------455234523"
-        if form_fields:
-            request_string += "\nContent-Type: multipart/form-data; boundary="
-            request_string += boundary
-        request_string += "\n\n"
-        if form_fields:
-            for name, value in form_fields.iteritems():
-                request_string += "--" + boundary + "\n"
-                request_string += 'Content-Disposition: form-data; name="'
-                request_string += name + '"\n\n'
-                request_string += value + "\n"
-            request_string += "--" + boundary + "--\n"
-        return self.__call__(request_string, handle_errors)
-        
 
     def chooseRequestClass(self, method, path, environment):
         """Choose and return a request class and a publication class"""
@@ -660,7 +642,6 @@ class HTTPCaller(CookieHandler):
 def FunctionalDocFileSuite(*paths, **kw):
     globs = kw.setdefault('globs', {})
     globs['http'] = HTTPCaller()
-    globs['post'] = globs['http'].post
     globs['getRootFolder'] = getRootFolder
     globs['sync'] = sync
 
