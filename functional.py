@@ -357,14 +357,20 @@ class BrowserTestCase(CookieHandler, FunctionalTestCase):
                     object = publication.getApplication(request)
                     object = request.traverse(object)
                     publication.afterTraversal(request, object)
-                except (KeyError, NameError, AttributeError, Unauthorized, Forbidden):
-                    e = traceback.format_exception_only(*sys.exc_info()[:2])[-1]
+                except (KeyError, NameError, AttributeError, Unauthorized,
+                        Forbidden):
+                    e = traceback.format_exception_only(
+                        *sys.exc_info()[:2])[-1]
                     errors.append((a, e.strip()))
             finally:
                 publication.endRequest(request, object)
                 self.setSite(old_site)
-                # Bad Things(TM) related to garbage collection and special
-                # __del__ methods happen if request.close() is not called here
+
+                # Make sure we don't have pending changes
+                abort()
+                
+                # The request should always be closed to free resources
+                # held by the request
                 if request:
                     request.close()
         if errors:
