@@ -133,9 +133,6 @@ the test runner script (see the list of global variables in process_args().).
 --repeat n
     Run the selected tests n times.
 
--m
--M  minimal GUI. See -U.
-
 -P
 --profile
     Run the tests under hotshot and display the top 50 stats, sorted by
@@ -180,24 +177,6 @@ the test runner script (see the list of global variables in process_args().).
 -u
 --skip-functional
     CHANGED. Run unit tests but not functional tests.
-    Note that the meaning of -u is changed from its former meaning,
-    which is now specified by -U or --gui.
-
--U
---gui
-    Use the PyUnit GUI instead of output to the command line.  The GUI
-    imports tests on its own, taking care to reload all dependencies
-    on each run.  The debug (-d), verbose (-v), progress (-p), and
-    Loop (-L) options will be ignored.  The testfilter filter is also
-    not applied.
-
--m
--M
---minimal-gui
-    Note: -m is DEPRECATED in favour of -M or --minimal-gui.
-    -m starts the gui minimized.  Double-clicking the progress bar
-    will start the import and run all tests.
-
 
 -v
 --verbose
@@ -247,11 +226,6 @@ Extreme (yet useful) examples:
     "testWriteClient".  Useful to avoid a specific failing test you don't
     want to deal with just yet.
 
-    test.py -M . "!^testWriteClient$"
-
-    As before, but now opens up a minimized PyUnit GUI window (only showing
-    the progress bar).  Useful for refactoring runs where you continually want
-    to make sure all tests still pass.
 
 $Id$
 """
@@ -665,21 +639,6 @@ def filter_testcases(s, rx):
                 new.addTest(filtered)
     return new
 
-def gui_runner(files, test_filter):
-    if BUILD_INPLACE:
-        utildir = os.path.join(os.getcwd(), "utilities")
-    else:
-        utildir = os.path.join(os.getcwd(), "..", "utilities")
-    sys.path.append(utildir)
-    import unittestgui
-    suites = []
-    for file in files:
-        suites.append(finder.module_from_path(file) + ".test_suite")
-
-    suites = ", ".join(suites)
-    minimal = (GUI == "minimal")
-    unittestgui.main(suites, minimal)
-
 class TrackRefs(object):
     """Object to track reference counts across test runs."""
 
@@ -857,9 +816,7 @@ def main(module_filter, test_filter, libdir):
         FunctionalTestSetup(config_file)
 
     numbad = 0
-    if GUI:
-        gui_runner(files, test_filter)
-    elif LOOP:
+    if LOOP:
         if REFCOUNT:
             rc = sys.gettotalrefcount()
             track = TrackRefs()
@@ -929,7 +886,6 @@ def process_args(argv=None):
     global TEST_FILTER
     global VERBOSE
     global LOOP
-    global GUI
     global TRACE
     global REFCOUNT
     global DEBUG
@@ -958,7 +914,6 @@ def process_args(argv=None):
     TEST_FILTERS = []
     VERBOSE = 0
     LOOP = 0
-    GUI = False
     TRACE = False
     REFCOUNT = False
     DEBUG = False # Don't collect test results; simply let tests crash
@@ -997,7 +952,7 @@ def process_args(argv=None):
                                     "at-level=",
                                     "pychecker", "debug", "pdebug",
                                     "gc-threshold=", "gc-option=",
-                                    "loop", "gui", "minimal-gui",
+                                    "loop",
                                     "test=", "module=",
                                     "profile", "progress", "refcount", "trace",
                                     "top-fifty", "verbose", "repeat=",
@@ -1055,12 +1010,6 @@ def process_args(argv=None):
             LOOP = 1000000000
         elif k in ("-N", "--repeat"):
             LOOP = int(v)
-        elif k == "-m":
-            GUI = "minimal"
-            msg = "Use -M or --minimal-gui instead of -m."
-            warnings.warn(msg, DeprecationWarning)
-        elif k in ("-M", "--minimal-gui"):
-            GUI = "minimal"
         elif k in ("-P", "--profile"):
             PROFILE = True
         elif k in ("-p", "--progress"):
@@ -1072,8 +1021,6 @@ def process_args(argv=None):
         elif k in ("-t", "--top-fifty"):
             if not TIMETESTS:
                 TIMETESTS = 50
-        elif k in ("-U", "--gui"):
-            GUI = 1
         elif k in ("-1", "--report-only-first-doctest-failure"):
             REPORT_ONLY_FIRST_DOCTEST_FAILURE = True
         elif k in ("-v", "--verbose"):
