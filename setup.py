@@ -156,24 +156,39 @@ from zope.app.folder import Folder, rootFolder
 def buildSampleFolderTree():
     # set up a reasonably complex folder structure
     #
-    #     ____________ rootFolder ____________
-    #    /                                    \
-    # folder1 __________________            folder2
-    #   |                       \             |
-    # folder1_1 ____           folder1_2    folder2_1
+    #     ____________ rootFolder ______________________________
+    #    /                                    \                 \
+    # folder1 __________________            folder2           folder3
+    #   |                       \             |                 |
+    # folder1_1 ____           folder1_2    folder2_1         folder3_1
     #   |           \            |            |
     # folder1_1_1 folder1_1_2  folder1_2_1  folder2_1_1
 
     root = rootFolder()
-    root['folder1'] = Folder()
-    root['folder1']['folder1_1'] = Folder()
-    root['folder1']['folder1_1']['folder1_1_1'] = Folder()
-    root['folder1']['folder1_1']['folder1_1_2'] = Folder()
-    root['folder1']['folder1_2'] = Folder()
-    root['folder1']['folder1_2']['folder1_2_1'] = Folder()
-    root['folder2'] = Folder()
-    root['folder2']['folder2_1'] = Folder()
-    root['folder2']['folder2_1']['folder2_1_1'] = Folder()
+    root[u'folder1'] = Folder()
+    root[u'folder1'][u'folder1_1'] = Folder()
+    root[u'folder1'][u'folder1_1'][u'folder1_1_1'] = Folder()
+    root[u'folder1'][u'folder1_1'][u'folder1_1_2'] = Folder()
+    root[u'folder1'][u'folder1_2'] = Folder()
+    root[u'folder1'][u'folder1_2'][u'folder1_2_1'] = Folder()
+    root[u'folder2'] = Folder()
+    root[u'folder2'][u'folder2_1'] = Folder()
+    root[u'folder2'][u'folder2_1'][u'folder2_1_1'] = Folder()
+    root[u"\N{CYRILLIC SMALL LETTER PE}"
+         u"\N{CYRILLIC SMALL LETTER A}"
+         u"\N{CYRILLIC SMALL LETTER PE}"
+         u"\N{CYRILLIC SMALL LETTER KA}"
+         u"\N{CYRILLIC SMALL LETTER A}3"] = Folder()
+    root[u"\N{CYRILLIC SMALL LETTER PE}"
+         u"\N{CYRILLIC SMALL LETTER A}"
+         u"\N{CYRILLIC SMALL LETTER PE}"
+         u"\N{CYRILLIC SMALL LETTER KA}"
+         u"\N{CYRILLIC SMALL LETTER A}3"][
+         u"\N{CYRILLIC SMALL LETTER PE}"
+         u"\N{CYRILLIC SMALL LETTER A}"
+         u"\N{CYRILLIC SMALL LETTER PE}"
+         u"\N{CYRILLIC SMALL LETTER KA}"
+         u"\N{CYRILLIC SMALL LETTER A}3_1"] = Folder()
 
     return root
 
