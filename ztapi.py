@@ -78,6 +78,7 @@ def subscribe(required, provided, factory):
     gsm = zapi.getGlobalSiteManager()
     gsm.subscribe(required, provided, factory)
 
+# BBB: Deprecated. Gone in 3.3
 def handle(required, handler):
     subscribe(required, None, handler)
 
@@ -94,7 +95,7 @@ def provideNamespaceHandler(name, handler):
     provideView(None, None, ITraversable, name, handler)
 
 
-# BBB: Deprecated. Gone in X3.3.
+# BBB: Deprecated. Gone in 3.3.
 from zope.deprecation import deprecated
 
 def provideService(name, service, interface=None):
@@ -105,4 +106,9 @@ def provideService(name, service, interface=None):
     
 deprecated('provideService',
            'The concept of services has been removed. Use utilities instead. '
-           'The reference will be gone in X3.3.')
+           'The reference will be gone in 3.3.')
+
+deprecated('handle',
+           'The handle(required, handler) function as a shorter spelling of '
+           'subscribe(required, None, handler) has been deprecated to avoid '
+           'nomenclature confusion with zope.component.handle.')
