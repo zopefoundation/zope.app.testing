@@ -669,7 +669,10 @@ def FunctionalDocFileSuite(*paths, **kw):
     kw['tearDown'] = tearDown
 
     if 'optionflags' not in kw:
-        kw['optionflags'] = (doctest.ELLIPSIS
+        old = doctest.set_unittest_reportflags(0)
+        doctest.set_unittest_reportflags(old)
+        kw['optionflags'] = (old
+                             | doctest.ELLIPSIS
                              | doctest.REPORT_NDIFF
                              | doctest.NORMALIZE_WHITESPACE)
 
