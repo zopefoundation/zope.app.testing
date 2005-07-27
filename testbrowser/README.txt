@@ -30,7 +30,6 @@ The contents of the current page are available:
         <h1>Simple Page</h1>
       </body>
     </html>
-    <BLANKLINE>
 
 Making assertions about page contents are easy.
 
@@ -108,7 +107,6 @@ The headers can be accesed as a string:
     Content-Type: text/html;charset=utf-8
     X-Content-Type-Warning: guessed from content
     X-Powered-By: Zope (www.zope.org), Python (www.python.org)
-    <BLANKLINE>
 
 Or as a mapping:
 
