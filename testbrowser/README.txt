@@ -11,9 +11,9 @@ simulates a web browser similar to Mozilla Firefox or IE.
 
 The browser can `open` web pages:
 
-    >>> browser.open('http://localhost/++etc++site/default')
+    >>> browser.open('http://localhost/@@/testbrowser/simple.html')
     >>> browser.url
-    'http://localhost/++etc++site/default'
+    'http://localhost/@@/testbrowser/simple.html'
 
 
 Page Contents
@@ -22,12 +22,19 @@ Page Contents
 The contents of the current page are available:
 
     >>> print browser.contents
-    <...
-    <html...>
-    <body...>
-    ...
+    <html>
+      <head>
+        <title>Simple Page</title>
+      </head>
+      <body>
+        <h1>Simple Page</h1>
+      </body>
+    </html>
+    <BLANKLINE>
 
 Making assertions about page contents are easy.
+
+    >>> browser.open('http://localhost/++etc++site/default')
 
     >>> '<a href="RootErrorReportingUtility">' in browser.contents
     True
