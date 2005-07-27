@@ -93,12 +93,10 @@ Headers
 -------
 
 As you can see, the `contents` of the browser does not return any HTTP
-headers. The headers are accessible via a separate attribute:
+headers. The headers are accessible via a separate attribute, which is an
+``httplib.HTTPMessage`` instance:
 
     >>> browser.open('http://localhost/@@/testbrowser/simple.html')
-
-The page's headers are also available as an httplib.HTTPMessage instance:
-
     >>> browser.headers
     <httplib.HTTPMessage instance...>
 
@@ -121,23 +119,118 @@ Or as a mapping:
 Navigation
 ----------
 
-    >>> browser.open('http://localhost/++etc++site/default')
+If you want to simulate clicking on a link, there is a `click` method. In the
+`navigate.html` file there are several links setup to demonstrate the
+capabilities of the `click` method. 
 
-If you want to simulate clicking on a link, there is a `click` method.
+    >>> browser.open('http://localhost/@@/testbrowser/navigate.html')
 
-    >>> browser.click('RootErrorReportingUtility')
+The simplest is to access the link by the text value that is linked, in other
+words the linked text you would see in a browser:
+
+    >>> print browser.contents
+    <html>
+    ...
+    <a href="navigate.html?message=By+Link+Text">Link Text</a>
+    ...
+
+    >>> browser.click('Link Text')
     >>> browser.url
-    'http://localhost/++etc++site/default/RootErrorReportingUtility'
+    'http://localhost/@@/testbrowser/navigate.html?message=By+Link+Text'
+    >>> print browser.contents
+    <html>
+    ...
+    Message: <em>By Link Text</em>
+    ...
 
-We'll navigate to a form and fill in some values and the submit the form.
+You can also find the link by (1) its URL,
 
-    >>> browser.click('Configure')
+    >>> browser.open('http://localhost/@@/testbrowser/navigate.html')
+    >>> print browser.contents
+    <html>
+    ...
+    <a href="navigate.html?message=By+URL">Using the URL</a>
+    ...
+
+    >>> browser.click(url='\?message=By\+URL')
     >>> browser.url
-    'http://localhost/++etc++site/default/RootErrorReportingUtility/@@configure.html'
+    'http://localhost/@@/testbrowser/navigate.html?message=By+URL'
+    >>> print browser.contents
+    <html>
+    ...
+    Message: <em>By URL</em>
+    ...
+
+and (2) its id:
+
+    >>> browser.open('http://localhost/@@/testbrowser/navigate.html')
+    >>> print browser.contents
+    <html>
+    ...
+    <a href="navigate.html?message=By+Id" id="anchorid">By Anchor Id</a>
+    ...
+
+    >>> browser.click(id='anchorid')
+    >>> browser.url
+    'http://localhost/@@/testbrowser/navigate.html?message=By+Id'
+    >>> print browser.contents
+    <html>
+    ...
+    Message: <em>By Id</em>
+    ...
+
+But there are more interesting cases. You can also use the `click` method to
+submit forms. You can either use the submit button's value by simply
+specifying the text:
+
+    >>> browser.open('http://localhost/@@/testbrowser/navigate.html')
+    >>> print browser.contents
+    <html>
+    ...
+    <input type="submit" name="submit-form" value="Submit" />
+    ...
+
+    >>> browser.click('Submit')
+    >>> browser.url
+    'http://localhost/@@/testbrowser/navigate.html'
+    >>> print browser.contents
+    <html>
+    ...
+    Message: <em>By Form Submit</em>
+    ...
+
+Alternatively, you can specify the name of the control:
+
+    >>> browser.open('http://localhost/@@/testbrowser/navigate.html')
+    >>> browser.click(name='submit-form')
+    >>> browser.url
+    'http://localhost/@@/testbrowser/navigate.html'
+    >>> print browser.contents
+    <html>
+    ...
+    Message: <em>By Form Submit</em>
+    ...
+
+You thought we were done here? Not so quickly. The `click` method also
+supports image maps, though not by specifying the coordinates, but using the
+area's title (or other tag attgributes):
+
+    >>> browser.open('http://localhost/@@/testbrowser/navigate.html')
+    >>> browser.click(id='zope3')
+    >>> browser.url
+    'http://localhost/@@/testbrowser/navigate.html?message=Zope+3+Name'
+    >>> print browser.contents
+    <html>
+    ...
+    Message: <em>Zope 3 Name</em>
+    ...
 
 
 Forms
 -----
+
+   >>> browser.open('http://localhost/++etc++site/default/RootErrorReportingUtility/@@configure.html')
+
 
 The current page has a form on it, let's look at some of the controls:
 
@@ -175,6 +268,7 @@ a dictionary:
     '30'
     >>> browser.controls['copy_to_zlog']
     False
+
 
 Finding Specific Forms
 ----------------------

@@ -128,7 +128,8 @@ class Browser(object):
         # a regular link
 
         if id is not None:
-            predicate = lambda link: link.attrs.get('id') == id
+            def predicate(link):
+                return dict(link.attrs).get('id') == id
             self.mech_browser.follow_link(predicate=predicate)
         else:
             if text is not None:
