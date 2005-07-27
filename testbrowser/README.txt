@@ -34,14 +34,68 @@ The contents of the current page are available:
 
 Making assertions about page contents are easy.
 
-    >>> browser.open('http://localhost/++etc++site/default')
-
-    >>> '<a href="RootErrorReportingUtility">' in browser.contents
+    >>> 'Simple Page' in browser.contents
     True
+
+Utilizing the doctest facilities, it is better to do:
+
+    >>> print browser.contents
+    <html>
+    ...
+        <h1>Simple Page</h1>
+    ...
+
+Note: Unfortunately, ellipsis (...) cannot be used at the beginning of the
+output.
+
+
+Checking for HTML
+-----------------
+
+Not all URLs return HTML. Of course our simple page does:
+
+    >>> browser.open('http://localhost/@@/testbrowser/simple.html')
+    >>> browser.isHtml
+    True
+
+But if we load an image (or other binary file), we do not get HTML:
+
+    >>> browser.open('http://localhost/@@/testbrowser/zope3logo.gif')
+    >>> browser.isHtml
+    False
+
+
+HTML Page Title
+----------------
+
+Another useful helper property is the title:
+
+    >>> browser.open('http://localhost/@@/testbrowser/simple.html')
+    >>> browser.title
+    'Simple Page'
+
+If a page does not provide a title, it is simply ``None``:
+
+    >>> browser.open('http://localhost/@@/testbrowser/notitle.html')
+    >>> browser.title
+
+However, if the output is not HTML, then an error will occur trying to access
+the title:
+
+    >>> browser.open('http://localhost/@@/testbrowser/zope3logo.gif')
+    >>> browser.title
+    Traceback (most recent call last):
+    ...
+    BrowserStateError: not viewing HTML
 
 
 Headers
 -------
+
+As you can see, the `contents` of the browser does not return any HTTP
+headers. The headers are accessible via a separate attribute:
+
+    >>> browser.open('http://localhost/@@/testbrowser/simple.html')
 
 The page's headers are also available as an httplib.HTTPMessage instance:
 
@@ -54,7 +108,9 @@ The headers can be accesed as a string:
     Status: 200 Ok
     Content-Length: ...
     Content-Type: text/html;charset=utf-8
+    X-Content-Type-Warning: guessed from content
     X-Powered-By: Zope (www.zope.org), Python (www.python.org)
+    <BLANKLINE>
 
 Or as a mapping:
 
@@ -64,6 +120,8 @@ Or as a mapping:
 
 Navigation
 ----------
+
+    >>> browser.open('http://localhost/++etc++site/default')
 
 If you want to simulate clicking on a link, there is a `click` method.
 
