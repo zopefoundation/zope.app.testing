@@ -12,6 +12,10 @@
 # FOR A PARTICULAR PURPOSE
 #
 ##############################################################################
+"""Publisher Hook to ``mechanize``
+
+$Id$
+"""
 import httplib
 import urllib2
 from cStringIO import StringIO
