@@ -77,8 +77,29 @@ class Browser(object):
         """See zope.app.testing.testbrowser.interfaces.IBrowser"""
         return self.mech_browser.response().info()
 
+    @apply
+    def handleErrors():
+        """See zope.app.testing.testbrowser.interfaces.IBrowser"""
+        header_key = 'X-zope-handle-errors'
+
+        def get(self):
+            headers = self.mech_browser.addheaders
+            return dict(headers).get(header_key, True)
+
+        def set(self, value):
+            headers = self.mech_browser.addheaders
+            current_value = get(self)
+            if current_value == value:
+                return
+            if header_key in dict(headers):
+                headers.remove((header_key, current_value))
+            headers.append((header_key, value))
+            
+        return property(get, set)
+
     def open(self, url, data=None):
         """See zope.app.testing.testbrowser.interfaces.IBrowser"""
+        
         self.mech_browser.open(url, data)
 
     def reload(self):
@@ -119,8 +140,8 @@ class Browser(object):
             else:
                 url_regex = None
 
-            self.mech_browser.follow_link(text_regex=text_regex,
-                                          url_regex=url_regex)
+            self.mech_browser.follow_link(
+                text_regex=text_regex, url_regex=url_regex)
         self._changed()
 
     def getControl(self, text):

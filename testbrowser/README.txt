@@ -194,3 +194,34 @@ Let's set it back, so we don't mess anything up.
     >>> browser.click('Change')
 
 
+Handling Errors
+---------------
+
+A very useful feature of the publisher is the automatic graceful handling of
+application errors, such as invalid URLs:
+
+    >>> browser.open('http://localhost/invalid')
+    Traceback (most recent call last):
+    ...
+    HTTPError: HTTP Error 404: Not Found
+
+Note that the above error was thrown by ``urllib2`` and not by the
+publisher. For debugging purposes, however, it can be very useful to see the
+original exception caused by the application. In those cases you can set the
+``handleErrors`` property of the browser to ``False``. It is defaulted to
+``True``:
+
+    >>> browser.handleErrors
+    True
+
+So when we tell the publisher not to handle the errors,    
+
+    >>> browser.handleErrors = False
+
+we get a different, Zope internal error:
+
+    >>> browser.open('http://localhost/invalid')
+    Traceback (most recent call last):
+    ...
+    NotFound: Object: <zope.app.folder.folder.Folder object at ...>, 
+              name: u'invalid'

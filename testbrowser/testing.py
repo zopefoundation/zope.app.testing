@@ -45,6 +45,12 @@ class PublisherConnection(object):
         if body is None:
             body = ''
 
+        # Extract the handle_error option header
+        handle_errors_key = 'X-zope-handle-errors'
+        handle_errors = headers.get(handle_errors_key, True)
+        if handle_errors_key in headers:
+            del headers[handle_errors_key]
+
         # Construct the headers.
         header_chunks = []
         if headers is not None:
@@ -59,7 +65,7 @@ class PublisherConnection(object):
         request_string = (method + ' ' + url + ' HTTP/1.1\n'
                           + headers + '\n' + body)
 
-        self.response = self.caller(request_string)
+        self.response = self.caller(request_string, handle_errors)
 
     def getresponse(self):
         """Return a ``urllib2`` compatible response.
