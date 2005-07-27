@@ -226,6 +226,35 @@ area's title (or other tag attgributes):
     ...
 
 
+Other Navigation
+----------------
+
+Like in any normal browser, you can reload a page:
+
+    >>> browser.open('http://localhost/@@/testbrowser/simple.html')
+    >>> browser.url
+    'http://localhost/@@/testbrowser/simple.html'
+    >>> browser.reload()
+    >>> browser.url
+    'http://localhost/@@/testbrowser/simple.html'
+
+You can also go back:
+
+    >>> browser.open('http://localhost/@@/testbrowser/notitle.html')
+    >>> browser.url
+    'http://localhost/@@/testbrowser/notitle.html'
+    >>> browser.goBack()
+    >>> browser.url
+    'http://localhost/@@/testbrowser/simple.html'
+
+
+Controls
+--------
+
+One of the most important features of the browser is the ability to inspect
+and fill in values for the controls of input forms.
+
+
 Forms
 -----
 

@@ -109,7 +109,7 @@ class Browser(object):
 
     def goBack(self, count=1):
         """See zope.app.testing.testbrowser.interfaces.IBrowser"""
-        self.mech_browser.back(self, count)
+        self.mech_browser.back(count)
         self._changed()
 
     def addHeader(self, key, value):
