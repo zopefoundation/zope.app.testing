@@ -68,7 +68,7 @@ class PublisherConnection(object):
         a ``urllib2`` compatible response, which is also understood by
         mechanize.
         """
-        headers = self.response.header_output.headers
+        headers = self.response.header_output.headersl
         real_response = self.response._response
         status = real_response.getStatus()
         reason = real_response._reason # XXX should add a getReason method
