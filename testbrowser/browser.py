@@ -118,7 +118,11 @@ class Browser(object):
 
     def click(self, text=None, url=None, id=None, name=None, coord=(1,1)):
         """See zope.app.testing.testbrowser.interfaces.IBrowser"""
+        # Determine whether the click is a form submit and click the submit
+        # button if this is the case.
         form, control = self._findControl(text, id, name, type='submit')
+        if control is None:
+            form, control = self._findControl(text, id, name, type='image')
         if control is not None:
             self._clickSubmit(form, control, coord)
             self._changed()

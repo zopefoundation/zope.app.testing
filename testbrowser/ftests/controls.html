@@ -68,8 +68,15 @@
       <radio name="radio-value" value="2" selected="selected" />
       <radio name="radio-value" value="3" />
 
-      <input type="image" name="image" src="zope3logo.gif" />
-      <input type="submit" name="submit" value="Submit" />
+      <em tal:condition="request/image-value.x|nothing"
+          tal:content="request/image-value.x" />
+      <em tal:condition="request/image-value.y|nothing"
+          tal:content="request/image-value.y" />
+      <input type="image" name="image-value" src="zope3logo.gif" />
+
+      <em tal:condition="request/submit-value|nothing"
+          tal:content="request/submit-value" />
+      <input type="submit" name="submit-value" value="Submit" />
     </form>
 
   </body>

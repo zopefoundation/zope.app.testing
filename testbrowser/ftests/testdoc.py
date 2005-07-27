@@ -22,8 +22,9 @@ from zope.app.testing.functional import FunctionalDocFileSuite
 
 
 def test_suite():
-    return FunctionalDocFileSuite('../README.txt',
-              optionflags=doctest.NORMALIZE_WHITESPACE+doctest.ELLIPSIS)
+    return FunctionalDocFileSuite(
+        '../README.txt',
+        optionflags=doctest.NORMALIZE_WHITESPACE|doctest.ELLIPSIS)
 
 if __name__ == '__main__':
     unittest.main(defaultTest='test_suite')

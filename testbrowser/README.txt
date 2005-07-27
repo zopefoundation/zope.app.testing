@@ -11,9 +11,9 @@ simulates a web browser similar to Mozilla Firefox or IE.
 
 The browser can `open` web pages:
 
-    >>> browser.open('http://localhost/@@/testbrowser/simple.html')
-    >>> browser.url
-    'http://localhost/@@/testbrowser/simple.html'
+   >>> browser.open('http://localhost/@@/testbrowser/simple.html')
+   >>> browser.url
+   'http://localhost/@@/testbrowser/simple.html'
 
 
 Page Contents
@@ -30,6 +30,7 @@ The contents of the current page are available:
         <h1>Simple Page</h1>
       </body>
     </html>
+    <BLANKLINE>
 
 Making assertions about page contents is easy.
 
@@ -107,6 +108,7 @@ The headers can be accesed as a string:
     Content-Type: text/html;charset=utf-8
     X-Content-Type-Warning: guessed from content
     X-Powered-By: Zope (www.zope.org), Python (www.python.org)
+    <BLANKLINE>
 
 Or as a mapping:
 
@@ -299,6 +301,13 @@ The key is matched against the value, id and name of the control. The
     'More Text'
     >>> browser.controls['password-value']
     'pass now'
+
+If we request a control that doesn't exist, an exception is raised.
+
+    >>> browser.controls['does_not_exist']
+    Traceback (most recent call last):
+    ...
+    KeyError: 'does_not_exist'
 
 
 Control Objects
@@ -524,53 +533,94 @@ There are various types of controls. They are demonstrated here.
     >>> ctrl.options
     ['1', '2', '3']
 
+  - Image Control
+
+    >>> ctrl = browser.getControl('image-value')
+    >>> ctrl
+    Control(name='image-value', type='image')
+    >>> ctrl.value
+    ''
+    >>> ctrl.disabled
+    False
+    >>> ctrl.readonly
+    False
+    >>> ctrl.multiple
+    >>> ctrl.options
+    Traceback (most recent call last):
+    ...    
+    AttributeError: options
+
+  - Submit Control
+
+    >>> ctrl = browser.getControl('submit-value')
+    >>> ctrl
+    Control(name='submit-value', type='submit')
+    >>> ctrl.value
+    'Submit'
+    >>> ctrl.disabled
+    False
+    >>> ctrl.readonly
+    True
+    >>> ctrl.multiple
+    >>> ctrl.options
+    Traceback (most recent call last):
+    ...    
+    AttributeError: options
+
+
+Using Submitting Controls
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Both, the submit and image type, should be clickable and submit the form:
+
+    >>> browser.controls['text-value'] = 'Other Text'
+    >>> browser.click('Submit')
+    >>> print browser.contents
+    <html>
+    ...
+    <em>Other Text</em>
+    <input type="text" name="text-value" value="Some Text" />
+    ...
+    <em>Submit</em>
+    <input type="submit" name="submit-value" value="Submit" />
+    ...
+    </html>
+
+And also with the image value:
+
+    >>> browser.open('http://localhost/@@/testbrowser/controls.html')
+    >>> browser.controls['text-value'] = 'Other Text'
+    >>> browser.click(name='image-value')
+    >>> print browser.contents
+    <html>
+    ...
+    <em>Other Text</em>
+    <input type="text" name="text-value" value="Some Text" />
+    ...
+    <em>1</em>
+    <em>1</em>
+    <input type="image" name="image-value" src="zope3logo.gif" />
+    ...
+    </html>
+
+But when sending an image, you can also specify the coordinate you clicked:
+
+    >>> browser.open('http://localhost/@@/testbrowser/controls.html')
+    >>> browser.click(name='image-value', coord=(50,25))
+    >>> print browser.contents
+    <html>
+    ...
+    <em>50</em>
+    <em>25</em>
+    <input type="image" name="image-value" src="zope3logo.gif" />
+    ...
+    </html>
+
 
 Forms
 -----
 
-   >>> browser.open('http://localhost/++etc++site/default/RootErrorReportingUtility/@@configure.html')
 
-
-The current page has a form on it, let's look at some of the controls:
-
-    >>> browser.controls['keep_entries']
-    '20'
-    >>> browser.controls['copy_to_zlog']
-    False
-
-If we request a control that doesn't exist, an exception is raised.
-
-    >>> browser.controls['does_not_exist']
-    Traceback (most recent call last):
-    ...
-    KeyError: 'does_not_exist'
-
-We want to change some of the form values and submit.
-
-    >>> browser.controls['keep_entries'] = '40'
-    >>> browser.controls['copy_to_zlog'] = True
-    >>> browser.click('Save Changes')
-
-Are our changes reflected on the resulting page?
-
-    >>> browser.controls['keep_entries']
-    '40'
-    >>> browser.controls['copy_to_zlog']
-    True
-
-The `controls` object also has an `update()` method similar to that of
-a dictionary:
-
-    >>> browser.controls.update(dict(keep_entries='30', copy_to_zlog=False))
-    >>> browser.click('Save Changes')
-    >>> browser.controls['keep_entries']
-    '30'
-    >>> browser.controls['copy_to_zlog']
-    False
-
-
-Finding Specific Forms
-----------------------
 
 Because pages can have multiple forms with like-named controls, it is sometimes
 neccesary to access forms by name or id.  The browser's `forms` attribute can
