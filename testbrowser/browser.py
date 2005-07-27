@@ -95,20 +95,17 @@ class Browser(object):
                                           url_regex=url_regex)
         self._changed()
 
-    @property
-    def _findControl(self):
-        def _findControl(text, id, name, type=None, form=None):
-            for control_form, control in self._controls:
-                if form is None or control_form == form:
-                    if (((id is not None and control.id == id)
-                    or (name is not None and control.name == name)
-                    or (text is not None and re.search(text, str(control.value)))
-                    ) and (type is None or control.type == type)):
-                        self.mech_browser.form = control_form
-                        return control_form, control
-
-            return None, None
-        return _findControl
+    def _findControl(self, text, id, name, type=None, form=None):
+        for control_form, control in self._controls:
+            if form is None or control_form == form:
+                if (((id is not None and control.id == id)
+                or (name is not None and control.name == name)
+                or (text is not None and re.search(text, str(control.value)))
+                ) and (type is None or control.type == type)):
+                    self.mech_browser.form = control_form
+                    return control_form, control
+    
+        return None, None
         
     def _findForm(self, id, name, action):
         for form in self.mech_browser.forms():
