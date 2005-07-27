@@ -213,7 +213,7 @@ class Control(object):
 
         def fget(self):
             value = self.mech_control.value
-            if self.type == 'checkbox' and self.options == ['on']:
+            if self.type == 'checkbox' and self.options == [True]:
                 value = bool(value)
             return value
 
@@ -221,7 +221,7 @@ class Control(object):
             if self.mech_control.type == 'file':
                 self.mech_control.add_file(value)
                 return
-            if self.type == 'checkbox' and self.options == ['on']:
+            if self.type == 'checkbox' and self.options == [True]:
                 if value: 
                     value = ['on']
                 else:
@@ -235,6 +235,9 @@ class Control(object):
     @property
     def options(self):
         """See zope.app.testing.testbrowser.interfaces.IControl"""
+        if (self.type == 'checkbox'
+        and self.mech_control.possible_items() == ['on']):
+            return [True]
         try:
             return self.mech_control.possible_items()
         except:

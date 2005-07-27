@@ -31,7 +31,7 @@ The contents of the current page are available:
       </body>
     </html>
 
-Making assertions about page contents are easy.
+Making assertions about page contents is easy.
 
     >>> 'Simple Page' in browser.contents
     True
@@ -488,7 +488,7 @@ There are various types of controls. They are demonstrated here.
     >>> ctrl.multiple
     True
     >>> ctrl.options
-    ['on']
+    [True]
 
   - Checkbox Control (Single-Valued, Valued)
 
