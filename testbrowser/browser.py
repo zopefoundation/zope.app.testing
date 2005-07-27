@@ -17,9 +17,11 @@ $Id$
 """
 __docformat__ = "reStructuredText"
 import re
+import mechanize
 import zope.interface
 
 from zope.app.testing.testbrowser import interfaces
+
 
 class Browser(object):
     """A Test Browser based on ``mechanize``."""
@@ -27,25 +29,57 @@ class Browser(object):
 
     def __init__(self, url=None, mech_browser=None):
         if mech_browser is None:
-            import mechanize
             mech_browser = mechanize.Browser()
-
         self.mech_browser = mech_browser
+        
         if url is not None:
             self.open(url)
-
-    def open(self, url, data=None):
-        """See zope.app.testing.testbrowser.interfaces.IBrowser"""
-        self.mech_browser.open(url, data)
-
-    def addHeader(self, key, value):
-        """See zope.app.testing.testbrowser.interfaces.IBrowser"""
-        self.mech_browser.addheaders.append( (key, value) )
 
     @property
     def url(self):
         """See zope.app.testing.testbrowser.interfaces.IBrowser"""
         return self.mech_browser.geturl()
+
+    @property
+    def isHtml(self):
+        """See zope.app.testing.testbrowser.interfaces.IBrowser"""
+        return self.mech_browser.viewing_html()
+
+    @property
+    def title(self):
+        """See zope.app.testing.testbrowser.interfaces.IBrowser"""
+        return self.mech_browser.title()
+
+    @property
+    def controls(self):
+        """See zope.app.testing.testbrowser.interfaces.IBrowser"""
+        return ControlsMapping(self)
+
+    @property
+    def forms(self):
+        """See zope.app.testing.testbrowser.interfaces.IBrowser"""
+        return FormsMapping(self)
+
+    @property
+    def contents(self):
+        """See zope.app.testing.testbrowser.interfaces.IBrowser"""
+        response = self.mech_browser.response()
+        old_location = response.tell()
+        response.seek(0)
+        for line in iter(lambda: response.readline().strip(), ''):
+            pass
+        contents = response.read()
+        response.seek(old_location)
+        return contents
+
+    @property
+    def headers(self):
+        """See zope.app.testing.testbrowser.interfaces.IBrowser"""
+        return self.mech_browser.response().info()
+
+    def open(self, url, data=None):
+        """See zope.app.testing.testbrowser.interfaces.IBrowser"""
+        self.mech_browser.open(url, data)
 
     def reload(self):
         """See zope.app.testing.testbrowser.interfaces.IBrowser"""
@@ -57,15 +91,9 @@ class Browser(object):
         self.mech_browser.back(self, count)
         self._changed()
 
-    @property
-    def isHtml(self):
+    def addHeader(self, key, value):
         """See zope.app.testing.testbrowser.interfaces.IBrowser"""
-        return self.mech_browser.viewing_html()
-
-    @property
-    def title(self):
-        """See zope.app.testing.testbrowser.interfaces.IBrowser"""
-        return self.mech_browser.title()
+        self.mech_browser.addheaders.append( (key, value) )
 
     def click(self, text=None, url=None, id=None, name=None, coord=(1,1)):
         """See zope.app.testing.testbrowser.interfaces.IBrowser"""
@@ -94,6 +122,13 @@ class Browser(object):
             self.mech_browser.follow_link(text_regex=text_regex,
                                           url_regex=url_regex)
         self._changed()
+
+    def getControl(self, text):
+        """See zope.app.testing.testbrowser.interfaces.IBrowser"""
+        form, control = self._findControl(text, text, text)
+        if control is None:
+            raise ValueError('could not locate control: ' + text)
+        return Control(control)
 
     def _findControl(self, text, id, name, type=None, form=None):
         for control_form, control in self._controls:
@@ -130,40 +165,6 @@ class Browser(object):
                 for control in form.controls:
                     self.__controls.append( (form, control) )
         return self.__controls
-
-    @property
-    def controls(self):
-        """See zope.app.testing.testbrowser.interfaces.IBrowser"""
-        return ControlsMapping(self)
-
-    @property
-    def forms(self):
-        """See zope.app.testing.testbrowser.interfaces.IBrowser"""
-        return FormsMapping(self)
-
-    def getControl(self, text):
-        """See zope.app.testing.testbrowser.interfaces.IBrowser"""
-        form, control = self._findControl(text, text, text)
-        if control is None:
-            raise ValueError('could not locate control: ' + text)
-        return Control(control)
-
-    @property
-    def contents(self):
-        """See zope.app.testing.testbrowser.interfaces.IBrowser"""
-        response = self.mech_browser.response()
-        old_location = response.tell()
-        response.seek(0)
-        for line in iter(lambda: response.readline().strip(), ''):
-            pass
-        contents = response.read()
-        response.seek(old_location)
-        return contents
-
-    @property
-    def headers(self):
-        """See zope.app.testing.testbrowser.interfaces.IBrowser"""
-        return self.mech_browser.response().info()
 
     def _changed(self):
         self.__controls = None
