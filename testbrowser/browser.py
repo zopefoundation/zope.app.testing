@@ -1,6 +1,30 @@
+##############################################################################
+#
+# Copyright (c) 2005 Zope Corporation and Contributors.
+# All Rights Reserved.
+#
+# This software is subject to the provisions of the Zope Public License,
+# Version 2.1 (ZPL).  A copy of the ZPL should accompany this distribution.
+# THIS SOFTWARE IS PROVIDED "AS IS" AND ANY AND ALL EXPRESS OR IMPLIED
+# WARRANTIES ARE DISCLAIMED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+# WARRANTIES OF TITLE, MERCHANTABILITY, AGAINST INFRINGEMENT, AND FITNESS
+# FOR A PARTICULAR PURPOSE.
+#
+##############################################################################
+"""Mechanize-based Functional Doctest interfaces
+
+$Id$
+"""
+__docformat__ = "reStructuredText"
 import re
+import zope.interface
+
+from zope.app.testing.testbrowser import interfaces
 
 class Browser(object):
+    """A Test Browser based on ``mechanize``."""
+    zope.interface.implements(interfaces.IBrowser)
+
     def __init__(self, url=None, mech_browser=None):
         if mech_browser is None:
             import mechanize
@@ -27,10 +51,6 @@ class Browser(object):
     def goBack(self, count=1):
         self.mech_browser.back(self, count)
         self._changed()
-
-    @property
-    def links(self, *args, **kws):
-        return self.mech_browser.links(*args, **kws)
 
     @property
     def isHtml(self):
@@ -140,6 +160,8 @@ class Browser(object):
 
 
 class Control(object):
+    zope.interface.implements(interfaces.IControl)
+
     def __init__(self, control):
         self.mech_control = control
 
@@ -158,6 +180,9 @@ class Control(object):
                 value = bool(value)
             return value
         def fset(self, value):
+            if self.mech_control.type == 'file':
+                self.mech_control.add_file(value)
+                return
             if self.mech_control.type == 'checkbox':
                 if value: 
                     value = ['on']
@@ -178,6 +203,8 @@ class Control(object):
 
 
 class FormsMapping(object):
+    zope.interface.implements(interfaces.IFormsMapping)
+    
     def __init__(self, browser):
         self.browser = browser
 
@@ -193,6 +220,9 @@ class FormsMapping(object):
 
 
 class ControlsMapping(object):
+    """A mapping of all controls in a form or a page."""
+    zope.interface.implements(interfaces.IControlsMapping)
+
     def __init__(self, browser, form=None):
         """Initialize the ControlsMapping
         
@@ -203,6 +233,7 @@ class ControlsMapping(object):
         self.mech_form = form
 
     def __getitem__(self, key):
+        """See zope.app.testing.testbrowser.interfaces.IControlsMapping"""
         form, control = self.browser._findControl(key, key, key)
         if control is None:
             raise KeyError(key)
@@ -211,12 +242,14 @@ class ControlsMapping(object):
         return Control(control).value
 
     def __setitem__(self, key, value):
+        """See zope.app.testing.testbrowser.interfaces.IControlsMapping"""
         form, control = self.browser._findControl(key, key, key)
         if control is None:
             raise KeyError(key)
         Control(control).value = value
 
     def __contains__(self, item):
+        """See zope.app.testing.testbrowser.interfaces.IControlsMapping"""
         try:
             self[item]
         except KeyError:
@@ -225,13 +258,17 @@ class ControlsMapping(object):
             return True
 
     def update(self, mapping):
+        """See zope.app.testing.testbrowser.interfaces.IControlsMapping"""
         for k, v in mapping.items():
             self[k] = v
 
 
 class Form(ControlsMapping):
+    """HTML Form"""
+    zope.interface.implements(interfaces.IForm)
     
     def __getattr__(self, name):
+        # See zope.app.testing.testbrowser.interfaces.IForm
         names = ['action', 'method', 'enctype', 'name']
         if name in names:
             return getattr(self.mech_form, name, None)
@@ -240,9 +277,19 @@ class Form(ControlsMapping):
 
     @property
     def id(self):
+        """See zope.app.testing.testbrowser.interfaces.IForm"""
         return self.mech_form.attrs.get(id)
 
     @property
     def controls(self):
+        """See zope.app.testing.testbrowser.interfaces.IForm"""
         return ControlsMapping(browser=self.browser, form=self.mech_form)
 
+    def submit(self, text=None, id=None, name=None, coord=(1,1)):
+        """See zope.app.testing.testbrowser.interfaces.IForm"""
+        form, control = self.browser._findControl(
+            text, id, name, type='submit', form=self.mech_form)
+        if control is not None:
+            self.browser._clickSubmit(form, control, coord)
+            self.browser._changed()
+            return
