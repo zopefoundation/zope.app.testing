@@ -12,6 +12,10 @@
 # FOR A PARTICULAR PURPOSE
 #
 ##############################################################################
+"""Test Browser Tests
+
+$Id$
+"""
 import unittest
 from zope.app.testing.functional import FunctionalDocFileSuite
 
@@ -21,7 +25,7 @@ def test_suite():
     except ImportError:
         return
     else:
-        return FunctionalDocFileSuite('demo.txt')
+        return FunctionalDocFileSuite('README.txt')
 
 if __name__ == '__main__':
     unittest.main(defaultTest='test_suite')
