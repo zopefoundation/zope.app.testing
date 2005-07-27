@@ -250,7 +250,279 @@ Controls
 --------
 
 One of the most important features of the browser is the ability to inspect
-and fill in values for the controls of input forms.
+and fill in values for the controls of input forms. To do so, let's first open
+a page that has a bunch of controls:
+
+    >>> browser.open('http://localhost/@@/testbrowser/controls.html')
+
+
+Control Mappings
+~~~~~~~~~~~~~~~~
+
+You can look up a control's value from a mapping attribute:
+
+    >>> browser.controls['text-value']
+    'Some Text'
+
+The key is matched against the value, id and name of the control. The
+`controls` mapping provides oterh functions too:
+
+  - Getting the value with a default option:
+
+      >>> browser.controls.get('text-value')
+      'Some Text'
+      >>> browser.controls.get('foo-value', 42)
+      42
+
+  - Asking for existence:
+
+      >>> 'text-value' in browser.controls
+      True
+      >>> 'foo-value' in browser.controls
+      False
+
+  - Setting an item to a new value:
+
+    >>> browser.controls['text-value'] = 'Some other Text'
+    >>> browser.controls['text-value']
+    'Some other Text'
+
+  - Updating a lot of values at once:
+
+    >>> browser.controls['password-value']
+    'Password'
+
+    >>> browser.controls.update({'text-value': 'More Text',
+    ...                          'password-value': 'pass now'})
+
+    >>> browser.controls['text-value']
+    'More Text'
+    >>> browser.controls['password-value']
+    'pass now'
+
+
+Control Objects
+~~~~~~~~~~~~~~~
+
+But the value of a control is not always everything that there is to know or
+interesting. In those cases, one can access the control object:
+
+    >>> ctrl = browser.getControl('text-value')
+    >>> ctrl
+    Control(name='text-value', type='text')
+
+The string passed into the function will be matched against the value, id and
+name of the control. The control has several useful attributes:
+
+  - the name as which the control is known to the form:
+
+    >>> ctrl.name
+    'text-value'
+
+  - the value of the control; this attribute can also be set, of course:
+
+    >>> ctrl.value
+    'More Text'
+    >>> ctrl.value = 'Some Text'
+
+  - the type of the control:
+
+    >>> ctrl.type
+    'text'
+
+  - a flag describing whether the control is disabled:
+
+    >>> ctrl.disabled
+    False
+
+  - another flag describing whether the value can be changed; this might seem
+    strange, but for example hidden field values cannot be modified:
+
+    >>> ctrl.readonly
+    False
+
+  - there is a flag to tell us whether the control can have multiple values:
+
+    >>> ctrl.multiple
+
+  - and finally there is an attribute that provides all available value
+    options. This is of course not sensible for a text input control and thus
+    not available:
+
+    >>> ctrl.options
+    Traceback (most recent call last):
+    ...    
+    AttributeError: options
+
+
+Various Controls
+~~~~~~~~~~~~~~~~
+
+There are various types of controls. They are demonstrated here. 
+
+  - Text Control
+
+    The text control we already introduced above.
+
+  - Password Control
+
+    >>> ctrl = browser.getControl('password-value')
+    >>> ctrl
+    Control(name='password-value', type='password')
+    >>> ctrl.value
+    'pass now'
+    >>> ctrl.value = 'Password'
+    >>> ctrl.disabled
+    False
+    >>> ctrl.readonly
+    False
+    >>> ctrl.multiple
+    >>> ctrl.options
+    Traceback (most recent call last):
+    ...    
+    AttributeError: options
+
+  - Hidden Control
+
+    >>> ctrl = browser.getControl('hidden-value')
+    >>> ctrl
+    Control(name='hidden-value', type='hidden')
+    >>> ctrl.value
+    'Hidden'
+    >>> ctrl.value = 'More Hidden'
+    Traceback (most recent call last):
+    ...    
+    AttributeError: control 'hidden-value' is readonly
+    >>> ctrl.disabled
+    False
+    >>> ctrl.readonly
+    True
+    >>> ctrl.multiple
+    >>> ctrl.options
+    Traceback (most recent call last):
+    ...    
+    AttributeError: options
+    
+  - Text Area Control
+
+    >>> ctrl = browser.getControl('textarea-value')
+    >>> ctrl
+    Control(name='textarea-value', type='textarea')
+    >>> ctrl.value
+    '\n        Text inside\n        area!\n      '
+    >>> ctrl.value = 'A lot of\n text.'
+    >>> ctrl.disabled
+    False
+    >>> ctrl.readonly
+    False
+    >>> ctrl.multiple
+    >>> ctrl.options
+    Traceback (most recent call last):
+    ...    
+    AttributeError: options
+
+  - File Control
+
+    >>> ctrl = browser.getControl('file-value')
+    >>> ctrl
+    Control(name='file-value', type='file')
+    >>> ctrl.value
+    >>> import cStringIO
+    >>> ctrl.value = cStringIO.StringIO('File contents')
+    >>> ctrl.disabled
+    False
+    >>> ctrl.readonly
+    False
+    >>> ctrl.multiple
+    >>> ctrl.options
+    Traceback (most recent call last):
+    ...    
+    AttributeError: options
+
+  - Selection Control (Single-Valued)
+
+    >>> ctrl = browser.getControl('single-select-value')
+    >>> ctrl
+    Control(name='single-select-value', type='select')
+    >>> ctrl.value
+    ['1']
+    >>> ctrl.value = ['2']
+    >>> ctrl.disabled
+    False
+    >>> ctrl.readonly
+    False
+    >>> ctrl.multiple
+    False
+    >>> ctrl.options
+    ['1', '2', '3']
+
+  - Selection Control (Multi-Valued)
+
+    >>> ctrl = browser.getControl('multi-select-value')
+    >>> ctrl
+    Control(name='multi-select-value', type='select')
+    >>> ctrl.value
+    []
+    >>> ctrl.value = ['1', '2']
+    >>> ctrl.disabled
+    False
+    >>> ctrl.readonly
+    False
+    >>> ctrl.multiple
+    True
+    >>> ctrl.options
+    ['1', '2', '3']
+
+  - Checkbox Control (Single-Valued; Unvalued)
+
+    >>> ctrl = browser.getControl('single-unvalued-checkbox-value')
+    >>> ctrl
+    Control(name='single-unvalued-checkbox-value', type='checkbox')
+    >>> ctrl.value
+    True
+    >>> ctrl.value = False
+    >>> ctrl.disabled
+    False
+    >>> ctrl.readonly
+    False
+    >>> ctrl.multiple
+    True
+    >>> ctrl.options
+    ['on']
+
+  - Checkbox Control (Single-Valued, Valued)
+
+    >>> ctrl = browser.getControl('single-valued-checkbox-value')
+    >>> ctrl
+    Control(name='single-valued-checkbox-value', type='checkbox')
+    >>> ctrl.value
+    ['1']
+    >>> ctrl.value = []
+    >>> ctrl.disabled
+    False
+    >>> ctrl.readonly
+    False
+    >>> ctrl.multiple
+    True
+    >>> ctrl.options
+    ['1']
+
+  - Checkbox Control (Multi-Valued)
+
+    >>> ctrl = browser.getControl('multi-checkbox-value')
+    >>> ctrl
+    Control(name='multi-checkbox-value', type='checkbox')
+    >>> ctrl.value
+    ['1', '3']
+    >>> ctrl.value = ['1', '2']
+    >>> ctrl.disabled
+    False
+    >>> ctrl.readonly
+    False
+    >>> ctrl.multiple
+    True
+    >>> ctrl.options
+    ['1', '2', '3']
 
 
 Forms
@@ -324,60 +596,6 @@ The form's controls can also be accessed with the `controls` mapping.
 
 ##    >>> form.controls['portlet_action']
 ##    '...'
-
-More Forms
-----------
-
-Now, let's navegate to a page with a slightly more complex form.
-
-    >>> browser.click('Registration')
-    >>> browser.click('Advanced Options')
-    >>> browser.click('UtilityRegistration')
-
-Is the expected control on the page?
-
-    >>> 'field.permission' in browser.controls
-    True
-
-Good, let's retrieve it then:
-
-    >>> permission = browser.getControl('field.permission')
-
-What kind of control is it?
-    
-    >>> permission.type
-    'select'
-
-Is it a single- or multi-select?
-
-    >>> permission.multiple
-    False
-
-What options are available for the "field.permission" control?
-
-    >>> permission.options
-    ['', 'zope.Public', ... 'zope.ManageContent', ... 'zope.View', ...]
-
-
-We'll store the current setting so we can set it back later.
-
-    >>> original_permission = permission.value
-
-Let's set one of the options and submit the form.
-
-    >>> permission.value = ['zope.Public']
-    >>> browser.click('Change')
-
-Ok, did our change take effect? (Note that the order may not be preserved for
-multi-selects.)
-
-    >>> browser.controls['field.permission'] == ['zope.Public']
-    True
-
-Let's set it back, so we don't mess anything up.
-
-    >>> permission.value = original_permission
-    >>> browser.click('Change')
 
 
 Handling Errors

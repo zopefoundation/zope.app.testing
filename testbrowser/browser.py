@@ -99,8 +99,8 @@ class Browser(object):
 
     def open(self, url, data=None):
         """See zope.app.testing.testbrowser.interfaces.IBrowser"""
-        
         self.mech_browser.open(url, data)
+        self._changed()
 
     def reload(self):
         """See zope.app.testing.testbrowser.interfaces.IBrowser"""
@@ -201,7 +201,7 @@ class Control(object):
 
     def __getattr__(self, name):
         # See zope.app.testing.testbrowser.interfaces.IControl
-        names = ['options', 'disabled', 'type', 'name', 'readonly', 'multiple']
+        names = ['disabled', 'type', 'name', 'readonly', 'multiple']
         if name in names:
             return getattr(self.mech_control, name, None)
         else:
@@ -210,16 +210,18 @@ class Control(object):
     @apply
     def value():
         """See zope.app.testing.testbrowser.interfaces.IControl"""
+
         def fget(self):
             value = self.mech_control.value
-            if self.mech_control.type == 'checkbox':
+            if self.type == 'checkbox' and self.options == ['on']:
                 value = bool(value)
             return value
+
         def fset(self, value):
             if self.mech_control.type == 'file':
                 self.mech_control.add_file(value)
                 return
-            if self.mech_control.type == 'checkbox':
+            if self.type == 'checkbox' and self.options == ['on']:
                 if value: 
                     value = ['on']
                 else:
@@ -237,6 +239,9 @@ class Control(object):
             return self.mech_control.possible_items()
         except:
             raise AttributeError('options')
+
+    def __repr__(self):
+        return "Control(name='%s', type='%s')" %(self.name, self.type)
 
 
 class FormsMapping(object):
@@ -288,12 +293,12 @@ class ControlsMapping(object):
             raise KeyError(key)
         return Control(control).value
 
-    def __setitem__(self, key, value):
-        """See zope.app.testing.testbrowser.interfaces.IControlsMapping"""
-        form, control = self.browser._findControl(key, key, key)
-        if control is None:
-            raise KeyError(key)
-        Control(control).value = value
+    def get(self, key, default=None):
+        """See zope.interface.common.mapping.IReadMapping"""
+        try:
+            return self[key]
+        except KeyError:
+            return default
 
     def __contains__(self, item):
         """See zope.app.testing.testbrowser.interfaces.IControlsMapping"""
@@ -303,6 +308,13 @@ class ControlsMapping(object):
             return False
         else:
             return True
+
+    def __setitem__(self, key, value):
+        """See zope.app.testing.testbrowser.interfaces.IControlsMapping"""
+        form, control = self.browser._findControl(key, key, key)
+        if control is None:
+            raise KeyError(key)
+        Control(control).value = value
 
     def update(self, mapping):
         """See zope.app.testing.testbrowser.interfaces.IControlsMapping"""

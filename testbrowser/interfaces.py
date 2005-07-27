@@ -52,7 +52,7 @@ class IControl(zope.interface.Interface):
     type = zope.schema.Choice(
         title=u"Type",
         description=u"The type of the control",
-        values=['text', 'hidden', 'submit', 'checkbox', 'select',
+        values=['text', 'password', 'hidden', 'submit', 'checkbox', 'select',
                 'radio', 'image', 'file'],
         required=True)
 
