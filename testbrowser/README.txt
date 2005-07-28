@@ -620,32 +620,104 @@ But when sending an image, you can also specify the coordinate you clicked:
 Forms
 -----
 
-
-
 Because pages can have multiple forms with like-named controls, it is sometimes
 neccesary to access forms by name or id.  The browser's `forms` attribute can
 be used to do so.  The key value is the form's name or id.  If more than one 
 form has the same name or id, the first one will be returned.
 
-XXX these need to be re-targeted to pages registered just for this test
-##    >>> # zope form and use that instead
-##    >>> form = browser.forms['portlet_form']
+    >>> browser.open('http://localhost/@@/testbrowser/forms.html')
+    >>> form = browser.forms['one']
 
-The form exposes several attributes:
+The form exposes several attributes related to forms:
 
-##    >>> form.name
-##    'portlet_form'
-##    >>> form.action
-##    'http://localhost/++etc++site/default/...'
-##    >>> form.method
-##    'POST'
-##    >>> form.id is None
-##    True
+  - The name of the form:
 
-The form's controls can also be accessed with the `controls` mapping.
+    >>> form.name
+    'one'
 
-##    >>> form.controls['portlet_action']
-##    '...'
+  - The id of the form:
+
+    >>> form.id
+    '1'
+    
+  - The action (target URL) when the form is submitted:
+
+    >>> form.action
+    'http://localhost/@@/testbrowser/forms.html'
+
+  - The method (HTTP verb) used to transmit the form data:
+
+    >>> form.method
+    'POST'
+
+  - The encoding type of the form data:
+
+    >>> form.enctype
+    'multipart/form-data'
+
+  - The controls for this specific form are also available:
+
+    >>> form.controls
+    <zope.app.testing.testbrowser.browser.ControlsMapping object at ...>
+    >>> form.controls['text-value']
+    'First Text'
+
+Besides those attributes, you have also a couple of methods. Like for the
+browser, you can get control objects
+
+    >>> form.getControl('text-value')
+    Control(name='text-value', type='text')
+
+and submit the form:
+
+    >>> form.submit('Submit')
+    >>> print browser.contents
+    <html>
+    ...
+    <em>First Text</em>
+    ...
+    </html>
+
+Okay, that's it about forms. Now let me show you briefly that looking up forms
+is sometimes important. In the `forms.html` template, we have three forms all
+having a text control named `text-value`. Now, if I use the browser's
+`controls` attribute and `click` method,
+
+    >>> browser.controls['text-value']
+    'First Text'
+    >>> browser.click('Submit')
+    >>> print browser.contents
+    <html>
+    ...
+    <em>First Text</em>
+    ...
+    </html>
+
+I can every only get to the first form, making the others unreachable. But
+with the `forms` mapping I can get to the second and third form as well:
+
+    >>> form = browser.forms['2']
+    >>> form.controls['text-value']
+    'Second Text'
+    >>> form.submit('Submit')
+    >>> print browser.contents
+    <html>
+    ...
+    <em>Second Text</em>
+    ...
+    </html>
+
+The `forms` mapping also supports the check for containment
+
+    >>> 'three' in browser.forms
+    True
+
+and retrievel with optional default value:
+
+    >>> browser.forms.get('2')
+    <zope.app.testing.testbrowser.browser.Form object at ...>
+    >>> browser.forms.get('invalid', 42)
+    42
 
 
 Handling Errors

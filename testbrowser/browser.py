@@ -260,9 +260,8 @@ class FormsMapping(object):
 
     def __getitem__(self, key):
         """See zope.interface.common.mapping.IItemMapping"""
-        try:
-            form = self.browser._findForm(key, key, None)
-        except ValueError:
+        form = self.browser._findForm(key, key, None)
+        if form is None:
             raise KeyError(key)
         return Form(self.browser, form)
 
@@ -273,7 +272,7 @@ class FormsMapping(object):
         except KeyError:
             return default
 
-    def __contains__(self, item):
+    def __contains__(self, key):
         """See zope.interface.common.mapping.IReadMapping"""
         return self.browser._findForm(key, key, None) is not None
 
@@ -293,10 +292,9 @@ class ControlsMapping(object):
 
     def __getitem__(self, key):
         """See zope.app.testing.testbrowser.interfaces.IControlsMapping"""
-        form, control = self.browser._findControl(key, key, key)
+        form, control = self.browser._findControl(key, key, key,
+                                                  form=self.mech_form)
         if control is None:
-            raise KeyError(key)
-        if self.mech_form is not None and self.mech_form != form:
             raise KeyError(key)
         return Control(control).value
 
@@ -344,7 +342,7 @@ class Form(ControlsMapping):
     @property
     def id(self):
         """See zope.app.testing.testbrowser.interfaces.IForm"""
-        return self.mech_form.attrs.get(id)
+        return self.mech_form.attrs.get('id')
 
     @property
     def controls(self):
@@ -355,7 +353,19 @@ class Form(ControlsMapping):
         """See zope.app.testing.testbrowser.interfaces.IForm"""
         form, control = self.browser._findControl(
             text, id, name, type='submit', form=self.mech_form)
+
+        if control is None:
+            form, control = self.browser._findControl(
+                text, id, name, type='image', form=self.mech_form)
+
         if control is not None:
             self.browser._clickSubmit(form, control, coord)
             self.browser._changed()
-            return
+
+    def getControl(self, text):
+        """See zope.app.testing.testbrowser.interfaces.IForm"""
+        form, control = self.browser._findControl(text, text, text,
+                                                  form=self.mech_form)
+        if control is None:
+            raise ValueError('could not locate control: ' + text)
+        return Control(control)

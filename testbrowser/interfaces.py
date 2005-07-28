@@ -128,6 +128,9 @@ class IForm(zope.interface.Interface):
         schema=IControlsMapping,
         required=True)
 
+    def getControl(self, text):
+        """Get a control of the form."""
+
     def submit(text=None, id=None, name=None, coord=(1,1)):
         """Submit this form.
 
