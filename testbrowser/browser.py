@@ -20,7 +20,7 @@ import re
 import mechanize
 import zope.interface
 
-from zope.app.testing.testbrowser import interfaces
+from zope.testbrowser import interfaces
 
 
 class Browser(object):
@@ -37,32 +37,32 @@ class Browser(object):
 
     @property
     def url(self):
-        """See zope.app.testing.testbrowser.interfaces.IBrowser"""
+        """See zope.testbrowser.interfaces.IBrowser"""
         return self.mech_browser.geturl()
 
     @property
     def isHtml(self):
-        """See zope.app.testing.testbrowser.interfaces.IBrowser"""
+        """See zope.testbrowser.interfaces.IBrowser"""
         return self.mech_browser.viewing_html()
 
     @property
     def title(self):
-        """See zope.app.testing.testbrowser.interfaces.IBrowser"""
+        """See zope.testbrowser.interfaces.IBrowser"""
         return self.mech_browser.title()
 
     @property
     def controls(self):
-        """See zope.app.testing.testbrowser.interfaces.IBrowser"""
+        """See zope.testbrowser.interfaces.IBrowser"""
         return ControlsMapping(self)
 
     @property
     def forms(self):
-        """See zope.app.testing.testbrowser.interfaces.IBrowser"""
+        """See zope.testbrowser.interfaces.IBrowser"""
         return FormsMapping(self)
 
     @property
     def contents(self):
-        """See zope.app.testing.testbrowser.interfaces.IBrowser"""
+        """See zope.testbrowser.interfaces.IBrowser"""
         response = self.mech_browser.response()
         old_location = response.tell()
         response.seek(0)
@@ -74,12 +74,12 @@ class Browser(object):
 
     @property
     def headers(self):
-        """See zope.app.testing.testbrowser.interfaces.IBrowser"""
+        """See zope.testbrowser.interfaces.IBrowser"""
         return self.mech_browser.response().info()
 
     @apply
     def handleErrors():
-        """See zope.app.testing.testbrowser.interfaces.IBrowser"""
+        """See zope.testbrowser.interfaces.IBrowser"""
         header_key = 'X-zope-handle-errors'
 
         def get(self):
@@ -98,26 +98,26 @@ class Browser(object):
         return property(get, set)
 
     def open(self, url, data=None):
-        """See zope.app.testing.testbrowser.interfaces.IBrowser"""
+        """See zope.testbrowser.interfaces.IBrowser"""
         self.mech_browser.open(url, data)
         self._changed()
 
     def reload(self):
-        """See zope.app.testing.testbrowser.interfaces.IBrowser"""
+        """See zope.testbrowser.interfaces.IBrowser"""
         self.mech_browser.reload()
         self._changed()
 
     def goBack(self, count=1):
-        """See zope.app.testing.testbrowser.interfaces.IBrowser"""
+        """See zope.testbrowser.interfaces.IBrowser"""
         self.mech_browser.back(count)
         self._changed()
 
     def addHeader(self, key, value):
-        """See zope.app.testing.testbrowser.interfaces.IBrowser"""
+        """See zope.testbrowser.interfaces.IBrowser"""
         self.mech_browser.addheaders.append( (key, value) )
 
     def click(self, text=None, url=None, id=None, name=None, coord=(1,1)):
-        """See zope.app.testing.testbrowser.interfaces.IBrowser"""
+        """See zope.testbrowser.interfaces.IBrowser"""
         # Determine whether the click is a form submit and click the submit
         # button if this is the case.
         form, control = self._findControl(text, id, name, type='submit')
@@ -150,7 +150,7 @@ class Browser(object):
         self._changed()
 
     def getControl(self, text):
-        """See zope.app.testing.testbrowser.interfaces.IBrowser"""
+        """See zope.testbrowser.interfaces.IBrowser"""
         form, control = self._findControl(text, text, text)
         if control is None:
             raise ValueError('could not locate control: ' + text)
@@ -204,7 +204,7 @@ class Control(object):
         self.mech_control = control
 
     def __getattr__(self, name):
-        # See zope.app.testing.testbrowser.interfaces.IControl
+        # See zope.testbrowser.interfaces.IControl
         names = ['disabled', 'type', 'name', 'readonly', 'multiple']
         if name in names:
             return getattr(self.mech_control, name, None)
@@ -213,7 +213,7 @@ class Control(object):
 
     @apply
     def value():
-        """See zope.app.testing.testbrowser.interfaces.IControl"""
+        """See zope.testbrowser.interfaces.IControl"""
 
         def fget(self):
             value = self.mech_control.value
@@ -238,7 +238,7 @@ class Control(object):
 
     @property
     def options(self):
-        """See zope.app.testing.testbrowser.interfaces.IControl"""
+        """See zope.testbrowser.interfaces.IControl"""
         if (self.type == 'checkbox'
         and self.mech_control.possible_items() == ['on']):
             return [True]
@@ -291,7 +291,7 @@ class ControlsMapping(object):
         self.mech_form = form
 
     def __getitem__(self, key):
-        """See zope.app.testing.testbrowser.interfaces.IControlsMapping"""
+        """See zope.testbrowser.interfaces.IControlsMapping"""
         form, control = self.browser._findControl(key, key, key,
                                                   form=self.mech_form)
         if control is None:
@@ -306,7 +306,7 @@ class ControlsMapping(object):
             return default
 
     def __contains__(self, item):
-        """See zope.app.testing.testbrowser.interfaces.IControlsMapping"""
+        """See zope.testbrowser.interfaces.IControlsMapping"""
         try:
             self[item]
         except KeyError:
@@ -315,14 +315,14 @@ class ControlsMapping(object):
             return True
 
     def __setitem__(self, key, value):
-        """See zope.app.testing.testbrowser.interfaces.IControlsMapping"""
+        """See zope.testbrowser.interfaces.IControlsMapping"""
         form, control = self.browser._findControl(key, key, key)
         if control is None:
             raise KeyError(key)
         Control(control).value = value
 
     def update(self, mapping):
-        """See zope.app.testing.testbrowser.interfaces.IControlsMapping"""
+        """See zope.testbrowser.interfaces.IControlsMapping"""
         for k, v in mapping.items():
             self[k] = v
 
@@ -332,7 +332,7 @@ class Form(ControlsMapping):
     zope.interface.implements(interfaces.IForm)
     
     def __getattr__(self, name):
-        # See zope.app.testing.testbrowser.interfaces.IForm
+        # See zope.testbrowser.interfaces.IForm
         names = ['action', 'method', 'enctype', 'name']
         if name in names:
             return getattr(self.mech_form, name, None)
@@ -341,16 +341,16 @@ class Form(ControlsMapping):
 
     @property
     def id(self):
-        """See zope.app.testing.testbrowser.interfaces.IForm"""
+        """See zope.testbrowser.interfaces.IForm"""
         return self.mech_form.attrs.get('id')
 
     @property
     def controls(self):
-        """See zope.app.testing.testbrowser.interfaces.IForm"""
+        """See zope.testbrowser.interfaces.IForm"""
         return ControlsMapping(browser=self.browser, form=self.mech_form)
 
     def submit(self, text=None, id=None, name=None, coord=(1,1)):
-        """See zope.app.testing.testbrowser.interfaces.IForm"""
+        """See zope.testbrowser.interfaces.IForm"""
         form, control = self.browser._findControl(
             text, id, name, type='submit', form=self.mech_form)
 
@@ -363,7 +363,7 @@ class Form(ControlsMapping):
             self.browser._changed()
 
     def getControl(self, text):
-        """See zope.app.testing.testbrowser.interfaces.IForm"""
+        """See zope.testbrowser.interfaces.IForm"""
         form, control = self.browser._findControl(text, text, text,
                                                   form=self.mech_form)
         if control is None:

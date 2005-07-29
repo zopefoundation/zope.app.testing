@@ -2,10 +2,10 @@
 The Test Browser
 ================
 
-The ``zope.app.testing.testbrowser`` module exposes a ``Browser`` class that
+The ``zope.testbrowser`` module exposes a ``Browser`` class that
 simulates a web browser similar to Mozilla Firefox or IE.
 
-    >>> from zope.app.testing.testbrowser import Browser
+    >>> from zope.testbrowser import Browser
     >>> browser = Browser()
     >>> browser.addHeader('Authorization', 'Basic mgr:mgrpw')
 
@@ -658,7 +658,7 @@ The form exposes several attributes related to forms:
   - The controls for this specific form are also available:
 
     >>> form.controls
-    <zope.app.testing.testbrowser.browser.ControlsMapping object at ...>
+    <zope.testbrowser.browser.ControlsMapping object at ...>
     >>> form.controls['text-value']
     'First Text'
 
@@ -715,7 +715,7 @@ The `forms` mapping also supports the check for containment
 and retrievel with optional default value:
 
     >>> browser.forms.get('2')
-    <zope.app.testing.testbrowser.browser.Form object at ...>
+    <zope.testbrowser.browser.Form object at ...>
     >>> browser.forms.get('invalid', 42)
     42
 

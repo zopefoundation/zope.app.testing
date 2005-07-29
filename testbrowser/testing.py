@@ -24,7 +24,7 @@ import mechanize
 import ClientCookie
 
 from zope.app.testing.functional import HTTPCaller
-from zope.app.testing.testbrowser import browser
+from zope.testbrowser import browser
 
 
 class PublisherConnection(object):
