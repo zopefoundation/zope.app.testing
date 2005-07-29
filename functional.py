@@ -96,7 +96,7 @@ def _getDefaultSkin():
 class IManagerSetup(zope.interface.Interface):
     """Utility for enabling up a functional testing manager with needed grants
 
-    XXX This is an interim solution.  It tries to break the dependence
+    TODO This is an interim solution.  It tries to break the dependence
     on a particular security policy, however, we need a much better
     way of managing functional-testing configurations.
     """
@@ -346,7 +346,7 @@ class BrowserTestCase(CookieHandler, FunctionalTestCase):
                 a = base + a
             if a.find('#') != -1:
                 a = a[:a.index('#') - 1]
-            # XXX what about queries (/path/to/foo?bar=baz&etc)?
+            # ??? what about queries (/path/to/foo?bar=baz&etc)?
             request = None
             try:
                 try:
