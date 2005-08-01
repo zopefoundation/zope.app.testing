@@ -50,6 +50,14 @@ def addService(servicemanager, name, service, suffix=''):
     zapi.traverse(default.registrationManager, key).status = ActiveStatus
     return default[name+suffix]
 
+def createServiceManager(folder, setsite=False):
+    return createSiteManager(folder, setsite)
+
+zope.deprecation.deprecated(
+    'createServiceManager',
+    '`ServiceManager`s became `SiteManager`s. Use `createSiteManager` '
+    'instead. Gone in Zope 3.3.')
+
 #############################################################################
 
 #------------------------------------------------------------------------
