@@ -129,13 +129,15 @@ def output_test(request, response, clean_redirects=False):
     print '  >>> print http(r"""'
     print '  ...', '\n  ... '.join(request.lines())+'""")'
     if response.code in (301, 302, 303) and clean_redirects:
+        content_length = None
         if response.headers:
             for i in range(len(response.headers)):
                 h, v = response.headers[i]
                 if h == "Content-Length":
+                    content_length = int(v.strip())
                     response.headers[i] = (h, "...")
         lines = response.header_lines()
-        if lines:
+        if lines and content_length:
             lines.append("...")
     else:
         lines = response.lines()
