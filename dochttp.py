@@ -134,10 +134,10 @@ def output_test(request, response, clean_redirects=False):
             for i in range(len(response.headers)):
                 h, v = response.headers[i]
                 if h == "Content-Length":
-                    content_length = int(v.strip())
+                    content_length = int(v)
                     response.headers[i] = (h, "...")
         lines = response.header_lines()
-        if lines and content_length:
+        if lines and content_length == 0:
             lines.append("...")
     else:
         lines = response.lines()
