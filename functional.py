@@ -44,12 +44,13 @@ import zope.app.testing.setup
 from zope.app import zapi
 from zope.app.debug import Debugger
 from zope.app.publication.http import HTTPPublication
-from zope.app.publication.browser import BrowserPublication
+from zope.app.publication.browser import BrowserPublication, setDefaultSkin
 from zope.app.publication.xmlrpc import XMLRPCPublication
 from zope.app.publication.soap import SOAPPublication
 from zope.app.publication.interfaces import ISOAPRequestFactory
 from zope.app.publication.zopepublication import ZopePublication
 from zope.app.publication.http import HTTPPublication
+from zope.app.publication.httpfactory import chooseClasses
 from zope.publisher.interfaces.browser import IDefaultBrowserLayer
 from zope.publisher.interfaces.browser import IDefaultSkin
 from zope.publisher.interfaces.browser import IBrowserRequest
@@ -86,12 +87,6 @@ class ResponseWrapper(object):
     def __getattr__(self, attr):
         return getattr(self._response, attr)
 
-
-def _getDefaultSkin():
-    """Returns the current default skin as an interface."""
-    adapters = zapi.getSiteManager().adapters
-    skin = adapters.lookup((IBrowserRequest,), IDefaultSkin, '')
-    return skin or IDefaultBrowserLayer
 
 class IManagerSetup(zope.interface.Interface):
     """Utility for enabling up a functional testing manager with needed grants
@@ -270,7 +265,7 @@ class BrowserTestCase(CookieHandler, FunctionalTestCase):
                                environment=environment,
                                basic=basic, form=form,
                                request=BrowserRequest)
-        interface.directlyProvides(request, _getDefaultSkin())
+        setDefaultSkin(request)
         return request
 
     def publish(self, path, basic=None, form=None, env={},
@@ -582,8 +577,7 @@ class HTTPCaller(CookieHandler):
         old_site = getSite()
         setSite(None)
 
-        request_cls, publication_cls = self.chooseRequestClass(method, path,
-                                                               environment)
+        request_cls, publication_cls = chooseClasses(method, environment)
 
         app = FunctionalTestSetup().getApplication()
 
@@ -591,9 +585,9 @@ class HTTPCaller(CookieHandler):
             path, instream, outstream,
             environment=environment,
             request=request_cls, publication=publication_cls)
-        if request_cls is BrowserRequest:
-            # Only browser requests have skins
-            interface.directlyProvides(request, _getDefaultSkin())
+        if IBrowserRequest.providedBy(request):
+            # only browser requests have skins
+            setDefaultSkin(request)
 
         if form is not None:
             if request.form:
@@ -614,35 +608,6 @@ class HTTPCaller(CookieHandler):
         getRootFolder()._p_jar.sync()
 
         return response
-
-    def chooseRequestClass(self, method, path, environment):
-        """Choose and return a request class and a publication class"""
-
-        content_type = environment.get('CONTENT_TYPE', '')
-        is_xml = content_type.startswith('text/xml')
-
-        if method in ('GET', 'POST', 'HEAD'):
-            if (method == 'POST' and environment.get('HTTP_SOAPACTION')
-                and is_xml):
-                factory = zapi.queryUtility(ISOAPRequestFactory)
-                if factory is not None:
-                    request_cls = factory(StringIO(), StringIO(), {}).__class__
-                    publication_cls = SOAPPublication
-                else:
-                    request_cls = BrowserRequest
-                    publication_cls = BrowserPublication
-            elif (method == 'POST' and is_xml):
-                request_cls = XMLRPCRequest
-                publication_cls = XMLRPCPublication
-            else:
-                request_cls = BrowserRequest
-                publication_cls = BrowserPublication
-
-        else:
-            request_cls = HTTPRequest
-            publication_cls = HTTPPublication
-
-        return request_cls, publication_cls
 
 
 def FunctionalDocFileSuite(*paths, **kw):
