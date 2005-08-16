@@ -577,8 +577,8 @@ class HTTPCaller(CookieHandler):
         old_site = getSite()
         setSite(None)
 
-        request_cls, publication_cls = chooseClasses(method, environment)
-
+        request_cls, publication_cls = self.chooseRequestClass(method, path,
+                                                               environment)
         app = FunctionalTestSetup().getApplication()
 
         request = app._request(
@@ -609,6 +609,11 @@ class HTTPCaller(CookieHandler):
 
         return response
 
+    def chooseRequestClass(self, method, path, environment):
+        """Choose and return a request class and a publication class"""
+        # note that `path` is unused by the default implementation (BBB)
+        return chooseClasses(method, environment)
+ 
 
 def FunctionalDocFileSuite(*paths, **kw):
     globs = kw.setdefault('globs', {})
