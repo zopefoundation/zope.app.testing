@@ -193,11 +193,25 @@ class AuthHeaderTestCase(unittest.TestCase):
         self.assertEquals(auth_header(header), expected)
 
 
+class HTTPCallerTestCase(unittest.TestCase):
+
+    def test_chooseRequestClass(self):
+        from zope.publisher.interfaces import IRequest, IPublication
+
+        caller = functional.HTTPCaller()
+        request_class, publication_class = caller.chooseRequestClass(
+            method='GET', path='/', environment={})
+
+        self.assert_(IRequest.implementedBy(request_class))
+        self.assert_(IPublication.implementedBy(publication_class))
+
+
 def test_suite():
     return unittest.TestSuite((
         unittest.makeSuite(FunctionalHTTPDocTest),
         unittest.makeSuite(DocResponseWrapperTestCase),
-        unittest.makeSuite(AuthHeaderTestCase)
+        unittest.makeSuite(AuthHeaderTestCase),
+        unittest.makeSuite(HTTPCallerTestCase),
         ))
 
 if __name__ == '__main__':
