@@ -39,7 +39,6 @@ from zope.security.interfaces import Forbidden, Unauthorized
 from zope.security.management import endInteraction
 from zope.testing import doctest
 
-import zope.app.pluggableauth
 import zope.app.testing.setup
 from zope.app import zapi
 from zope.app.debug import Debugger
