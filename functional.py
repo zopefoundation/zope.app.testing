@@ -55,29 +55,38 @@ from zope.publisher.interfaces.browser import IDefaultSkin
 from zope.publisher.interfaces.browser import IBrowserRequest
 from zope.app.component.hooks import setSite, getSite
 
-HTTPTaskStub = StringIO
-
 
 class ResponseWrapper(object):
     """A wrapper that adds several introspective methods to a response."""
 
-    def __init__(self, response, outstream, path):
+    def __init__(self, response, path, omit=()):
         self._response = response
-        self._outstream = outstream
         self._path = path
+        self.omit = omit
+        self._body = None
 
     def getOutput(self):
         """Returns the full HTTP output (headers + body)"""
-        return self._outstream.getvalue()
+        body = self.getBody()
+        omit = self.omit
+        headers = [x
+                   for x in self._response.getHeaders()
+                   if x[0].lower() not in omit]
+        headers.sort()
+        headers = '\n'.join([("%s: %s" % (n, v)) for (n, v) in headers])
+        statusline = '%s %s' % (self._response._request['SERVER_PROTOCOL'],
+                                self._response.getStatusString())
+        if body:
+            return '%s\n%s\n\n%s' %(statusline, headers, body)
+        else:
+            return '%s\n%s\n' % (statusline, headers)
 
     def getBody(self):
         """Returns the response body"""
-        output = self._outstream.getvalue()
-        idx = output.find('\r\n\r\n')
-        if idx == -1:
-            return None
-        else:
-            return output[idx+4:]
+        if self._body is None:
+            self._body = ''.join(self._response.consumeBody())
+
+        return self._body
 
     def getPath(self):
         """Returns the path of the request"""
@@ -85,6 +94,8 @@ class ResponseWrapper(object):
 
     def __getattr__(self, attr):
         return getattr(self._response, attr)
+
+    __str__ = getOutput
 
 
 class IManagerSetup(zope.interface.Interface):
@@ -238,8 +249,7 @@ class BrowserTestCase(CookieHandler, FunctionalTestCase):
         """Returns the site which is used to look up local components"""
         return getSite()
 
-    def makeRequest(self, path='', basic=None, form=None, env={},
-                    outstream=None):
+    def makeRequest(self, path='', basic=None, form=None, env={}):
         """Creates a new request object.
 
         Arguments:
@@ -251,16 +261,13 @@ class BrowserTestCase(CookieHandler, FunctionalTestCase):
                     (You can emulate HTTP request header
                        X-Header: foo
                      by adding 'HTTP_X_HEADER': 'foo' to env)
-          outstream -- a stream where the HTTP response will be written
         """
-        if outstream is None:
-            outstream = HTTPTaskStub()
         environment = {"HTTP_HOST": 'localhost',
                        "HTTP_REFERER": 'localhost',
                        "HTTP_COOKIE": self.httpCookie(path)}
         environment.update(env)
         app = FunctionalTestSetup().getApplication()
-        request = app._request(path, '', outstream,
+        request = app._request(path, '',
                                environment=environment,
                                basic=basic, form=form,
                                request=BrowserRequest)
@@ -281,7 +288,6 @@ class BrowserTestCase(CookieHandler, FunctionalTestCase):
           getBody()      -- returns the full response body as a string
           getPath()      -- returns the path used in the request
         """
-        outstream = HTTPTaskStub()
         old_site = self.getSite()
         self.setSite(None)
         # A cookie header has been sent - ensure that future requests
@@ -292,9 +298,8 @@ class BrowserTestCase(CookieHandler, FunctionalTestCase):
             self.loadCookies(env['HTTP_COOKIE'])
             del env['HTTP_COOKIE'] # Added again in makeRequest
 
-        request = self.makeRequest(path, basic=basic, form=form, env=env,
-                                   outstream=outstream)
-        response = ResponseWrapper(request.response, outstream, path)
+        request = self.makeRequest(path, basic=basic, form=form, env=env)
+        response = ResponseWrapper(request.response, path)
         if env.has_key('HTTP_COOKIE'):
             self.loadCookies(env['HTTP_COOKIE'])
         publish(request, handle_errors=handle_errors)
@@ -362,7 +367,7 @@ class BrowserTestCase(CookieHandler, FunctionalTestCase):
 
                 # Make sure we don't have pending changes
                 abort()
-                
+
                 # The request should always be closed to free resources
                 # held by the request
                 if request:
@@ -376,7 +381,7 @@ class HTTPTestCase(FunctionalTestCase):
     """Functional test case for HTTP requests."""
 
     def makeRequest(self, path='', basic=None, form=None, env={},
-                    instream=None, outstream=None):
+                    instream=None):
         """Creates a new request object.
 
         Arguments:
@@ -389,17 +394,14 @@ class HTTPTestCase(FunctionalTestCase):
                        X-Header: foo
                      by adding 'HTTP_X_HEADER': 'foo' to env)
           instream  -- a stream from where the HTTP request will be read
-          outstream -- a stream where the HTTP response will be written
         """
-        if outstream is None:
-            outstream = HTTPTaskStub()
         if instream is None:
             instream = ''
         environment = {"HTTP_HOST": 'localhost',
                        "HTTP_REFERER": 'localhost'}
         environment.update(env)
         app = FunctionalTestSetup().getApplication()
-        request = app._request(path, instream, outstream,
+        request = app._request(path, instream,
                                environment=environment,
                                basic=basic, form=form,
                                request=HTTPRequest, publication=HTTPPublication)
@@ -419,65 +421,11 @@ class HTTPTestCase(FunctionalTestCase):
           getBody()      -- returns the full response body as a string
           getPath()      -- returns the path used in the request
         """
-        outstream = HTTPTaskStub()
         request = self.makeRequest(path, basic=basic, form=form, env=env,
-                                   instream=request_body, outstream=outstream)
-        response = ResponseWrapper(request.response, outstream, path)
+                                   instream=request_body)
+        response = ResponseWrapper(request.response, path)
         publish(request, handle_errors=handle_errors)
         return response
-
-
-class HTTPHeaderOutput:
-
-    interface.implements(zope.publisher.interfaces.http.IHeaderOutput)
-
-    def __init__(self, protocol, omit):
-        self.headers = {}
-        self.headersl = []
-        self.protocol = protocol
-        self.omit = omit
-
-    def setResponseStatus(self, status, reason):
-        self.status, self.reason = status, reason
-
-    def setResponseHeaders(self, mapping):
-        self.headers.update(dict(
-            [('-'.join([s.capitalize() for s in name.split('-')]), v)
-             for name, v in mapping.items()
-             if name.lower() not in self.omit]
-        ))
-
-    def appendResponseHeaders(self, lst):
-        headers = [split_header(header) for header in lst]
-        self.headersl.extend(
-            [('-'.join([s.capitalize() for s in name.split('-')]), v)
-             for name, v in headers
-             if name.lower() not in self.omit]
-        )
-
-    def __str__(self):
-        out = ["%s: %s" % header for header in self.headers.items()]
-        out.extend(["%s: %s" % header for header in self.headersl])
-        out.sort()
-        out.insert(0, "%s %s %s" % (self.protocol, self.status, self.reason))
-        return '\n'.join(out)
-
-class DocResponseWrapper(ResponseWrapper):
-    """Response Wrapper for use in doc tests
-    """
-
-    def __init__(self, response, outstream, path, header_output):
-        ResponseWrapper.__init__(self, response, outstream, path)
-        self.header_output = header_output
-
-    def __str__(self):
-        body = self.getOutput()
-        if body:
-            return "%s\n\n%s" % (self.header_output, body)
-        return "%s\n" % (self.header_output)
-
-    def getBody(self):
-        return self.getOutput()
 
 
 headerre = re.compile(r'(\S+): (.+)$')
@@ -525,7 +473,7 @@ class SampleFunctionalTest(BrowserTestCase):
     def testLinks(self):
         response = self.publish('/')
         self.assertEquals(response.getStatus(), 200)
-        self.checkForBrokenLinks(response.getBody(), response.getPath())
+        self.checkForBrokenLinks(response.consumeBody(), response.getPath())
 
 
 def sample_test_suite():
@@ -571,8 +519,6 @@ class HTTPCaller(CookieHandler):
         if environment.has_key(auth_key):
             environment[auth_key] = auth_header(environment[auth_key])
 
-        outstream = HTTPTaskStub()
-
         old_site = getSite()
         setSite(None)
 
@@ -581,7 +527,7 @@ class HTTPCaller(CookieHandler):
         app = FunctionalTestSetup().getApplication()
 
         request = app._request(
-            path, instream, outstream,
+            path, instream,
             environment=environment,
             request=request_cls, publication=publication_cls)
         if IBrowserRequest.providedBy(request):
@@ -593,11 +539,10 @@ class HTTPCaller(CookieHandler):
                 raise ValueError("only one set of form values can be provided")
             request.form = form
 
-        header_output = HTTPHeaderOutput(
-            protocol, ('x-content-type-warning', 'x-powered-by'))
-        request.response.setHeaderOutput(header_output)
-        response = DocResponseWrapper(
-            request.response, outstream, path, header_output)
+        response = ResponseWrapper(
+            request.response, path,
+            omit=('x-content-type-warning', 'x-powered-by'),
+            )
 
         publish(request, handle_errors=handle_errors)
         self.saveCookies(response)
@@ -612,7 +557,7 @@ class HTTPCaller(CookieHandler):
         """Choose and return a request class and a publication class"""
         # note that `path` is unused by the default implementation (BBB)
         return chooseClasses(method, environment)
- 
+
 
 def FunctionalDocFileSuite(*paths, **kw):
     globs = kw.setdefault('globs', {})

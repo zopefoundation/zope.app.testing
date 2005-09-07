@@ -123,7 +123,7 @@ expected = r'''
   <BLANKLINE>
   <BLANKLINE>
 '''
-      
+
 class FunctionalHTTPDocTest(unittest.TestCase):
 
     def test_dochttp(self):
@@ -134,34 +134,6 @@ class FunctionalHTTPDocTest(unittest.TestCase):
         got = sys.stdout.getvalue()
         sys.stdout = old
         self.assert_(got == expected)
-
-
-class DocResponseWrapperTestCase(unittest.TestCase):
-
-    def setUp(self):
-        self.body_output = StringIO.StringIO()
-        self.path = "/foo/bar/"
-        self.response = object()
-
-        self.wrapper = functional.DocResponseWrapper(
-            self.response, self.body_output, self.path, HEADERS)
-
-    def test__str__(self):
-        self.assertEqual(str(self.wrapper),
-                         HEADERS + "\n")
-        self.body_output.write(BODY)
-        self.assertEqual(str(self.wrapper),
-                         "%s\n\n%s" % (HEADERS, BODY))
-
-    def test_getBody(self):
-        self.assertEqual(self.wrapper.getBody(), "")
-        self.body_output.write(BODY)
-        self.assertEqual(self.wrapper.getBody(), BODY)
-
-    def test_getOutput(self):
-        self.assertEqual(self.wrapper.getOutput(), "")
-        self.body_output.write(BODY)
-        self.assertEqual(self.wrapper.getOutput(), BODY)
 
 
 class AuthHeaderTestCase(unittest.TestCase):
@@ -209,7 +181,6 @@ class HTTPCallerTestCase(unittest.TestCase):
 def test_suite():
     return unittest.TestSuite((
         unittest.makeSuite(FunctionalHTTPDocTest),
-        unittest.makeSuite(DocResponseWrapperTestCase),
         unittest.makeSuite(AuthHeaderTestCase),
         unittest.makeSuite(HTTPCallerTestCase),
         ))
