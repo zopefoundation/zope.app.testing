@@ -84,7 +84,7 @@ class ResponseWrapper(object):
     def getBody(self):
         """Returns the response body"""
         if self._body is None:
-            self._body = ''.join(self._response.result.body)
+            self._body = ''.join(self._response.consumeBody())
 
         return self._body
 
@@ -473,7 +473,7 @@ class SampleFunctionalTest(BrowserTestCase):
     def testLinks(self):
         response = self.publish('/')
         self.assertEquals(response.getStatus(), 200)
-        self.checkForBrokenLinks(response.getBody(), response.getPath())
+        self.checkForBrokenLinks(response.consumeBody(), response.getPath())
 
 
 def sample_test_suite():
