@@ -276,8 +276,13 @@ class ImmediateTestResult(unittest._TextTestResult):
             except ImportError:
                 pass
             else:
-                curses.setupterm()
-                self._maxWidth = curses.tigetnum('cols')
+                try:
+                    curses.setupterm()
+                    cols = curses.tigetnum('cols')
+                    if cols > 0:
+                        self._maxWidth = cols
+                except curses.error:
+                    pass
             self._maxWidth -= len("xxxx/xxxx (xxx.x%): ") + 1
 
     def stopTest(self, test):
