@@ -24,7 +24,7 @@ Steps to get started:
 7. Shut down tcpwatch.
 
 8. Run the script src/zope/app/testing/dochttp.py:
-   python2.3 src/zope/app/testing/dochttp.py tmpdir > somefile.txt
+   python2.4 src/zope/app/testing/dochttp.py tmpdir > somefile.txt
 
 9. Edit the generated text file to add explanations and elide
    uninteresting portions of the output.
