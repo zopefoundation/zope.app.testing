@@ -22,6 +22,8 @@ import StringIO
 from zope.testing.doctestunit import DocTestSuite
 
 import zope.app.testing
+from zope.app.publication.requestpublicationregistry import factoryRegistry
+from zope.app.publication.requestpublicationfactories import BrowserFactory
 from zope.app.testing import functional
 from zope.app.testing.dochttp import dochttp
 
@@ -169,6 +171,8 @@ class HTTPCallerTestCase(unittest.TestCase):
 
     def test_chooseRequestClass(self):
         from zope.publisher.interfaces import IRequest, IPublication
+
+        factoryRegistry.register('GET', '*', 'browser', 0, BrowserFactory())
 
         caller = functional.HTTPCaller()
         request_class, publication_class = caller.chooseRequestClass(
