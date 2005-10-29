@@ -344,7 +344,7 @@ class BrowserTestCase(CookieHandler, FunctionalTestCase):
             elif not a.startswith('/'):
                 a = base + a
             if a.find('#') != -1:
-                a = a[:a.index('#') - 1]
+                a = a[:a.index('#')]
             # ??? what about queries (/path/to/foo?bar=baz&etc)?
             request = None
             try:
