@@ -211,7 +211,9 @@ def defineLayer(name, zcml='test.zcml'):
         name,
         )
 
-if os.path.exists(os.path.join('etc', 'ftesting.zcml')):
+if os.path.exists(os.path.join('zopeskel', 'etc', 'ftesting.zcml')):
+    Functional = os.path.join('zopeskel', 'etc', 'ftesting.zcml')
+elif os.path.exists(os.path.join('etc', 'ftesting.zcml')):
     Functional = os.path.join('etc', 'ftesting.zcml')
 elif os.path.exists('ftesting.zcml'):
     Functional = 'ftesting.zcml'
