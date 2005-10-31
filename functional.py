@@ -18,6 +18,7 @@ There should be a file 'ftesting.zcml' in the current directory.
 $Id$
 """
 import logging
+import os.path
 import re
 import rfc822
 import sys
@@ -181,9 +182,51 @@ class FunctionalTestSetup(object):
         """Returns the Zope application instance."""
         return self.app
 
+class ZCMLLayer:
+    """ZCML-defined test layer
+    """
+
+    __bases__ = ()
+
+    def __init__(self, config_file, module, name):
+        self.config_file = config_file
+        self.__module__ = module
+        self.__name__ = name
+
+    def setUp(self):
+        FunctionalTestSetup(self.config_file)
+
+    def tearDown(self):
+        raise NotImplementedError
+
+def defineLayer(name, zcml='test.zcml'):
+    """Helper function for defining layers.
+
+    Usage: defineLater('foo')
+    """
+    globals = sys._getframe(1).f_globals
+    globals[name] = FTestingLayer(
+        os.path.join(os.path.split(globals['__file__'])[0], 'test.zcml'),
+        globals['__name__'],
+        name,
+        )
+
+if os.path.exists(os.path.join('etc', 'ftesting.zcml')):
+    Functional = os.path.join('etc', 'ftesting.zcml')
+elif os.path.exists('ftesting.zcml'):
+    Functional = 'ftesting.zcml'
+else:
+    raise IOError("No such file or directory: 'ftesting.zcml'")
+
+Functional = os.path.abspath(Functional)
+
+Functional = ZCMLLayer(
+    Functional, __name__, 'Functional')
 
 class FunctionalTestCase(unittest.TestCase):
     """Functional test case."""
+
+    layer = Functional
 
     def setUp(self):
         """Prepares for a functional test case."""
@@ -590,7 +633,10 @@ def FunctionalDocFileSuite(*paths, **kw):
                              | doctest.REPORT_NDIFF
                              | doctest.NORMALIZE_WHITESPACE)
 
-    return doctest.DocFileSuite(*paths, **kw)
+    suite = doctest.DocFileSuite(*paths, **kw)
+    suite.layer = Functional
+    return suite
+
 
 if __name__ == '__main__':
     unittest.main()
