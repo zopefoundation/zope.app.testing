@@ -215,10 +215,12 @@ if os.path.exists(os.path.join('zopeskel', 'etc', 'ftesting.zcml')):
     Functional = os.path.join('zopeskel', 'etc', 'ftesting.zcml')
 elif os.path.exists(os.path.join('etc', 'ftesting.zcml')):
     Functional = os.path.join('etc', 'ftesting.zcml')
-elif os.path.exists('ftesting.zcml'):
-    Functional = 'ftesting.zcml'
 else:
-    raise IOError("No such file or directory: 'ftesting.zcml'")
+    # let's hope that the file is in our CWD. If not, we'll get an
+    # error anyways, but we can't just throw an error if we don't find
+    # that file. This module might be imported for other things as
+    # well, not only starting up Zope from ftesting.zcml.    
+    Functional = 'ftesting.zcml'
 
 Functional = os.path.abspath(Functional)
 
