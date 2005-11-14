@@ -202,10 +202,10 @@ class ZCMLLayer:
 def defineLayer(name, zcml='test.zcml'):
     """Helper function for defining layers.
 
-    Usage: defineLater('foo')
+    Usage: defineLayer('foo')
     """
     globals = sys._getframe(1).f_globals
-    globals[name] = FTestingLayer(
+    globals[name] = ZCMLLayer(
         os.path.join(os.path.split(globals['__file__'])[0], 'test.zcml'),
         globals['__name__'],
         name,
