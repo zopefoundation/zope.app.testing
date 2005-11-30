@@ -378,8 +378,8 @@ class ImmediateTestResult(unittest._TextTestResult):
 
     def printErrors(self):
         if VERBOSE < 2:
-            # We'be output errors as they occured. Outputing them a second
-            # time is just annoying. 
+            # We output errors as they occurred; outputing them a second
+            # time is just annoying.
             return
 
         if self._progress and not (self.dots or self.showAll):
