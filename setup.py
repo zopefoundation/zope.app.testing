@@ -87,10 +87,10 @@ def setUpTraversal():
 #------------------------------------------------------------------------
 # ISiteManager lookup
 from zope.app.component.site import SiteManagerAdapter
-from zope.component.interfaces import ISiteManager
+from zope.component.interfaces import IComponentLookup
 from zope.interface import Interface
 def setUpSiteManagerLookup():
-    ztapi.provideAdapter(Interface, ISiteManager, SiteManagerAdapter)
+    ztapi.provideAdapter(Interface, IComponentLookup, SiteManagerAdapter)
 
 #------------------------------------------------------------------------
 # Placeful setup
