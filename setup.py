@@ -173,20 +173,17 @@ def createSiteManager(folder, setsite=False):
 
 #------------------------------------------------------------------------
 # Local Utility Addition
-from zope.app.component.site import UtilityRegistration
-from zope.app.component.interfaces.registration import ActiveStatus
 def addUtility(sitemanager, name, iface, utility, suffix=''):
     """Add a utility to a site manager
 
     This helper function is useful for tests that need to set up utilities.
     """
     folder_name = (name or (iface.__name__ + 'Utility')) + suffix
-    default = zapi.traverse(sitemanager, 'default')
+    default = sitemanager['default']
     default[folder_name] = utility
-    registration = UtilityRegistration(name, iface, default[folder_name])
-    key = default.registrationManager.addRegistration(registration)
-    zapi.traverse(default.registrationManager, key).status = ActiveStatus
-    return default[folder_name]
+    utility = default[folder_name]
+    sitemanager.registerUtility(utility, iface, name)
+    return utility
 
 
 #------------------------------------------------------------------------
