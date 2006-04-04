@@ -93,22 +93,3 @@ def unprovideUtility(provided, name=''):
 def provideNamespaceHandler(name, handler):
     provideAdapter(None, ITraversable, handler, name=name)
     provideView(None, None, ITraversable, name, handler)
-
-
-# BBB: Deprecated. Gone in 3.3.
-from zope.deprecation import deprecated
-
-def provideService(name, service, interface=None):
-    services = zapi.getGlobalServices()
-    if interface is not None:
-        services.defineService(name, interface)
-    services.provideService(name, service)
-    
-deprecated('provideService',
-           'The concept of services has been removed. Use utilities instead. '
-           'The reference will be gone in 3.3.')
-
-deprecated('handle',
-           'The handle(required, handler) function as a shorter spelling of '
-           'subscribe(required, None, handler) has been deprecated to avoid '
-           'nomenclature confusion with zope.component.handle.')
