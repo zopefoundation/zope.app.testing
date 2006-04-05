@@ -16,11 +16,11 @@
 $Id$
 """
 import zope.interface
+import zope.component
 from zope.component.interfaces import IDefaultViewName
 from zope.publisher.browser import IBrowserRequest
 from zope.publisher.interfaces.browser import IDefaultBrowserLayer
-from zope.app import zapi
-from zope.app.traversing.interfaces import ITraversable
+from zope.traversing.interfaces import ITraversable
 
 def provideView(for_, type, providing, name, factory, layer=None):
     if layer is None:
@@ -58,14 +58,14 @@ def setDefaultViewName(for_, name, layer=IDefaultBrowserLayer,
                        type=IBrowserRequest):
     if layer is None:
         layer = type
-    gsm = zapi.getGlobalSiteManager()
+    gsm = zope.component.getGlobalSiteManager()
     gsm.provideAdapter((for_, layer), IDefaultViewName, '', name)
 
 stypes = list, tuple
 def provideAdapter(required, provided, factory, name='', with=()):
     if isinstance(factory, (list, tuple)):
         raise ValueError("Factory cannot be a list or tuple")
-    gsm = zapi.getGlobalSiteManager()
+    gsm = zope.component.getGlobalSiteManager()
 
     if with:
         required = (required, ) + tuple(with)
@@ -75,7 +75,7 @@ def provideAdapter(required, provided, factory, name='', with=()):
     gsm.registerAdapter(factory, required, provided, name)
 
 def subscribe(required, provided, factory):
-    gsm = zapi.getGlobalSiteManager()
+    gsm = zope.component.getGlobalSiteManager()
     if provided is None:
         gsm.registerHandler(factory, required)
     else:
@@ -83,11 +83,11 @@ def subscribe(required, provided, factory):
         
 
 def provideUtility(provided, component, name=''):
-    gsm = zapi.getGlobalSiteManager()
+    gsm = zope.component.getGlobalSiteManager()
     gsm.registerUtility(component, provided, name)
 
 def unprovideUtility(provided, name=''):
-    gsm = zapi.getGlobalSiteManager()
+    gsm = zope.component.getGlobalSiteManager()
     gsm.provideAdapter((), provided, name, None)
 
 def provideNamespaceHandler(name, handler):

@@ -17,12 +17,11 @@ $Id$
 """
 import zope.component
 import zope.interface
-from zope.app import zapi
-from zope.app.testing import ztapi
+import zope.traversing.api
 from zope.interface import classImplements
+from zope.app.testing import ztapi
 
 import zope.deferredimport
-
 zope.deferredimport.deprecatedFrom(
     "Goes away in Zope 3.5",
     "zope.app.testing.back35",
@@ -48,19 +47,19 @@ def setUpDependable():
 
 #------------------------------------------------------------------------
 # Traversal
-from zope.app.traversing.browser.interfaces import IAbsoluteURL
+from zope.traversing.browser.interfaces import IAbsoluteURL
+from zope.traversing.interfaces import IContainmentRoot
+from zope.traversing.interfaces import IPhysicallyLocatable
+from zope.traversing.interfaces import ITraverser, ITraversable
+from zope.traversing.adapters import DefaultTraversable
+from zope.traversing.adapters import Traverser, RootPhysicallyLocatable
+from zope.traversing.namespace import etc
+from zope.app.location.traversing import LocationPhysicallyLocatable
 from zope.app.container.traversal import ContainerTraversable
 from zope.app.container.interfaces import ISimpleReadContainer
-from zope.app.traversing.interfaces import IContainmentRoot
-from zope.app.traversing.interfaces import IPhysicallyLocatable
-from zope.app.traversing.interfaces import ITraverser, ITraversable
-from zope.app.traversing.adapters import DefaultTraversable
-from zope.app.traversing.adapters import Traverser, RootPhysicallyLocatable
-from zope.app.location.traversing import LocationPhysicallyLocatable
-from zope.app.traversing.namespace import etc
 
 def setUpTraversal():
-    from zope.app.traversing.browser import SiteAbsoluteURL, AbsoluteURL
+    from zope.traversing.browser import SiteAbsoluteURL, AbsoluteURL
 
     ztapi.provideAdapter(None, ITraverser, Traverser)
     ztapi.provideAdapter(None, ITraversable, DefaultTraversable)
@@ -168,7 +167,7 @@ def createSiteManager(folder, setsite=False):
         folder.setSiteManager(LocalSiteManager(folder))
     if setsite:
         setSite(folder)
-    return zapi.traverse(folder, "++etc++site")
+    return zope.traversing.api.traverse(folder, "++etc++site")
 
 
 #------------------------------------------------------------------------
