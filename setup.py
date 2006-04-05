@@ -54,7 +54,7 @@ from zope.traversing.interfaces import ITraverser, ITraversable
 from zope.traversing.adapters import DefaultTraversable
 from zope.traversing.adapters import Traverser, RootPhysicallyLocatable
 from zope.traversing.namespace import etc
-from zope.app.location.traversing import LocationPhysicallyLocatable
+from zope.location.traversing import LocationPhysicallyLocatable
 from zope.app.container.traversal import ContainerTraversable
 from zope.app.container.interfaces import ISimpleReadContainer
 
