@@ -47,41 +47,14 @@ def setUpDependable():
 
 #------------------------------------------------------------------------
 # Traversal
-from zope.traversing.browser.interfaces import IAbsoluteURL
-from zope.traversing.interfaces import IContainmentRoot
-from zope.traversing.interfaces import IPhysicallyLocatable
-from zope.traversing.interfaces import ITraverser, ITraversable
-from zope.traversing.adapters import DefaultTraversable
-from zope.traversing.adapters import Traverser, RootPhysicallyLocatable
-from zope.traversing.namespace import etc
-from zope.location.traversing import LocationPhysicallyLocatable
-from zope.app.container.traversal import ContainerTraversable
+from zope.traversing.interfaces import ITraversable
 from zope.app.container.interfaces import ISimpleReadContainer
-
+from zope.app.container.traversal import ContainerTraversable
 def setUpTraversal():
-    from zope.traversing.browser import SiteAbsoluteURL, AbsoluteURL
-
-    ztapi.provideAdapter(None, ITraverser, Traverser)
-    ztapi.provideAdapter(None, ITraversable, DefaultTraversable)
-
-    ztapi.provideAdapter(
-        ISimpleReadContainer, ITraversable, ContainerTraversable)
-    ztapi.provideAdapter(
-        None, IPhysicallyLocatable, LocationPhysicallyLocatable)
-    ztapi.provideAdapter(
-        IContainmentRoot, IPhysicallyLocatable, RootPhysicallyLocatable)
-
-    # set up etc namespace
-    ztapi.provideAdapter(None, ITraversable, etc, name="etc")
-    ztapi.provideView(None, None, ITraversable, "etc", etc)
-
-    ztapi.browserView(None, "absolute_url", AbsoluteURL)
-    ztapi.browserView(IContainmentRoot, "absolute_url", SiteAbsoluteURL)
-
-    ztapi.browserView(None, '', AbsoluteURL, providing=IAbsoluteURL)
-    ztapi.browserView(IContainmentRoot, '', SiteAbsoluteURL,
-                      providing=IAbsoluteURL)
-
+    from zope.traversing.testing import setUp
+    setUp()
+    zope.component.provideAdapter(ContainerTraversable,
+                                  (ISimpleReadContainer,), ITraversable)
 
 #------------------------------------------------------------------------
 # ISiteManager lookup
