@@ -30,15 +30,13 @@ zope.deferredimport.deprecatedFrom(
 
 #------------------------------------------------------------------------
 # Annotations
-from zope.app.annotation.attribute import AttributeAnnotations
-from zope.app.annotation.interfaces import IAnnotations
-from zope.app.annotation.interfaces import IAttributeAnnotatable
+from zope.annotation.attribute import AttributeAnnotations
 def setUpAnnotations():
-    ztapi.provideAdapter(IAttributeAnnotatable, IAnnotations,
-                         AttributeAnnotations)
+    zope.component.provideAdapter(AttributeAnnotations)
 
 #------------------------------------------------------------------------
 # Dependencies
+from zope.annotation.interfaces import IAttributeAnnotatable
 from zope.app.dependable import Dependable
 from zope.app.dependable.interfaces import IDependable
 def setUpDependable():
