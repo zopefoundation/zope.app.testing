@@ -21,8 +21,6 @@ from zope.traversing.browser.interfaces import IAbsoluteURL
 from zope.traversing.browser.absoluteurl import AbsoluteURL
 
 from zope.app.testing import ztapi
-from zope.app.event.tests.placelesssetup \
-    import PlacelessSetup as EventPlacelessSetup
 from zope.app.i18n.tests.placelesssetup \
     import PlacelessSetup as I18nPlacelessSetup
 from zope.app.container.tests.placelesssetup \
@@ -32,16 +30,13 @@ from zope.app.authentication.placelesssetup \
 from zope.app.security._protections import protect
 
 class PlacelessSetup(CAPlacelessSetup,
-                     EventPlacelessSetup,
                      I18nPlacelessSetup,
                      ContainerPlacelessSetup,
-                     AuthenticationPlacelessSetup
-                     ):
+                     AuthenticationPlacelessSetup):
 
     def setUp(self, doctesttest=None):
         CAPlacelessSetup.setUp(self)
         ContainerPlacelessSetup.setUp(self)
-        EventPlacelessSetup.setUp(self)
         I18nPlacelessSetup.setUp(self)
         AuthenticationPlacelessSetup.setUp(self)
         # Register app-specific security declarations
