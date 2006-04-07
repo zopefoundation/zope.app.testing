@@ -18,8 +18,6 @@ $Id$
 import zope.component
 import zope.interface
 import zope.traversing.api
-from zope.interface import classImplements
-from zope.app.testing import ztapi
 
 import zope.deferredimport
 zope.deferredimport.deprecatedFrom(
@@ -40,8 +38,8 @@ from zope.annotation.interfaces import IAttributeAnnotatable
 from zope.app.dependable import Dependable
 from zope.app.dependable.interfaces import IDependable
 def setUpDependable():
-    ztapi.provideAdapter(IAttributeAnnotatable, IDependable,
-                         Dependable)
+    zope.component.provideAdapter(Dependable, (IAttributeAnnotatable,),
+                                  IDependable)
 
 #------------------------------------------------------------------------
 # Traversal
@@ -60,7 +58,8 @@ from zope.app.component.site import SiteManagerAdapter
 from zope.component.interfaces import IComponentLookup
 from zope.interface import Interface
 def setUpSiteManagerLookup():
-    ztapi.provideAdapter(Interface, IComponentLookup, SiteManagerAdapter)
+    zope.component.provideAdapter(SiteManagerAdapter, (Interface,),
+                                  IComponentLookup)
 
 #------------------------------------------------------------------------
 # Placeful setup
