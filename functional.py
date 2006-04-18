@@ -170,6 +170,7 @@ class FunctionalTestSetup(object):
             self.connection.close()
             self.connection = None
         self.db.close()
+        setSite(None)
 
     def getRootFolder(self):
         """Returns the Zope root folder."""
@@ -283,10 +284,6 @@ class CookieHandler(object):
 
 class BrowserTestCase(CookieHandler, FunctionalTestCase):
     """Functional test case for Browser requests."""
-
-    def tearDown(self):
-        self.setSite(None)
-        super(BrowserTestCase, self).tearDown()
 
     def setSite(self, site):
         """Set the site which will be used to look up local components"""
