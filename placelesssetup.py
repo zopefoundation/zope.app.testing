@@ -17,12 +17,11 @@ $Id$
 """
 from zope.schema.vocabulary import setVocabularyRegistry
 from zope.component.testing import PlacelessSetup as CAPlacelessSetup
+from zope.i18n.testing import PlacelessSetup as I18nPlacelessSetup
 from zope.traversing.browser.interfaces import IAbsoluteURL
 from zope.traversing.browser.absoluteurl import AbsoluteURL
 
 from zope.app.testing import ztapi
-from zope.app.i18n.tests.placelesssetup \
-    import PlacelessSetup as I18nPlacelessSetup
 from zope.app.container.tests.placelesssetup \
     import PlacelessSetup as ContainerPlacelessSetup
 from zope.app.authentication.placelesssetup \
