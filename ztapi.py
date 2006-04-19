@@ -59,7 +59,7 @@ def setDefaultViewName(for_, name, layer=IDefaultBrowserLayer,
     if layer is None:
         layer = type
     gsm = zope.component.getGlobalSiteManager()
-    gsm.provideAdapter((for_, layer), IDefaultViewName, '', name)
+    gsm.registerAdapter(name, (for_, layer), IDefaultViewName, '')
 
 stypes = list, tuple
 def provideAdapter(required, provided, factory, name='', with=()):
