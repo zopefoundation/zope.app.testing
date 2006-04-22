@@ -88,7 +88,7 @@ def provideUtility(provided, component, name=''):
 
 def unprovideUtility(provided, name=''):
     gsm = zope.component.getGlobalSiteManager()
-    gsm.provideAdapter((), provided, name, None)
+    gsm.unregisterUtility(provided=provided, name=name)
 
 def provideNamespaceHandler(name, handler):
     provideAdapter(None, ITraversable, handler, name=name)
