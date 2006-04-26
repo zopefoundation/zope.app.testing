@@ -17,6 +17,7 @@ $Id$
 """
 from zope.schema.vocabulary import setVocabularyRegistry
 from zope.component.testing import PlacelessSetup as CAPlacelessSetup
+from zope.component.eventtesting import PlacelessSetup as EventPlacelessSetup
 from zope.i18n.testing import PlacelessSetup as I18nPlacelessSetup
 from zope.traversing.browser.interfaces import IAbsoluteURL
 from zope.traversing.browser.absoluteurl import AbsoluteURL
@@ -29,12 +30,14 @@ from zope.app.authentication.placelesssetup \
 from zope.app.security._protections import protect
 
 class PlacelessSetup(CAPlacelessSetup,
+                     EventPlacelessSetup,
                      I18nPlacelessSetup,
                      ContainerPlacelessSetup,
                      AuthenticationPlacelessSetup):
 
     def setUp(self, doctesttest=None):
         CAPlacelessSetup.setUp(self)
+        EventPlacelessSetup.setUp(self)
         ContainerPlacelessSetup.setUp(self)
         I18nPlacelessSetup.setUp(self)
         AuthenticationPlacelessSetup.setUp(self)
