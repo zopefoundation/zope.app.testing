@@ -72,19 +72,20 @@ def provideAdapter(required, provided, factory, name='', with=()):
     elif not isinstance(required, stypes):
         required = (required,)
 
-    gsm.registerAdapter(factory, required, provided, name)
+    gsm.registerAdapter(factory, required, provided, name, event=False)
 
 def subscribe(required, provided, factory):
     gsm = zope.component.getGlobalSiteManager()
     if provided is None:
-        gsm.registerHandler(factory, required)
+        gsm.registerHandler(factory, required, event=False)
     else:
-        gsm.registerSubscriptionAdapter(factory, required, provided)
+        gsm.registerSubscriptionAdapter(factory, required, provided,
+                                        event=False)
         
 
 def provideUtility(provided, component, name=''):
     gsm = zope.component.getGlobalSiteManager()
-    gsm.registerUtility(component, provided, name)
+    gsm.registerUtility(component, provided, name, event=False)
 
 def unprovideUtility(provided, name=''):
     gsm = zope.component.getGlobalSiteManager()
