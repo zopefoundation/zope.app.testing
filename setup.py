@@ -17,121 +17,49 @@ $Id$
 """
 import zope.component
 import zope.interface
-from zope.app import zapi
-from zope.app.testing import ztapi
-from zope.interface import classImplements
+import zope.traversing.api
 
-
-#############################################################################
-# BBB: Goes away in 3.3
-
-import zope.deprecation
-
-zope.deprecation.__show__.off()
-from zope.component.bbb.service import IService
-from zope.app.site.interfaces import ISimpleService
-zope.deprecation.__show__.on()
-
-from zope.app.component.site import UtilityRegistration
-
-def addService(servicemanager, name, service, suffix=''):
-    """Add a service to a service manager
-
-    This utility is useful for tests that need to set up services.
-    """
-    # Most local services implement ISimpleService in ZCML; therefore make
-    # sure we got it here as well.
-    zope.interface.directlyProvides(service, ISimpleService)
-
-    default = zapi.traverse(servicemanager, 'default')
-    default[name+suffix] = service
-    registration = UtilityRegistration(name, IService, service, default)
-    key = default.registrationManager.addRegistration(registration)
-    zapi.traverse(default.registrationManager, key).status = ActiveStatus
-    return default[name+suffix]
-
-def createServiceManager(folder, setsite=False):
-    return createSiteManager(folder, setsite)
-
-zope.deprecation.deprecated(
-    'createServiceManager',
-    '`ServiceManager`s became `SiteManager`s. Use `createSiteManager` '
-    'instead. Gone in Zope 3.3.')
-
-#############################################################################
+import zope.deferredimport
+zope.deferredimport.deprecatedFrom(
+    "Goes away in Zope 3.5",
+    "zope.app.testing.back35",
+    "addService",
+    )
 
 #------------------------------------------------------------------------
 # Annotations
-from zope.app.annotation.attribute import AttributeAnnotations
-from zope.app.annotation.interfaces import IAnnotations
-from zope.app.annotation.interfaces import IAttributeAnnotatable
+from zope.annotation.attribute import AttributeAnnotations
 def setUpAnnotations():
-    ztapi.provideAdapter(IAttributeAnnotatable, IAnnotations,
-                         AttributeAnnotations)
+    zope.component.provideAdapter(AttributeAnnotations)
 
 #------------------------------------------------------------------------
 # Dependencies
+from zope.annotation.interfaces import IAttributeAnnotatable
 from zope.app.dependable import Dependable
 from zope.app.dependable.interfaces import IDependable
 def setUpDependable():
-    ztapi.provideAdapter(IAttributeAnnotatable, IDependable,
-                         Dependable)
-
-#------------------------------------------------------------------------
-# Registrations
-
-from zope.app.component.interfaces.registration import IComponentRegistration
-from zope.app.component.interfaces.registration import IRegistrationEvent
-from zope.app.component.registration import componentRegistrationEventNotify
-def setUpRegistered():
-    ztapi.subscribe((IComponentRegistration, IRegistrationEvent), None,
-                     componentRegistrationEventNotify)
+    zope.component.provideAdapter(Dependable, (IAttributeAnnotatable,),
+                                  IDependable)
 
 #------------------------------------------------------------------------
 # Traversal
-from zope.app.traversing.browser.interfaces import IAbsoluteURL
-from zope.app.container.traversal import ContainerTraversable
+from zope.traversing.interfaces import ITraversable
 from zope.app.container.interfaces import ISimpleReadContainer
-from zope.app.traversing.interfaces import IContainmentRoot
-from zope.app.traversing.interfaces import IPhysicallyLocatable
-from zope.app.traversing.interfaces import ITraverser, ITraversable
-from zope.app.traversing.adapters import DefaultTraversable
-from zope.app.traversing.adapters import Traverser, RootPhysicallyLocatable
-from zope.app.location.traversing import LocationPhysicallyLocatable
-from zope.app.traversing.namespace import etc
-
+from zope.app.container.traversal import ContainerTraversable
 def setUpTraversal():
-    from zope.app.traversing.browser import SiteAbsoluteURL, AbsoluteURL
-
-    ztapi.provideAdapter(None, ITraverser, Traverser)
-    ztapi.provideAdapter(None, ITraversable, DefaultTraversable)
-
-    ztapi.provideAdapter(
-        ISimpleReadContainer, ITraversable, ContainerTraversable)
-    ztapi.provideAdapter(
-        None, IPhysicallyLocatable, LocationPhysicallyLocatable)
-    ztapi.provideAdapter(
-        IContainmentRoot, IPhysicallyLocatable, RootPhysicallyLocatable)
-
-    # set up etc namespace
-    ztapi.provideAdapter(None, ITraversable, etc, name="etc")
-    ztapi.provideView(None, None, ITraversable, "etc", etc)
-
-    ztapi.browserView(None, "absolute_url", AbsoluteURL)
-    ztapi.browserView(IContainmentRoot, "absolute_url", SiteAbsoluteURL)
-
-    ztapi.browserView(None, '', AbsoluteURL, providing=IAbsoluteURL)
-    ztapi.browserView(IContainmentRoot, '', SiteAbsoluteURL,
-                      providing=IAbsoluteURL)
-
+    from zope.traversing.testing import setUp
+    setUp()
+    zope.component.provideAdapter(ContainerTraversable,
+                                  (ISimpleReadContainer,), ITraversable)
 
 #------------------------------------------------------------------------
 # ISiteManager lookup
 from zope.app.component.site import SiteManagerAdapter
-from zope.component.interfaces import ISiteManager
+from zope.component.interfaces import IComponentLookup
 from zope.interface import Interface
 def setUpSiteManagerLookup():
-    ztapi.provideAdapter(Interface, ISiteManager, SiteManagerAdapter)
+    zope.component.provideAdapter(SiteManagerAdapter, (Interface,),
+                                  IComponentLookup)
 
 #------------------------------------------------------------------------
 # Placeful setup
@@ -143,7 +71,6 @@ def placefulSetUp(site=False):
     zope.app.component.hooks.setHooks()
     setUpAnnotations()
     setUpDependable()
-    setUpRegistered()
     setUpTraversal()
     setUpSiteManagerLookup()
 
@@ -210,25 +137,22 @@ def createSiteManager(folder, setsite=False):
         folder.setSiteManager(LocalSiteManager(folder))
     if setsite:
         setSite(folder)
-    return zapi.traverse(folder, "++etc++site")
+    return zope.traversing.api.traverse(folder, "++etc++site")
 
 
 #------------------------------------------------------------------------
 # Local Utility Addition
-from zope.app.component.site import UtilityRegistration
-from zope.app.component.interfaces.registration import ActiveStatus
 def addUtility(sitemanager, name, iface, utility, suffix=''):
     """Add a utility to a site manager
 
     This helper function is useful for tests that need to set up utilities.
     """
     folder_name = (name or (iface.__name__ + 'Utility')) + suffix
-    default = zapi.traverse(sitemanager, 'default')
+    default = sitemanager['default']
     default[folder_name] = utility
-    registration = UtilityRegistration(name, iface, default[folder_name])
-    key = default.registrationManager.addRegistration(registration)
-    zapi.traverse(default.registrationManager, key).status = ActiveStatus
-    return default[folder_name]
+    utility = default[folder_name]
+    sitemanager.registerUtility(utility, iface, name)
+    return utility
 
 
 #------------------------------------------------------------------------

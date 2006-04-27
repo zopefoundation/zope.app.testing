@@ -16,11 +16,11 @@
 $Id$
 """
 import zope.interface
+import zope.component
 from zope.component.interfaces import IDefaultViewName
 from zope.publisher.browser import IBrowserRequest
 from zope.publisher.interfaces.browser import IDefaultBrowserLayer
-from zope.app import zapi
-from zope.app.traversing.interfaces import ITraversable
+from zope.traversing.interfaces import ITraversable
 
 def provideView(for_, type, providing, name, factory, layer=None):
     if layer is None:
@@ -58,57 +58,39 @@ def setDefaultViewName(for_, name, layer=IDefaultBrowserLayer,
                        type=IBrowserRequest):
     if layer is None:
         layer = type
-    gsm = zapi.getGlobalSiteManager()
-    gsm.provideAdapter((for_, layer), IDefaultViewName, '', name)
+    gsm = zope.component.getGlobalSiteManager()
+    gsm.registerAdapter(name, (for_, layer), IDefaultViewName, '')
 
 stypes = list, tuple
 def provideAdapter(required, provided, factory, name='', with=()):
     if isinstance(factory, (list, tuple)):
         raise ValueError("Factory cannot be a list or tuple")
-    gsm = zapi.getGlobalSiteManager()
+    gsm = zope.component.getGlobalSiteManager()
 
     if with:
         required = (required, ) + tuple(with)
     elif not isinstance(required, stypes):
         required = (required,)
 
-    gsm.provideAdapter(required, provided, name, factory)
+    gsm.registerAdapter(factory, required, provided, name, event=False)
 
 def subscribe(required, provided, factory):
-    gsm = zapi.getGlobalSiteManager()
-    gsm.subscribe(required, provided, factory)
-
-# BBB: Deprecated. Gone in 3.3
-def handle(required, handler):
-    subscribe(required, None, handler)
+    gsm = zope.component.getGlobalSiteManager()
+    if provided is None:
+        gsm.registerHandler(factory, required, event=False)
+    else:
+        gsm.registerSubscriptionAdapter(factory, required, provided,
+                                        event=False)
+        
 
 def provideUtility(provided, component, name=''):
-    gsm = zapi.getGlobalSiteManager()
-    gsm.provideUtility(provided, component, name)
+    gsm = zope.component.getGlobalSiteManager()
+    gsm.registerUtility(component, provided, name, event=False)
 
 def unprovideUtility(provided, name=''):
-    gsm = zapi.getGlobalSiteManager()
-    gsm.provideAdapter((), provided, name, None)
+    gsm = zope.component.getGlobalSiteManager()
+    gsm.unregisterUtility(provided=provided, name=name)
 
 def provideNamespaceHandler(name, handler):
     provideAdapter(None, ITraversable, handler, name=name)
     provideView(None, None, ITraversable, name, handler)
-
-
-# BBB: Deprecated. Gone in 3.3.
-from zope.deprecation import deprecated
-
-def provideService(name, service, interface=None):
-    services = zapi.getGlobalServices()
-    if interface is not None:
-        services.defineService(name, interface)
-    services.provideService(name, service)
-    
-deprecated('provideService',
-           'The concept of services has been removed. Use utilities instead. '
-           'The reference will be gone in 3.3.')
-
-deprecated('handle',
-           'The handle(required, handler) function as a shorter spelling of '
-           'subscribe(required, None, handler) has been deprecated to avoid '
-           'nomenclature confusion with zope.component.handle.')

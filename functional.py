@@ -32,7 +32,7 @@ from ZODB.DB import DB
 from ZODB.DemoStorage import DemoStorage
 
 from zope import interface, component
-from zope.publisher.browser import BrowserRequest
+from zope.publisher.browser import BrowserRequest, setDefaultSkin
 from zope.publisher.http import HTTPRequest
 from zope.publisher.publish import publish
 from zope.publisher.xmlrpc import XMLRPCRequest
@@ -44,7 +44,7 @@ import zope.app.testing.setup
 from zope.app import zapi
 from zope.app.debug import Debugger
 from zope.app.publication.http import HTTPPublication
-from zope.app.publication.browser import BrowserPublication, setDefaultSkin
+from zope.app.publication.browser import BrowserPublication
 from zope.app.publication.xmlrpc import XMLRPCPublication
 from zope.app.publication.soap import SOAPPublication
 from zope.app.publication.interfaces import ISOAPRequestFactory
@@ -170,6 +170,7 @@ class FunctionalTestSetup(object):
             self.connection.close()
             self.connection = None
         self.db.close()
+        setSite(None)
 
     def getRootFolder(self):
         """Returns the Zope root folder."""
@@ -283,10 +284,6 @@ class CookieHandler(object):
 
 class BrowserTestCase(CookieHandler, FunctionalTestCase):
     """Functional test case for Browser requests."""
-
-    def tearDown(self):
-        self.setSite(None)
-        super(BrowserTestCase, self).tearDown()
 
     def setSite(self, site):
         """Set the site which will be used to look up local components"""
