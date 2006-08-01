@@ -278,8 +278,8 @@ class CookieHandler(object):
         for k,v in response._cookies.items():
             k = k.encode('utf8')
             self.cookies[k] = v['value'].encode('utf8')
-            if self.cookies[k].has_key('Path'):
-                self.cookies[k]['Path'] = v['Path']
+            if self.cookies[k].has_key('path'):
+                self.cookies[k]['path'] = v['path']
 
 
 class BrowserTestCase(CookieHandler, FunctionalTestCase):
