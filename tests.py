@@ -181,12 +181,59 @@ class HTTPCallerTestCase(unittest.TestCase):
         self.assert_(IRequest.implementedBy(request_class))
         self.assert_(IPublication.implementedBy(publication_class))
 
+class DummyCookiesResponse(object):
+    # Ugh, this simulates the *internals* of a HTTPResponse object
+    # TODO: expand the IHTTPResponse interface to give access to all cookies
+    _cookies = None
+    
+    def __init__(self, cookies=None):
+        if not cookies:
+            cookies = {}
+        self._cookies = cookies
+        
+class CookieHandlerTestCase(unittest.TestCase):
+    def setUp(self):
+        self.handler = functional.CookieHandler()
+    
+    def test_saveCookies(self):
+        response = DummyCookiesResponse(dict(
+            spam=dict(value='eggs', path='/foo', comment='rest is ignored'),
+            monty=dict(value='python')))
+        self.handler.saveCookies(response)
+        self.assertEqual(len(self.handler.cookies), 2)
+        self.assertEqual(self.handler.cookies['spam'].OutputString(),
+                         'spam=eggs; Path=/foo;')
+        self.assertEqual(self.handler.cookies['monty'].OutputString(),
+                         'monty=python;')
+        
+    def test_httpCookie(self):
+        cookies = self.handler.cookies
+        cookies['spam'] = 'eggs'
+        cookies['spam']['path'] = '/foo'
+        cookies['bar'] = 'baz'
+        cookies['bar']['path'] = '/foo/baz'
+        cookies['monty'] = 'python'
+        
+        cookieHeader = self.handler.httpCookie('/foo/bar')
+        parts = cookieHeader.split('; ')
+        parts.sort()
+        self.assertEqual(parts, ['monty=python', 'spam=eggs'])
+        
+        cookieHeader = self.handler.httpCookie('/foo/baz')
+        parts = cookieHeader.split('; ')
+        parts.sort()
+        self.assertEqual(parts, ['bar=baz', 'monty=python', 'spam=eggs'])
+        
+    # There is no test for CookieHandler.loadCookies because it that method
+    # only passes the arguments on to Cookie.BaseCookie.load, which the 
+    # standard library has tests for (we hope).
 
 def test_suite():
     return unittest.TestSuite((
         unittest.makeSuite(FunctionalHTTPDocTest),
         unittest.makeSuite(AuthHeaderTestCase),
         unittest.makeSuite(HTTPCallerTestCase),
+        unittest.makeSuite(CookieHandlerTestCase),
         ))
 
 if __name__ == '__main__':

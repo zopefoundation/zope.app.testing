@@ -264,7 +264,7 @@ class CookieHandler(object):
 
     def httpCookie(self, path):
          """Return self.cookies as an HTTP_COOKIE environment value."""
-         l = [m.OutputString() for m in self.cookies.values()
+         l = [m.OutputString().split(';')[0] for m in self.cookies.values()
               if path.startswith(m['path'])]
          return '; '.join(l)
 
@@ -275,6 +275,9 @@ class CookieHandler(object):
         """Save cookies from the response."""
         # Urgh - need to play with the response's privates to extract
         # cookies that have been set
+        # TODO: extend the IHTTPRequest interface to allow access to all 
+        # cookies
+        # TODO: handle cookie expirations
         for k,v in response._cookies.items():
             k = k.encode('utf8')
             self.cookies[k] = v['value'].encode('utf8')
