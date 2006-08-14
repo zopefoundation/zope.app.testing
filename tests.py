@@ -47,7 +47,7 @@ expected = r'''
   HTTP/1.1 401 Unauthorized
   Content-Length: 89
   Content-Type: text/html;charset=utf-8
-  Www-Authenticate: basic realm=zope
+  Www-Authenticate: basic realm="Zope"
   <BLANKLINE>
   <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
         lang="en">
@@ -135,7 +135,7 @@ class FunctionalHTTPDocTest(unittest.TestCase):
         dochttp(['-p', 'test', directory])
         got = sys.stdout.getvalue()
         sys.stdout = old
-        self.assert_(got == expected)
+        self.assertEquals(expected, got)
 
 
 class AuthHeaderTestCase(unittest.TestCase):
