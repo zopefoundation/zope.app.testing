@@ -214,19 +214,24 @@ def defineLayer(name, zcml='test.zcml'):
 
 if os.path.exists(os.path.join('zopeskel', 'etc', 'ftesting.zcml')):
     Functional = os.path.join('zopeskel', 'etc', 'ftesting.zcml')
+    FunctionalNoDevMode = os.path.join('zopeskel', 'etc', 'ftesting-base.zcml')
 elif os.path.exists(os.path.join('etc', 'ftesting.zcml')):
     Functional = os.path.join('etc', 'ftesting.zcml')
+    FunctionalNoDevMode = os.path.join('etc', 'ftesting-base.zcml')
 else:
     # let's hope that the file is in our CWD. If not, we'll get an
     # error anyways, but we can't just throw an error if we don't find
     # that file. This module might be imported for other things as
     # well, not only starting up Zope from ftesting.zcml.    
     Functional = 'ftesting.zcml'
+    FunctionalNoDevMode = 'ftesting-base.zcml'
 
 Functional = os.path.abspath(Functional)
+FunctionalNoDevMode = os.path.abspath(FunctionalNoDevMode)
 
-Functional = ZCMLLayer(
-    Functional, __name__, 'Functional')
+Functional = ZCMLLayer(Functional, __name__, 'Functional')
+FunctionalNoDevMode = ZCMLLayer(FunctionalNoDevMode, __name__,
+                                'FunctionalNoDevMode')
 
 class FunctionalTestCase(unittest.TestCase):
     """Functional test case."""
