@@ -24,7 +24,6 @@ import rfc822
 import sys
 import traceback
 import unittest
-import urllib
 from StringIO import StringIO
 from Cookie import SimpleCookie
 from transaction import abort, commit
@@ -549,7 +548,6 @@ class HTTPCaller(CookieHandler):
         command_line = request_string[:l].rstrip()
         request_string = request_string[l+1:]
         method, path, protocol = command_line.split()
-        path = urllib.unquote(path)
 
         instream = StringIO(request_string)
         environment = {"HTTP_COOKIE": self.httpCookie(path),
