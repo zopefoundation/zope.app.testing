@@ -31,6 +31,7 @@ class ZopeTestTransport(xmlrpclib.Transport):
     """
 
     verbose = False
+    handleErrors = True
 
     def request(self, host, handler, request_body, verbose=0):
         request = "POST %s HTTP/1.0\n" % (handler,)
@@ -42,7 +43,7 @@ class ZopeTestTransport(xmlrpclib.Transport):
             request += "Authorization: %s\n" % (dict(extra_headers)["Authorization"],)
 
         request += "\n" + request_body
-        response = HTTPCaller()(request)
+        response = HTTPCaller()(request, handle_errors=self.handleErrors)
 
         errcode = response.getStatus()
         errmsg = response.getStatusString()
@@ -61,9 +62,11 @@ class ZopeTestTransport(xmlrpclib.Transport):
 
 
 def ServerProxy(uri, transport=ZopeTestTransport(), encoding=None,
-                verbose=0, allow_none=0):
+                verbose=0, allow_none=0, handleErrors=True):
     """A factory that creates a server proxy using the ZopeTestTransport
     by default.
     
     """
+    if isinstance(transport, ZopeTestTransport):
+        transport.handleErrors = handleErrors
     return xmlrpclib.ServerProxy(uri, transport, encoding, verbose, allow_none)
