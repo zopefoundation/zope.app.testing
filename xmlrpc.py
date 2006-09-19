@@ -1,0 +1,69 @@
+##############################################################################
+#
+# Copyright (c) 2006 Zope Corporation and Contributors.
+# All Rights Reserved.
+#
+# This software is subject to the provisions of the Zope Public License,
+# Version 2.1 (ZPL).  A copy of the ZPL should accompany this distribution.
+# THIS SOFTWARE IS PROVIDED "AS IS" AND ANY AND ALL EXPRESS OR IMPLIED
+# WARRANTIES ARE DISCLAIMED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+# WARRANTIES OF TITLE, MERCHANTABILITY, AGAINST INFRINGEMENT, AND FITNESS
+# FOR A PARTICULAR PURPOSE.
+#
+##############################################################################
+"""XMLRPC testing helpers for Zope 3.
+
+$Id$
+"""
+
+from StringIO import StringIO
+import xmlrpclib 
+
+from zope.app.testing.functional import HTTPCaller
+
+
+REQUEST_TEMPLATE = """POST %(handler)s HTTP/1.0
+Authorization: %(authorization)s
+Content-Length: %(content_length)i
+Content-Type: text/xml
+
+"""
+
+
+class ZopeTestTransport(xmlrpclib.Transport):
+    """xmlrpclib transport that delegates to
+    zope.app.testing.functional.HTTPCaller.
+    """
+
+    verbose = False
+
+    def request(self, host, handler, request_body, verbose=0):
+        request = "POST %s HTTP/1.0\n" % (handler,)
+        request += "Content-Length: %i\n" % len(request_body)
+        request += "Content-Type: text/xml\n"
+
+        host, extra_headers, x509 = self.get_host_info(host)
+        if extra_headers:
+            request += "Authorization: %s\n" % (dict(extra_headers)["Authorization"],)
+
+        request += "\n" + request_body
+        response = HTTPCaller()(request)
+
+        errcode = response.getStatus()
+        errmsg = response.getStatusString()
+        headers = response.getHeaders()
+
+        if errcode != 200:
+            raise xmlrpclib.ProtocolError(
+                host + handler,
+                errcode, errmsg,
+                headers
+                )
+
+        return self._parse_response(StringIO(response.getBody()), sock=None)
+
+
+
+def ServerProxy(uri, transport=ZopeTestTransport(), encoding=None,
+                verbose=0, allow_none=0):
+    return xmlrpclib.ServerProxy(uri, transport, encoding, verbose, allow_none)
