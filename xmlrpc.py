@@ -16,23 +16,18 @@
 $Id$
 """
 
-from StringIO import StringIO
+import StringIO
 import xmlrpclib 
 
 from zope.app.testing.functional import HTTPCaller
 
 
-REQUEST_TEMPLATE = """POST %(handler)s HTTP/1.0
-Authorization: %(authorization)s
-Content-Length: %(content_length)i
-Content-Type: text/xml
-
-"""
-
-
 class ZopeTestTransport(xmlrpclib.Transport):
     """xmlrpclib transport that delegates to
     zope.app.testing.functional.HTTPCaller.
+
+    It can be used like a normal transport, including support for basic
+    authentication.
     """
 
     verbose = False
@@ -51,6 +46,7 @@ class ZopeTestTransport(xmlrpclib.Transport):
 
         errcode = response.getStatus()
         errmsg = response.getStatusString()
+        # This is not the same way that the normal transport deals with the headers.
         headers = response.getHeaders()
 
         if errcode != 200:
@@ -60,10 +56,14 @@ class ZopeTestTransport(xmlrpclib.Transport):
                 headers
                 )
 
-        return self._parse_response(StringIO(response.getBody()), sock=None)
-
+        return self._parse_response(
+            StringIO.StringIO(response.getBody()), sock=None)
 
 
 def ServerProxy(uri, transport=ZopeTestTransport(), encoding=None,
                 verbose=0, allow_none=0):
+    """A factory that creates a server proxy using the ZopeTestTransport
+    by default.
+    
+    """
     return xmlrpclib.ServerProxy(uri, transport, encoding, verbose, allow_none)
