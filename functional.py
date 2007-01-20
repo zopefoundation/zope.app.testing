@@ -171,6 +171,12 @@ class FunctionalTestSetup(object):
         self.db.close()
         setSite(None)
 
+    def tearDownCompletely(self):
+        """Cleans up the setup done by the constructor."""
+        zope.app.testing.setup.placefulTearDown()
+        self._config_file = False
+        self._init = False
+
     def getRootFolder(self):
         """Returns the Zope root folder."""
         if not self.connection:
@@ -181,6 +187,7 @@ class FunctionalTestSetup(object):
     def getApplication(self):
         """Returns the Zope application instance."""
         return self.app
+
 
 class ZCMLLayer:
     """ZCML-defined test layer
@@ -194,10 +201,11 @@ class ZCMLLayer:
         self.__name__ = name
 
     def setUp(self):
-        FunctionalTestSetup(self.config_file)
+        self.setup = FunctionalTestSetup(self.config_file)
 
     def tearDown(self):
-        raise NotImplementedError
+        self.setup.tearDownCompletely()
+
 
 def defineLayer(name, zcml='test.zcml'):
     """Helper function for defining layers.
