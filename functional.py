@@ -195,19 +195,26 @@ class ZCMLLayer:
 
     __bases__ = ()
 
-    def __init__(self, config_file, module, name):
+    def __init__(self, config_file, module, name, allow_teardown=False):
         self.config_file = config_file
         self.__module__ = module
         self.__name__ = name
+        self.allow_teardown = allow_teardown
 
     def setUp(self):
         self.setup = FunctionalTestSetup(self.config_file)
 
     def tearDown(self):
         self.setup.tearDownCompletely()
+        if not self.allow_teardown:
+            # Some ZCML directives change globals but are not accompanied
+            # with registered CleanUp handlers to undo the changes.  Let
+            # packages which use such directives indicate that they do not
+            # support tearing down.
+            raise NotImplementedError
 
 
-def defineLayer(name, zcml='test.zcml'):
+def defineLayer(name, zcml='test.zcml', allow_teardown=False):
     """Helper function for defining layers.
 
     Usage: defineLayer('foo')
@@ -217,6 +224,7 @@ def defineLayer(name, zcml='test.zcml'):
         os.path.join(os.path.split(globals['__file__'])[0], zcml),
         globals['__name__'],
         name,
+        allow_teardown=allow_teardown,
         )
 
 if os.path.exists(os.path.join('zopeskel', 'etc', 'ftesting.zcml')):
