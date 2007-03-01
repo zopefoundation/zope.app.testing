@@ -126,6 +126,7 @@ expected = r'''
   <BLANKLINE>
 '''
 
+
 class FunctionalHTTPDocTest(unittest.TestCase):
 
     def test_dochttp(self):
@@ -181,20 +182,22 @@ class HTTPCallerTestCase(unittest.TestCase):
         self.assert_(IRequest.implementedBy(request_class))
         self.assert_(IPublication.implementedBy(publication_class))
 
+
 class DummyCookiesResponse(object):
     # Ugh, this simulates the *internals* of a HTTPResponse object
     # TODO: expand the IHTTPResponse interface to give access to all cookies
     _cookies = None
-    
+
     def __init__(self, cookies=None):
         if not cookies:
             cookies = {}
         self._cookies = cookies
-        
+
+
 class CookieHandlerTestCase(unittest.TestCase):
     def setUp(self):
         self.handler = functional.CookieHandler()
-    
+
     def test_saveCookies(self):
         response = DummyCookiesResponse(dict(
             spam=dict(value='eggs', path='/foo', comment='rest is ignored'),
@@ -205,7 +208,7 @@ class CookieHandlerTestCase(unittest.TestCase):
                          'spam=eggs; Path=/foo;')
         self.assertEqual(self.handler.cookies['monty'].OutputString(),
                          'monty=python;')
-        
+
     def test_httpCookie(self):
         cookies = self.handler.cookies
         cookies['spam'] = 'eggs'
@@ -213,20 +216,47 @@ class CookieHandlerTestCase(unittest.TestCase):
         cookies['bar'] = 'baz'
         cookies['bar']['path'] = '/foo/baz'
         cookies['monty'] = 'python'
-        
+
         cookieHeader = self.handler.httpCookie('/foo/bar')
         parts = cookieHeader.split('; ')
         parts.sort()
         self.assertEqual(parts, ['monty=python', 'spam=eggs'])
-        
+
         cookieHeader = self.handler.httpCookie('/foo/baz')
         parts = cookieHeader.split('; ')
         parts.sort()
         self.assertEqual(parts, ['bar=baz', 'monty=python', 'spam=eggs'])
-        
+
     # There is no test for CookieHandler.loadCookies because it that method
-    # only passes the arguments on to Cookie.BaseCookie.load, which the 
+    # only passes the arguments on to Cookie.BaseCookie.load, which the
     # standard library has tests for (we hope).
+
+
+def test_include_of_zope_app():
+    """
+    >>> from zope.configuration import xmlconfig, config
+    >>> context = config.ConfigurationMachine()
+    >>> xmlconfig.registerCommonDirectives(context)
+    >>> import zope.app
+
+    >>> import warnings
+    >>> showwarning = warnings.showwarning
+    >>> warnings.showwarning = lambda *a, **k: None
+
+    >>> xmlconfig.include(context, package=zope.app)
+
+    >>> xmlconfig.include(context, 'configure.zcml', zope.app)
+    >>> xmlconfig.include(context, 'ftesting.zcml', zope.app)
+    >>> xmlconfig.include(context, 'menus.zcml', zope.app)
+    >>> xmlconfig.include(context, 'meta.zcml', zope.app)
+    >>> xmlconfig.include(context, 'file_not_exists.zcml', zope.app) #doctest: +ELLIPSIS
+    Traceback (most recent call last):
+    ...
+    IOError: ...
+
+    >>> warnings.showwarning = showwarning
+    """
+
 
 def test_suite():
     return unittest.TestSuite((
@@ -234,8 +264,8 @@ def test_suite():
         unittest.makeSuite(AuthHeaderTestCase),
         unittest.makeSuite(HTTPCallerTestCase),
         unittest.makeSuite(CookieHandlerTestCase),
+        DocTestSuite(),
         ))
 
 if __name__ == '__main__':
     unittest.main(defaultTest='test_suite')
-
