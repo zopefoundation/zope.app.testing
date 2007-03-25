@@ -30,8 +30,14 @@ setup(name='zope.app.testing',
       packages=find_packages('src'),
       package_dir = {'': 'src'},
       namespace_packages=['zope', 'zope.app'],
-      tests_require = ['zope.testing'],
-      install_requires=['zope.app'], # TODO: more fine-grained deps
+      install_requires=['setuptools',
+                        'zope.component',
+                        'zope.interface',
+                        'zope.app.dependable',
+                        #'zope.deferredimport',
+                        #'zope.traversing',
+                        'zope.app.publication',
+                        ], # TODO: more fine-grained deps
       include_package_data = True,
       zip_safe = False,
       )
