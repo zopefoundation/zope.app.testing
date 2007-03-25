@@ -232,31 +232,6 @@ class CookieHandlerTestCase(unittest.TestCase):
     # standard library has tests for (we hope).
 
 
-def test_include_of_zope_app():
-    """
-    >>> from zope.configuration import xmlconfig, config
-    >>> context = config.ConfigurationMachine()
-    >>> xmlconfig.registerCommonDirectives(context)
-    >>> import zope.app.zcmlfiles
-
-    >>> import warnings
-    >>> showwarning = warnings.showwarning
-    >>> warnings.showwarning = lambda *a, **k: None
-
-    >>> xmlconfig.include(context, package=zope.app.zcmlfiles)
-
-    >>> xmlconfig.include(context, 'configure.zcml', zope.app.zcmlfiles)
-    >>> xmlconfig.include(context, 'ftesting.zcml', zope.app.zcmlfiles)
-    >>> xmlconfig.include(context, 'menus.zcml', zope.app.zcmlfiles)
-    >>> xmlconfig.include(context, 'meta.zcml', zope.app.zcmlfiles)
-    >>> xmlconfig.include(context,
-    ...     'file_not_exists.zcml', zope.app.zcmlfiles) #doctest: +ELLIPSIS
-    Traceback (most recent call last):
-    ...
-    IOError: ...
-
-    >>> warnings.showwarning = showwarning
-    """
 
 
 def test_suite():
