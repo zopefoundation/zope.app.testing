@@ -16,7 +16,6 @@
 $Id$
 """
 import zope.component
-import zope.interface
 import zope.traversing.api
 
 import zope.deferredimport

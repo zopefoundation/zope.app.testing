@@ -30,28 +30,19 @@ from transaction import abort, commit
 from ZODB.DB import DB
 from ZODB.DemoStorage import DemoStorage
 
-from zope import interface, component
+from zope import component
 from zope.publisher.browser import BrowserRequest, setDefaultSkin
 from zope.publisher.http import HTTPRequest
 from zope.publisher.publish import publish
-from zope.publisher.xmlrpc import XMLRPCRequest
 from zope.security.interfaces import Forbidden, Unauthorized
-from zope.security.management import endInteraction
 from zope.testing import doctest
 
 import zope.app.testing.setup
-from zope.app import zapi
 from zope.app.debug import Debugger
 from zope.app.publication.http import HTTPPublication
-from zope.app.publication.browser import BrowserPublication
-from zope.app.publication.xmlrpc import XMLRPCPublication
-from zope.app.publication.soap import SOAPPublication
-from zope.app.publication.interfaces import ISOAPRequestFactory
 from zope.app.publication.zopepublication import ZopePublication
 from zope.app.publication.http import HTTPPublication
 from zope.app.publication.httpfactory import chooseClasses
-from zope.publisher.interfaces.browser import IDefaultBrowserLayer
-from zope.publisher.interfaces.browser import IDefaultSkin
 from zope.publisher.interfaces.browser import IBrowserRequest
 from zope.app.component.hooks import setSite, getSite
 

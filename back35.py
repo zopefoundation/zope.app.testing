@@ -16,8 +16,7 @@
 $Id$
 """
 
-from zope.app import zapi
-import zope.interface
+from zope.traversing.api import traverse
 from zope.component.service import IService
 from zope.app.component.site import UtilityRegistration
 from zope.app.component.back35 import ActiveStatus
@@ -27,9 +26,9 @@ def addService(servicemanager, name, service, suffix=''):
 
     This utility is useful for tests that need to set up services.
     """
-    default = zapi.traverse(servicemanager, 'default')
+    default = traverse(servicemanager, 'default')
     default[name+suffix] = service
     registration = UtilityRegistration(name, IService, service, default)
     key = default.registrationManager.addRegistration(registration)
-    zapi.traverse(default.registrationManager, key).status = ActiveStatus
+    traverse(default.registrationManager, key).status = ActiveStatus
     return default[name+suffix]
