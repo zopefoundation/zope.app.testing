@@ -35,7 +35,7 @@ from zope.app.testing.testing import AppTestingLayer
 
 
 HEADERS = """\
-HTTP/1.1 200 Ok
+HTTP/1.1 200 OK
 Content-Type: text/plain
 """
 
@@ -70,7 +70,7 @@ expected = r'''
   ... GET /@@contents.html HTTP/1.1
   ... Authorization: Basic bWdyOm1ncnB3
   ... """)
-  HTTP/1.1 200 Ok
+  HTTP/1.1 200 OK
   Content-Length: 89
   Content-Type: text/html;charset=utf-8
   <BLANKLINE>
@@ -100,7 +100,7 @@ expected = r'''
   ... GET / HTTP/1.1
   ... Authorization: Basic bWdyOm1ncnB3
   ... """)
-  HTTP/1.1 200 Ok
+  HTTP/1.1 200 OK
   Content-Length: 89
   Content-Type: text/html;charset=utf-8
   <BLANKLINE>
@@ -119,7 +119,7 @@ expected = r'''
   ... Authorization: Basic bWdyOm1ncnB3
   ... Referer: http://localhost:8081/
   ... """)
-  HTTP/1.1 200 Ok
+  HTTP/1.1 200 OK
   Content-Length: 89
   Content-Type: text/html;charset=utf-8
   <BLANKLINE>
