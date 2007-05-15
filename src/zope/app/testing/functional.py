@@ -38,6 +38,7 @@ from zope.security.interfaces import Forbidden, Unauthorized
 from zope.testing import doctest
 
 import zope.app.testing.setup
+from zope.app.appsetup.appsetup import multi_database
 from zope.app.debug import Debugger
 from zope.app.publication.http import HTTPPublication
 from zope.app.publication.zopepublication import ZopePublication
@@ -101,17 +102,75 @@ class IManagerSetup(zope.interface.Interface):
         """Set up the manager, zope.mgr
         """
 
+class BaseDatabaseFactory(object):
+    """Factory object for passing to appsetup.multi_databases
+
+    This class is an internal implementation detail, subject to change
+    without notice!
+
+    It is currently used by FunctionalTestSetUp.__init__ to create the
+    basic storage(s) containing the data that is common to all tests
+    in a layer.
+
+    The constructor takes the name of the new database, and a
+    dictionary of storages.  The 'open' method creates a new
+    DemoStorage, and adds it to the storage dictionary under the given
+    name. Then creates and returns a named DB object using the
+    storage.
+    """
+
+    def __init__(self, name, base_storages):
+        self.name = name
+        self.base_storages = base_storages
+
+    def open(self):
+        name = self.name
+        if name in self.base_storages:
+            raise ValueError("Duplicate database name: %r" % name)
+        storage = DemoStorage("Memory storage %r" % name)
+        self.base_storages[name] = storage
+        return DB(storage, database_name=name)
+
+
+class DerivedDatabaseFactory(object):
+    """Factory object for passing to appsetup.multi_databases
+
+    This class is an internal implementation detail, subject to change
+    without notice!
+
+    It is currently used by FunctionalTestSetUp.setUp to create the
+    derived storage(s) used for each test in a layer.
+
+    The constructor takes the name of the new database, and a
+    dictionary of storages.  The 'open' method creates a new
+    DemoStorage as a wrapper around the storage with the given
+    name. Then creates and returns a named DB object using the
+    storage.
+    """
+
+    def __init__(self, name, base_storages):
+        self.name = name
+        self.storage = DemoStorage("Demo storage %r" % name,
+                                   base_storages[name])
+
+    def open(self):
+        return DB(self.storage, database_name=self.name)
+
+
 class FunctionalTestSetup(object):
     """Keeps shared state across several functional test cases."""
 
     __shared_state = { '_init': False }
 
-    def __init__(self, config_file=None):
+    def __init__(self, config_file=None, database_names=None):
         """Initializes Zope 3 framework.
 
         Creates a volatile memory storage.  Parses Zope3 configuration files.
         """
         self.__dict__ = self.__shared_state
+
+        if database_names is not None:
+            database_names = tuple(database_names)
 
         if not self._init:
 
@@ -121,14 +180,22 @@ class FunctionalTestSetup(object):
 
             if not config_file:
                 config_file = 'ftesting.zcml'
+            if database_names is None:
+                database_names = ('unnamed',)
             self.log = StringIO()
             # Make it silent but keep the log available for debugging
             logging.root.addHandler(logging.StreamHandler(self.log))
-            self.base_storage = DemoStorage("Memory Storage")
-            self.db = DB(self.base_storage)
+
+            self._base_storages = {}
+            self.db = multi_database(
+                BaseDatabaseFactory(name, self._base_storages)
+                for name in database_names
+                )[0][0]
             self.app = Debugger(self.db, config_file)
+
             self.connection = None
             self._config_file = config_file
+            self._database_names = database_names
             self._init = True
 
             # Make a local grant for the test user
@@ -144,13 +211,36 @@ class FunctionalTestSetup(object):
             raise NotImplementedError('Already configured'
                                       ' with a different config file')
 
+        elif database_names and database_names != self._database_names:
+            # Running different tests with different configurations is not
+            # supported at the moment
+            raise NotImplementedError('Already configured'
+                                      ' with different database names')
+
+    # BBB: Simulate the old base_storage attribute, but only when not using
+    # multiple databases. There *is* code in the wild that uses the attribute.
+    def _get_base_storage(self):
+        if len(self._database_names)!=1:
+            raise AttributeError('base_storage')
+        return self._base_storages[self._database_names[0]]
+
+    def _set_base_storage(self, value):
+        if len(self._database_name)!=1:
+            raise AttributeError('base_storage')
+        self._base_storages[self._database_names[0]] = value
+
+    base_storage = property(_get_base_storage, _set_base_storage)
+
     def setUp(self):
         """Prepares for a functional test case."""
-        # Tear down the old demo storage (if any) and create a fresh one
+        # Tear down the old demo storages (if any) and create fresh ones
         abort()
-        self.db.close()
-        storage = DemoStorage("Demo Storage", self.base_storage)
-        self.db = self.app.db = DB(storage)
+        for db in self.db.databases.itervalues():
+            db.close()
+        self.db = self.app.db = multi_database(
+            DerivedDatabaseFactory(name, self._base_storages)
+            for name in self._database_names
+            )[0][0]
         self.connection = None
 
     def tearDown(self):
@@ -159,13 +249,15 @@ class FunctionalTestSetup(object):
         if self.connection:
             self.connection.close()
             self.connection = None
-        self.db.close()
+        for db in self.db.databases.itervalues():
+            db.close()
         setSite(None)
 
     def tearDownCompletely(self):
         """Cleans up the setup done by the constructor."""
         zope.app.testing.setup.placefulTearDown()
         self._config_file = False
+        self._database_names = None
         self._init = False
 
     def getRootFolder(self):
