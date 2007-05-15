@@ -16,10 +16,12 @@
 $Id$
 """
 import os
+import re
 import unittest
 import StringIO
 
 from zope.testing.doctestunit import DocTestSuite
+from zope.testing.renormalizing import RENormalizing
 
 import zope.app.testing
 from zope.app.publication.requestpublicationregistry import factoryRegistry
@@ -350,10 +352,13 @@ class SkinsAndHTTPCaller(FunctionalTestCase):
 
 
 def test_suite():
+    checker = RENormalizing([
+        (re.compile(r'^HTTP/1.1 (\d{3}) .*?\n'), 'HTTP/1.1 \\1\n')
+        ])
     SampleFunctionalTest.layer = AppTestingLayer
     CookieFunctionalTest.layer = AppTestingLayer
     SkinsAndHTTPCaller.layer = AppTestingLayer
-    doc_test = FunctionalDocFileSuite('doctest.txt')
+    doc_test = FunctionalDocFileSuite('doctest.txt', checker=checker)
     doc_test.layer = AppTestingLayer
 
     return unittest.TestSuite((
