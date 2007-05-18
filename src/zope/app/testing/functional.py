@@ -225,7 +225,7 @@ class FunctionalTestSetup(object):
         return self._base_storages[self._database_names[0]]
 
     def _set_base_storage(self, value):
-        if len(self._database_name)!=1:
+        if len(self._database_names)!=1:
             raise AttributeError('base_storage')
         self._base_storages[self._database_names[0]] = value
 
