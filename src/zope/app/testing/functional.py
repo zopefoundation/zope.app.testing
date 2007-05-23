@@ -709,12 +709,27 @@ class HTTPCaller(CookieHandler):
 
 
 def FunctionalDocFileSuite(*paths, **kw):
+    """Build a functional test suite from a text file."""
+    kw['package'] = doctest._normalize_module(kw.get('package'))
+    _prepare_doctest_keywords(kw)
+    suite = doctest.DocFileSuite(*paths, **kw)
+    suite.layer = Functional
+    return suite
+
+
+def FunctionalDocTestSuite(*paths, **kw):
+    """Build a functional test suite from docstrings in a module."""
+    _prepare_doctest_keywords(kw)
+    suite = doctest.DocTestSuite(*paths, **kw)
+    suite.layer = Functional
+    return suite
+
+
+def _prepare_doctest_keywords(kw):
     globs = kw.setdefault('globs', {})
     globs['http'] = HTTPCaller()
     globs['getRootFolder'] = getRootFolder
     globs['sync'] = sync
-
-    kw['package'] = doctest._normalize_module(kw.get('package'))
 
     kwsetUp = kw.get('setUp')
     def setUp(test):
@@ -738,10 +753,6 @@ def FunctionalDocFileSuite(*paths, **kw):
                              | doctest.ELLIPSIS
                              | doctest.REPORT_NDIFF
                              | doctest.NORMALIZE_WHITESPACE)
-
-    suite = doctest.DocFileSuite(*paths, **kw)
-    suite.layer = Functional
-    return suite
 
 
 if __name__ == '__main__':
