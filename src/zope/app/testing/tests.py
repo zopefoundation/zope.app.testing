@@ -213,10 +213,10 @@ class CookieHandlerTestCase(unittest.TestCase):
             monty=dict(value='python')))
         self.handler.saveCookies(response)
         self.assertEqual(len(self.handler.cookies), 2)
-        self.assertEqual(self.handler.cookies['spam'].OutputString(),
-                         'spam=eggs; Path=/foo;')
-        self.assertEqual(self.handler.cookies['monty'].OutputString(),
-                         'monty=python;')
+        self.assert_(self.handler.cookies['spam'].OutputString() in
+                         ('spam=eggs; Path=/foo;','spam=eggs; Path=/foo'))
+        self.assert_(self.handler.cookies['monty'].OutputString() in
+                         ('monty=python;','monty=python'))
 
     def test_httpCookie(self):
         cookies = self.handler.cookies
