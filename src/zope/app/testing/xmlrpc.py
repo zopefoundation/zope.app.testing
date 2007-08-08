@@ -63,12 +63,14 @@ class ZopeTestTransport(xmlrpclib.Transport):
             StringIO.StringIO(response.getBody()), sock=None)
 
 
-def ServerProxy(uri, transport=ZopeTestTransport(), encoding=None,
+def ServerProxy(uri, transport=None, encoding=None,
                 verbose=0, allow_none=0, handleErrors=True):
     """A factory that creates a server proxy using the ZopeTestTransport
     by default.
-    
+
     """
+    if transport is None:
+        transport = ZopeTestTransport()
     if isinstance(transport, ZopeTestTransport):
         transport.handleErrors = handleErrors
     return xmlrpclib.ServerProxy(uri, transport, encoding, verbose, allow_none)
