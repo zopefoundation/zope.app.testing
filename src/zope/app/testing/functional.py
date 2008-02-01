@@ -320,7 +320,7 @@ else:
     # let's hope that the file is in our CWD. If not, we'll get an
     # error anyways, but we can't just throw an error if we don't find
     # that file. This module might be imported for other things as
-    # well, not only starting up Zope from ftesting.zcml.    
+    # well, not only starting up Zope from ftesting.zcml.
     Functional = 'ftesting.zcml'
     FunctionalNoDevMode = 'ftesting-base.zcml'
 
@@ -378,7 +378,7 @@ class CookieHandler(object):
         """Save cookies from the response."""
         # Urgh - need to play with the response's privates to extract
         # cookies that have been set
-        # TODO: extend the IHTTPRequest interface to allow access to all 
+        # TODO: extend the IHTTPRequest interface to allow access to all
         # cookies
         # TODO: handle cookie expirations
         for k,v in response._cookies.items():
@@ -449,10 +449,13 @@ class BrowserTestCase(CookieHandler, FunctionalTestCase):
             del env['HTTP_COOKIE'] # Added again in makeRequest
 
         request = self.makeRequest(path, basic=basic, form=form, env=env)
-        response = ResponseWrapper(request.response, path)
         if env.has_key('HTTP_COOKIE'):
             self.loadCookies(env['HTTP_COOKIE'])
-        publish(request, handle_errors=handle_errors)
+
+        request = publish(request, handle_errors=handle_errors)
+
+        response = ResponseWrapper(request.response, path)
+
         self.saveCookies(response)
         self.setSite(old_site)
         return response
@@ -688,12 +691,13 @@ class HTTPCaller(CookieHandler):
                 raise ValueError("only one set of form values can be provided")
             request.form = form
 
+        request = publish(request, handle_errors=handle_errors)
+
         response = ResponseWrapper(
             request.response, path,
             omit=('x-content-type-warning', 'x-powered-by'),
             )
 
-        publish(request, handle_errors=handle_errors)
         self.saveCookies(response)
         setSite(old_site)
 

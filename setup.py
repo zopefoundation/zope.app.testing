@@ -56,7 +56,9 @@ setup(name='zope.app.testing',
       namespace_packages=['zope', 'zope.app'],
       extras_require=dict(test=['zope.app.zptpage',
                                 'zope.app.securitypolicy',
-                                'zope.app.zcmlfiles'
+                                'zope.app.zcmlfiles',
+                                'ZODB3',
+                                'zope.publisher'
                                 ]),
       install_requires=['setuptools',
                         'zope.annotation',

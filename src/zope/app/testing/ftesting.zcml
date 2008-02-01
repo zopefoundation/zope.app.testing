@@ -52,5 +52,9 @@
 
   <grant role="zope.Manager" principal="zope.globalmgr" />
 
+  <adapter
+           factory="zope.app.testing.testing.ConflictRaisingView"
+           name="test-conflict-raise-view.html" />
+
 
 </configure>

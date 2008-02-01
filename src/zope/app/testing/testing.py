@@ -19,8 +19,37 @@ $Id$
 __docformat__ = "reStructuredText"
 
 import os
+from ZODB.POSException import ConflictError
+from zope import interface
+from zope import component
+import zope.publisher.interfaces.browser
 from zope.app.testing.functional import ZCMLLayer
 
 AppTestingLayer = ZCMLLayer(
     os.path.join(os.path.split(__file__)[0], 'ftesting.zcml'),
     __name__, 'AppTestingLayer', allow_teardown=True)
+
+
+class IFailingKlass(interface.Interface):
+    pass
+
+class FailingKlass(object):
+    interface.implements(IFailingKlass)
+
+
+class ConflictRaisingView(object):
+    __used_for__ = IFailingKlass
+
+    interface.implements(zope.publisher.interfaces.browser.IBrowserPublisher)
+    component.adapts(interface.Interface,
+                     zope.publisher.interfaces.browser.IBrowserRequest)
+
+
+    def __init__(self, context, request):
+        pass
+
+    def browserDefault(self, *_):
+        return self, ()
+
+    def __call__(self):
+        raise ConflictError

@@ -34,6 +34,8 @@ from zope.app.testing.functional import FunctionalDocFileSuite
 from zope.app.testing.functional import FunctionalTestCase
 from zope.app.testing.testing import AppTestingLayer
 
+from zope.app.testing.testing import FailingKlass
+
 
 
 HEADERS = """\
@@ -139,7 +141,7 @@ expected = r'''
 class FunctionalHTTPDocTest(unittest.TestCase):
 
     def test_dochttp(self):
-        import sys, StringIO
+        import sys
         old = sys.stdout
         sys.stdout = StringIO.StringIO()
         dochttp(['-p', 'test', directory])
@@ -244,7 +246,7 @@ class CookieHandlerTestCase(unittest.TestCase):
 class CookieFunctionalTest(BrowserTestCase):
 
     """Functional tests should handle cookies like a web browser
-    
+
     Multiple requests in the same test should acumulate cookies.
     We also ensure that cookies with path values are only sent for
     the correct URL's so we can test cookies don't 'leak'. Expiry,
@@ -349,7 +351,54 @@ class SkinsAndHTTPCaller(FunctionalTestCase):
         response = http("GET /++skin++Basic HTTP/1.1\n\n")
         self.assert_("zopetopBasic.css" in str(response))
 
+class RetryProblemFunctional(FunctionalTestCase):
 
+    def setUp(self):
+        super(RetryProblemFunctional, self).setUp()
+
+        root = self.getRootFolder()
+
+        root['fail'] = FailingKlass()
+
+        transaction.commit()
+
+    def tearDown(self):
+        root = self.getRootFolder()
+        del root['fail']
+        super(RetryProblemFunctional, self).tearDown()
+
+    def test_retryOnConflictErrorFunctional(self):
+        from zope.app.testing.functional import HTTPCaller
+
+        http = HTTPCaller()
+        response = http(r"""
+GET /@@test-conflict-raise-view.html HTTP/1.1
+Authorization: Basic mgr:mgrpw
+""")
+
+        self.assertNotEqual(response.getStatus(), 599)
+        self.assertEqual(response.getStatus(), 500)
+
+class RetryProblemBrowser(BrowserTestCase):
+    def setUp(self):
+        super(RetryProblemBrowser, self).setUp()
+
+        root = self.getRootFolder()
+
+        root['fail'] = FailingKlass()
+
+        transaction.commit()
+
+    def tearDown(self):
+        root = self.getRootFolder()
+        del root['fail']
+        super(RetryProblemBrowser, self).tearDown()
+
+    def test_retryOnConflictErrorBrowser(self):
+        response = self.publish('/@@test-conflict-raise-view.html',
+                                handle_errors=True)
+        self.assertNotEqual(response.getStatus(), 599)
+        self.assertEqual(response.getStatus(), 500)
 
 def test_suite():
     checker = RENormalizing([
@@ -358,6 +407,9 @@ def test_suite():
     SampleFunctionalTest.layer = AppTestingLayer
     CookieFunctionalTest.layer = AppTestingLayer
     SkinsAndHTTPCaller.layer = AppTestingLayer
+    RetryProblemFunctional.layer = AppTestingLayer
+    RetryProblemBrowser.layer = AppTestingLayer
+
     doc_test = FunctionalDocFileSuite('doctest.txt', checker=checker)
     doc_test.layer = AppTestingLayer
 
@@ -370,6 +422,8 @@ def test_suite():
         unittest.makeSuite(SampleFunctionalTest),
         unittest.makeSuite(CookieFunctionalTest),
         unittest.makeSuite(SkinsAndHTTPCaller),
+        unittest.makeSuite(RetryProblemFunctional),
+        unittest.makeSuite(RetryProblemBrowser),
         doc_test,
         ))
 
