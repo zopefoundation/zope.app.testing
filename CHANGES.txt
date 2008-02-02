@@ -2,7 +2,7 @@
 CHANGES
 =======
 
-3.5.1 (2008-02-01)
+3.4.2 (2008-02-02)
 ------------------
 
 - Fix of 599 error on conflict error in request
