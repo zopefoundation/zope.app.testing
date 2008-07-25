@@ -22,6 +22,8 @@ import StringIO
 
 from zope.testing.doctestunit import DocTestSuite
 from zope.testing.renormalizing import RENormalizing
+from zope.component import getAllUtilitiesRegisteredFor
+from ZODB.interfaces import IDatabase
 
 import zope.app.testing
 from zope.app.publication.requestpublicationregistry import factoryRegistry
@@ -32,6 +34,7 @@ import transaction
 from zope.app.testing.functional import SampleFunctionalTest, BrowserTestCase
 from zope.app.testing.functional import FunctionalDocFileSuite
 from zope.app.testing.functional import FunctionalTestCase
+from zope.app.testing.functional import FunctionalTestSetup
 from zope.app.testing.testing import AppTestingLayer
 
 from zope.app.testing.testing import FailingKlass
@@ -399,6 +402,30 @@ class RetryProblemBrowser(BrowserTestCase):
                                 handle_errors=True)
         self.assertNotEqual(response.getStatus(), 599)
         self.assertEqual(response.getStatus(), 500)
+
+
+ftesting_zcml = os.path.join(os.path.split(zope.app.testing.__file__)[0],
+                             'ftesting.zcml')
+
+def doctest_FunctionalTestSetup_clears_global_utilities():
+    """Test that FunctionalTestSetup doesn't leave global utilities.
+
+    Leaving global IDatabase utilities makes a nice juicy memory leak.
+    See https://bugs.launchpad.net/zope3/+bug/251273
+
+        >>> setup = FunctionalTestSetup(ftesting_zcml)
+        >>> setup.setUp()
+        >>> setup.tearDown()
+
+        >>> len(getAllUtilitiesRegisteredFor(IDatabase))
+        0
+
+    Clean up:
+
+        >>> setup.tearDownCompletely()
+
+    """
+
 
 def test_suite():
     checker = RENormalizing([
