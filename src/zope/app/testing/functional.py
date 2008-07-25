@@ -29,6 +29,7 @@ from Cookie import SimpleCookie
 from transaction import abort, commit
 from ZODB.DB import DB
 from ZODB.DemoStorage import DemoStorage
+from ZODB.interfaces import IDatabase
 
 from zope import component
 from zope.publisher.browser import BrowserRequest, setDefaultSkin
@@ -231,12 +232,17 @@ class FunctionalTestSetup(object):
 
     base_storage = property(_get_base_storage, _set_base_storage)
 
+    def _close_databases(self):
+        base = component.getGlobalSiteManager()
+        for name, db in self.db.databases.iteritems():
+            db.close()
+            base.unregisterUtility(db, IDatabase, name)
+
     def setUp(self):
         """Prepares for a functional test case."""
         # Tear down the old demo storages (if any) and create fresh ones
         abort()
-        for db in self.db.databases.itervalues():
-            db.close()
+        self._close_databases()
         self.db = self.app.db = multi_database(
             DerivedDatabaseFactory(name, self._base_storages)
             for name in self._database_names
@@ -249,8 +255,7 @@ class FunctionalTestSetup(object):
         if self.connection:
             self.connection.close()
             self.connection = None
-        for db in self.db.databases.itervalues():
-            db.close()
+        self._close_databases()
         setSite(None)
 
     def tearDownCompletely(self):
