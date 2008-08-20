@@ -495,6 +495,74 @@ def doctest_FunctionalTestSetup_supports_product_config():
     """
 
 
+def doctest_ZCMLLayer_carries_product_configuration():
+    """Show that ``ZCMLLayer`` carries along product configuration.
+
+    ZCML layers can carry be defined to work with specific product
+    configuration; this is useful when application code (early subscribers,
+    including generations) need configuration data.
+
+    Let's define a couple of separate ZCML layers, and show that the
+    configuration data is properly associated with each, and applied at
+    appropriate times.
+
+    We'll need two distinct product configurations:
+
+        >>> product_config_one = '''
+        ... <product-config abc>
+        ...  key1 a1
+        ...  key2 a2
+        ... </product-config>
+        ... '''
+
+        >>> product_config_two = '''
+        ... <product-config abc>
+        ...  key1 b1
+        ...  key2 b2
+        ... </product-config>
+        ... '''
+
+    We can create two distinct layers that use these configurations:
+
+        >>> LayerOne = functional.ZCMLLayer(
+        ...     empty_zcml, 'zope.app.testing.tests', 'LayerOne',
+        ...     product_config=product_config_one)
+
+        >>> LayerTwo = functional.ZCMLLayer(
+        ...     empty_zcml, 'zope.app.testing.tests', 'LayerTwo',
+        ...     product_config=product_config_two)
+
+    For each layer, we can see that the correct product configuration is
+    installed, and subsequent layer usages won't have problems because of the
+    previously installed layer.  This checks that initialization and
+    deconstruction of the functional test setup is handled properly to allow
+    layers to be used in sequence.
+
+    Let's use a helper function to show the configuration:
+
+        >>> import pprint
+
+        >>> def show_config():
+        ...     c = zope.app.appsetup.product.getProductConfiguration('abc')
+        ...     pprint.pprint(c, width=1)
+
+        >>> LayerOne.setUp()
+        >>> show_config()
+        {'key1': 'a1',
+         'key2': 'a2'}
+
+        >>> LayerOne.tearDown()
+
+        >>> LayerTwo.setUp()
+        >>> show_config()
+        {'key1': 'b1',
+         'key2': 'b2'}
+
+        >>> LayerTwo.tearDown()
+
+    """
+
+
 def test_suite():
     checker = RENormalizing([
         (re.compile(r'^HTTP/1.1 (\d{3}) .*?\n'), 'HTTP/1.1 \\1\n')

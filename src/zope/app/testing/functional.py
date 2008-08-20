@@ -328,7 +328,7 @@ def defineLayer(name, zcml='test.zcml', allow_teardown=False):
     """
     globals = sys._getframe(1).f_globals
     globals[name] = ZCMLLayer(
-        os.path.join(os.path.split(globals['__file__'])[0], zcml),
+        os.path.join(os.path.dirname(globals['__file__']), zcml),
         globals['__name__'],
         name,
         allow_teardown=allow_teardown,
