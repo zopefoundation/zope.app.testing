@@ -50,8 +50,8 @@ BODY = """\
 This is the response body.
 """
 
-directory = os.path.join(os.path.split(zope.app.testing.__file__)[0],
-                         'recorded')
+here = os.path.dirname(zope.app.testing.__file__)
+directory = os.path.join(here, 'recorded')
 
 expected = r'''
 
@@ -404,8 +404,7 @@ class RetryProblemBrowser(BrowserTestCase):
         self.assertEqual(response.getStatus(), 500)
 
 
-ftesting_zcml = os.path.join(os.path.split(zope.app.testing.__file__)[0],
-                             'ftesting.zcml')
+ftesting_zcml = os.path.join(here, 'ftesting.zcml')
 
 def doctest_FunctionalTestSetup_clears_global_utilities():
     """Test that FunctionalTestSetup doesn't leave global utilities.
@@ -423,6 +422,75 @@ def doctest_FunctionalTestSetup_clears_global_utilities():
     Clean up:
 
         >>> setup.tearDownCompletely()
+
+    """
+
+
+empty_zcml = os.path.join(here, 'empty.zcml')
+
+def doctest_FunctionalTestSetup_supports_product_config():
+    """Test that FunctionalTestSetup configures products.
+
+    We want to apply the following product configuration before opening
+    databases:
+
+        >>> product_config = '''
+        ... <product-config abc>
+        ...  key1 value1
+        ...  key2 value2
+        ... </product-config>
+        ... '''
+
+    Since we expect the product configuration to be available when the layer
+    is initialized, we'll register a subscriber for the IDatabaseOpenedEvent
+    event, The normal CA-provided handling of the event is of no use to use,
+    since the functional layer controls the configuration of that, but a
+    low-level zoe.event subscriber will do the job:
+
+        >>> import zope.event
+
+        >>> def handle_database_open(event):
+        ...     global config
+        ...     IDbOE = zope.app.appsetup.interfaces.IDatabaseOpenedEvent
+        ...     if IDbOE.providedBy(event):
+        ...         config = zope.app.appsetup.product.getProductConfiguration(
+        ...             'abc')
+
+        >>> zope.event.subscribers.append(handle_database_open)
+
+    The product configuration is passed to the layer setup and installed by
+    the setUp method:
+
+        >>> import pprint
+        >>> import zope.app.appsetup.product
+
+        >>> setup = FunctionalTestSetup(
+        ...     empty_zcml, product_config=product_config)
+
+        >>> setup.setUp()
+
+    The configuration was visible to our database-opened subscriber:
+
+        >>> pprint.pprint(config, width=1)
+        {'key1': 'value1',
+         'key2': 'value2'}
+
+        >>> config = zope.app.appsetup.product.getProductConfiguration(
+        ...     'abc')
+        >>> pprint.pprint(config, width=1)
+        {'key1': 'value1',
+         'key2': 'value2'}
+
+        >>> setup.tearDown()
+
+    After the layer is cleaned up, there's no longer any product
+    configuration:
+
+        >>> zope.event.subscribers.remove(handle_database_open)
+        >>> setup.tearDownCompletely()
+
+        >>> zope.app.appsetup.product.saveConfiguration()
+        {}
 
     """
 

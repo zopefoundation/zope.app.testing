@@ -163,7 +163,8 @@ class FunctionalTestSetup(object):
 
     __shared_state = { '_init': False }
 
-    def __init__(self, config_file=None, database_names=None):
+    def __init__(self, config_file=None, database_names=None,
+                 product_config=None):
         """Initializes Zope 3 framework.
 
         Creates a volatile memory storage.  Parses Zope3 configuration files.
@@ -187,6 +188,15 @@ class FunctionalTestSetup(object):
             # Make it silent but keep the log available for debugging
             logging.root.addHandler(logging.StreamHandler(self.log))
 
+            product_configs = []
+            if product_config:
+                configs = zope.app.appsetup.product.loadConfiguration(
+                    StringIO(product_config))
+                zope.app.appsetup.product.setProductConfigurations([
+                    zope.app.appsetup.product.FauxConfiguration(name, values)
+                    for name, values in configs.items()
+                    ])
+
             self._base_storages = {}
             self.db = multi_database(
                 BaseDatabaseFactory(name, self._base_storages)
@@ -196,6 +206,7 @@ class FunctionalTestSetup(object):
 
             self.connection = None
             self._config_file = config_file
+            self._product_config = product_config
             self._database_names = database_names
             self._init = True
 
@@ -211,6 +222,10 @@ class FunctionalTestSetup(object):
             # supported at the moment
             raise NotImplementedError('Already configured'
                                       ' with a different config file')
+
+        elif product_config and product_config != self._product_config:
+            raise NotImplementedError('Already configured'
+                                      ' with different product configuration')
 
         elif database_names and database_names != self._database_names:
             # Running different tests with different configurations is not
@@ -262,6 +277,7 @@ class FunctionalTestSetup(object):
         """Cleans up the setup done by the constructor."""
         zope.app.testing.setup.placefulTearDown()
         self._config_file = False
+        self._product_config = None
         self._database_names = None
         self._init = False
 
@@ -283,14 +299,17 @@ class ZCMLLayer:
 
     __bases__ = ()
 
-    def __init__(self, config_file, module, name, allow_teardown=False):
+    def __init__(self, config_file, module, name, allow_teardown=False,
+                 product_config=None):
         self.config_file = config_file
         self.__module__ = module
         self.__name__ = name
         self.allow_teardown = allow_teardown
+        self.product_config = product_config
 
     def setUp(self):
-        self.setup = FunctionalTestSetup(self.config_file)
+        self.setup = FunctionalTestSetup(
+            self.config_file, product_config=self.product_config)
 
     def tearDown(self):
         self.setup.tearDownCompletely()
