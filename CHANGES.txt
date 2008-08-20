@@ -2,6 +2,12 @@
 CHANGES
 =======
 
+3.5.0 (2008-08-20)
+------------------
+
+- Add support for product-configuration as part of functional layers; this
+  more closely mirrors the configuration order for normal operation.
+
 3.4.3 (2008-07-25)
 ------------------
 
