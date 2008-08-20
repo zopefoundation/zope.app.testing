@@ -526,11 +526,13 @@ def doctest_ZCMLLayer_carries_product_configuration():
 
         >>> LayerOne = functional.ZCMLLayer(
         ...     empty_zcml, 'zope.app.testing.tests', 'LayerOne',
-        ...     product_config=product_config_one)
+        ...     product_config=product_config_one,
+        ...     allow_teardown=True)
 
         >>> LayerTwo = functional.ZCMLLayer(
         ...     empty_zcml, 'zope.app.testing.tests', 'LayerTwo',
-        ...     product_config=product_config_two)
+        ...     product_config=product_config_two,
+        ...     allow_teardown=True)
 
     For each layer, we can see that the correct product configuration is
     installed, and subsequent layer usages won't have problems because of the
