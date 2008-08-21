@@ -234,31 +234,38 @@ class FunctionalTestSetup(object):
     base_storage = property(_get_base_storage, _set_base_storage)
 
     def _close_databases(self):
+        # This is really careful to unregister the databases before attempting
+        # to close anything.  Zope Corporation has a couple of large
+        # multi-database applications that get bitten if we're not careful
+        # like this, but we've not been able to write a concise test case yet.
         base = component.getGlobalSiteManager()
-        for name, db in component.getUtilitiesFor(IDatabase):
+        dbs = []
+        for name, db in list(component.getUtilitiesFor(IDatabase)):
             ok = base.unregisterUtility(db, IDatabase, name)
             assert ok
+            dbs.append(db)
+        if self.connection:
+            self.connection.close()
+            self.connection = None
+        for db in dbs:
             db.close()
 
     def setUp(self):
         """Prepares for a functional test case."""
         # Tear down the old demo storages (if any) and create fresh ones
         abort()
-        self.dbstack.append(self.db)
+        self.dbstack.append((self.db, self.connection))
+        self.connection = None
         self.db = self.app.db = multi_database(
             DerivedDatabaseFactory(name, self._base_storages)
             for name in self._database_names
             )[0][0]
-        self.connection = None
 
     def tearDown(self):
         """Cleans up after a functional test case."""
         abort()
-        if self.connection:
-            self.connection.close()
-            self.connection = None
         self._close_databases()
-        self.db = self.dbstack.pop()
+        self.db, self.connection = self.dbstack.pop()
         setSite(None)
 
     def tearDownCompletely(self):
