@@ -1,0 +1,46 @@
+=======
+CHANGES
+=======
+
+3.5.2 (2008-08-21)
+------------------
+
+- Added missing dependency information in setup.py.
+
+- Added missing import.
+
+- Repair memory leak fix released in 3.4.3 to be more sane in the presence of
+  generations.
+
+3.5.1 (2008-08-20)
+------------------
+
+- Correct Fred's "I'm a doofus" release.
+
+3.5.0 (2008-08-20)
+------------------
+
+- Add support for product-configuration as part of functional layers; this
+  more closely mirrors the configuration order for normal operation.
+
+3.4.3 (2008-07-25)
+------------------
+
+- Fix memory leak in all functional tests.
+  see: https://bugs.launchpad.net/zope3/+bug/251273
+
+3.4.2 (2008-02-02)
+------------------
+
+- Fix of 599 error on conflict error in request
+  see: http://mail.zope.org/pipermail/zope-dev/2008-January/030844.html
+
+3.4.1 (2007-10-31)
+------------------
+
+- Fixed deprecation warning for ``ZopeSecurityPolicy``.
+
+3.4.0 (2007-10-27)
+------------------
+
+- Initial release independent of the main Zope tree.
