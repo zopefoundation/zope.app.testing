@@ -192,6 +192,7 @@ class FunctionalTestSetup(object):
                 BaseDatabaseFactory(name, self._base_storages)
                 for name in database_names
                 )[0][0]
+            self.dbstack = []
             self.app = Debugger(self.db, config_file)
 
             self.connection = None
@@ -234,15 +235,16 @@ class FunctionalTestSetup(object):
 
     def _close_databases(self):
         base = component.getGlobalSiteManager()
-        for name, db in self.db.databases.iteritems():
+        for name, db in component.getUtilitiesFor(IDatabase):
+            ok = base.unregisterUtility(db, IDatabase, name)
+            assert ok
             db.close()
-            base.unregisterUtility(db, IDatabase, name)
 
     def setUp(self):
         """Prepares for a functional test case."""
         # Tear down the old demo storages (if any) and create fresh ones
         abort()
-        self._close_databases()
+        self.dbstack.append(self.db)
         self.db = self.app.db = multi_database(
             DerivedDatabaseFactory(name, self._base_storages)
             for name in self._database_names
@@ -256,10 +258,13 @@ class FunctionalTestSetup(object):
             self.connection.close()
             self.connection = None
         self._close_databases()
+        self.db = self.dbstack.pop()
         setSite(None)
 
     def tearDownCompletely(self):
         """Cleans up the setup done by the constructor."""
+        self._close_databases()
+        assert self.dbstack == []
         zope.app.testing.setup.placefulTearDown()
         self._config_file = False
         self._database_names = None

@@ -2,6 +2,12 @@
 CHANGES
 =======
 
+3.4.4 (2008-08-21)
+------------------
+
+- Repair memory leak fix released in 3.4.3 to be more sane in the presence of
+  generations.
+
 3.4.3 (2008-07-25)
 ------------------
 

@@ -414,15 +414,37 @@ def doctest_FunctionalTestSetup_clears_global_utilities():
     See https://bugs.launchpad.net/zope3/+bug/251273
 
         >>> setup = FunctionalTestSetup(ftesting_zcml)
+
+    At this point, there are registrations for the base databases created by
+    the initialization:
+
+        >>> base, = getAllUtilitiesRegisteredFor(IDatabase)
+
+    Setting up for a test causes overriding registrations to be made:
+
         >>> setup.setUp()
+        >>> dbs = list(getAllUtilitiesRegisteredFor(IDatabase))
+        >>> len(dbs)
+        2
+        >>> base in dbs
+        True
+        >>> dbs.remove(base)
+        >>> override, = dbs
+
+    Tearing down the test context causes the overriding database to be
+    removed:
+
         >>> setup.tearDown()
+        >>> list(getAllUtilitiesRegisteredFor(IDatabase)) == [base]
+        True
 
-        >>> len(getAllUtilitiesRegisteredFor(IDatabase))
-        0
-
-    Clean up:
+    Tearing down the fixture causes the base database registration to be
+    removed:
 
         >>> setup.tearDownCompletely()
+
+        >>> list(getAllUtilitiesRegisteredFor(IDatabase))
+        []
 
     """
 
