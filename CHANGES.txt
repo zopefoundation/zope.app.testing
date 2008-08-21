@@ -2,7 +2,7 @@
 CHANGES
 =======
 
-3.4.4 (2008-08-21)
+3.4.4 (unreleased)
 ------------------
 
 - Repair memory leak fix released in 3.4.3 to be more sane in the presence of
