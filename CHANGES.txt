@@ -6,7 +6,11 @@ CHANGES
 ------------------
 
 - Added missing dependency information in setup.py.
+
 - Added missing import.
+
+- Repair memory leak fix released in 3.4.3 to be more sane in the presence of
+  generations.
 
 3.5.1 (2008-08-20)
 ------------------
