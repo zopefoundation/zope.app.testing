@@ -38,6 +38,7 @@ from zope.publisher.publish import publish
 from zope.security.interfaces import Forbidden, Unauthorized
 from zope.testing import doctest
 
+import zope.app.appsetup.product
 import zope.app.testing.setup
 from zope.app.appsetup.appsetup import multi_database
 from zope.app.debug import Debugger

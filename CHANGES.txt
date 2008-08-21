@@ -2,6 +2,12 @@
 CHANGES
 =======
 
+3.5.2 (unreleased)
+------------------
+
+- Added missing dependency information in setup.py.
+- Added missing import.
+
 3.5.1 (2008-08-20)
 ------------------
 
