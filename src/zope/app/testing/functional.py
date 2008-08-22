@@ -17,6 +17,7 @@ There should be a file 'ftesting.zcml' in the current directory.
 
 $Id$
 """
+import copy
 import logging
 import os.path
 import re
@@ -189,14 +190,18 @@ class FunctionalTestSetup(object):
             # Make it silent but keep the log available for debugging
             logging.root.addHandler(logging.StreamHandler(self.log))
 
-            product_configs = []
+            self.old_product_config = copy.deepcopy(
+                zope.app.appsetup.product.saveConfiguration())
+            configs = []
             if product_config:
                 configs = zope.app.appsetup.product.loadConfiguration(
                     StringIO(product_config))
-                zope.app.appsetup.product.setProductConfigurations([
+                configs = [
                     zope.app.appsetup.product.FauxConfiguration(name, values)
                     for name, values in configs.items()
-                    ])
+                    ]
+            self.local_product_config = configs
+            zope.app.appsetup.product.setProductConfigurations(configs)
 
             self._base_storages = {}
             self.db = multi_database(
@@ -272,6 +277,8 @@ class FunctionalTestSetup(object):
         abort()
         self.dbstack.append((self.db, self.connection))
         self.connection = None
+        zope.app.appsetup.product.setProductConfigurations(
+            self.local_product_config)
         self.db = self.app.db = multi_database(
             DerivedDatabaseFactory(name, self._base_storages)
             for name in self._database_names
@@ -289,6 +296,8 @@ class FunctionalTestSetup(object):
         self._close_databases()
         assert self.dbstack == []
         zope.app.testing.setup.placefulTearDown()
+        zope.app.appsetup.product.restoreConfiguration(
+            self.old_product_config)
         self._config_file = False
         self._product_config = None
         self._database_names = None

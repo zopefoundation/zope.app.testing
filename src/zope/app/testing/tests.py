@@ -489,8 +489,6 @@ def doctest_FunctionalTestSetup_supports_product_config():
         >>> setup = FunctionalTestSetup(
         ...     empty_zcml, product_config=product_config)
 
-        >>> setup.setUp()
-
     The configuration was visible to our database-opened subscriber:
 
         >>> pprint.pprint(config, width=1)
@@ -503,6 +501,23 @@ def doctest_FunctionalTestSetup_supports_product_config():
         {'key1': 'value1',
          'key2': 'value2'}
 
+    Let's run a test that mutates the product configuration:
+
+        >>> setup.setUp()
+        >>> zope.app.appsetup.product.setProductConfiguration(
+        ...     'abc', {'another': 'value'})
+        >>> zope.app.appsetup.product.getProductConfiguration('abc')
+        {'another': 'value'}
+        >>> setup.tearDown()
+
+    A second test run in the layer sees the original product configuration:
+
+        >>> setup.setUp()
+        >>> config = zope.app.appsetup.product.getProductConfiguration(
+        ...     'abc')
+        >>> pprint.pprint(config, width=1)
+        {'key1': 'value1',
+         'key2': 'value2'}
         >>> setup.tearDown()
 
     After the layer is cleaned up, there's no longer any product
