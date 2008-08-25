@@ -2,6 +2,11 @@
 CHANGES
 =======
 
+3.5.4 (unreleased)
+------------------
+
+- Clean up some transaction management in the functional test setup.
+
 3.5.3 (2008-08-22)
 ------------------
 

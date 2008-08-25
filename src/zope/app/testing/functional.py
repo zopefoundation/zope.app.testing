@@ -208,6 +208,9 @@ class FunctionalTestSetup(object):
                 BaseDatabaseFactory(name, self._base_storages)
                 for name in database_names
                 )[0][0]
+            # This handles anything added by generations or other bootstrap
+            # subscribers.
+            commit()
             self.dbstack = []
             self.app = Debugger(self.db, config_file)
 
@@ -265,6 +268,7 @@ class FunctionalTestSetup(object):
             ok = base.unregisterUtility(db, IDatabase, name)
             assert ok
             dbs.append(db)
+        abort()
         if self.connection:
             self.connection.close()
             self.connection = None
@@ -286,7 +290,6 @@ class FunctionalTestSetup(object):
 
     def tearDown(self):
         """Cleans up after a functional test case."""
-        abort()
         self._close_databases()
         self.db, self.connection = self.dbstack.pop()
         setSite(None)
