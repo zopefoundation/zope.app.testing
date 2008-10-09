@@ -612,7 +612,7 @@ def test_suite():
     RetryProblemFunctional.layer = AppTestingLayer
     RetryProblemBrowser.layer = AppTestingLayer
 
-    doc_test = FunctionalDocFileSuite('doctest.txt', checker=checker)
+    doc_test = FunctionalDocFileSuite('doctest.txt', 'doctest2.txt', checker=checker)
     doc_test.layer = AppTestingLayer
 
     return unittest.TestSuite((
