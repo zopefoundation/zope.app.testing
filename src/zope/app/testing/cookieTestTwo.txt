@@ -16,33 +16,33 @@ global declarations.
   >>> from zope.app.testing.tests import DummyCookiesResponse
 
   >>> response = DummyCookiesResponse(dict(
-  ...     cobalt=dict(value='ocean_fromCookieTestTwo', path='/foo', comment='rest is ignored'),
-  ...     crimson=dict(value='campfire_fromCookieTestTwo')))
+  ...     cobalt=dict(value='fromCookieTestTwo', path='/foo', comment='rest is ignored'),
+  ...     crimson=dict(value='fromCookieTestTwo')))
 
   >>> http.saveCookies(response)
   >>> len(http.cookies)
   2
         
   >>> http.cookies['cobalt'].OutputString()
-  'cobalt=ocean_fromCookieTestTwo; Path=/foo;'
+  'cobalt=fromCookieTestTwo; Path=/foo;'
 
   >>> http.cookies
-  <SimpleCookie: cobalt='ocean_fromCookieTestTwo' crimson='campfire_fromCookieTestTwo'>
+  <SimpleCookie: cobalt='fromCookieTestTwo' crimson='fromCookieTestTwo'>
 
-  >>> http.cookies['cobalt'] = 'ocean_fromCookieTestTwo'
+  >>> http.cookies['cobalt'] = 'fromCookieTestTwo'
   >>> http.cookies['cobalt']['path'] = '/foo'
-  >>> http.cookies['amber'] = 'coast_fromCookieTestTwo'
+  >>> http.cookies['amber'] = 'fromCookieTestTwo'
   >>> http.cookies['amber']['path'] = '/foo/baz'
-  >>> http.cookies['crimson'] = 'campfire_fromCookieTestTwo'
+  >>> http.cookies['crimson'] = 'fromCookieTestTwo'
 
   >>> cookieHeader = http.httpCookie('/foo/bar')
   >>> parts = cookieHeader.split('; ')
   >>> parts.sort()
   >>> parts
-  ['cobalt=ocean_fromCookieTestTwo', 'crimson=campfire_fromCookieTestTwo']
+  ['cobalt=fromCookieTestTwo', 'crimson=fromCookieTestTwo']
 
   >>> cookieHeader = http.httpCookie('/foo/baz')
   >>> parts = cookieHeader.split('; ')
   >>> parts.sort()
   >>> parts
-  ['amber=coast_fromCookieTestTwo', 'cobalt=ocean_fromCookieTestTwo', 'crimson=campfire_fromCookieTestTwo']
+  ['amber=fromCookieTestTwo', 'cobalt=fromCookieTestTwo', 'crimson=fromCookieTestTwo']

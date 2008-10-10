@@ -17,13 +17,12 @@ Now we will run tests to ensure that cookies are not saved across doctests.
   >>> from zope.app.testing import functional
   >>> from zope.app.testing.tests import DummyCookiesResponse
 
-
 We will create some cookie values and saved them in our 'http' value, which
 is a CookieHandler() object.
 
   >>> response = DummyCookiesResponse(dict(
-  ...     green=dict(value='grass_fromCookieTestOne', path='/foo', comment='rest is ignored'),
-  ...     red=dict(value='keychain_fromCookieTestOne')))
+  ...     proton=dict(value='fromCookieTestOne', path='/foo', comment='rest is ignored'),
+  ...     neutron=dict(value='fromCookieTestOne')))
 
 If 'http' is created as a global variable, then every doctest in this
 suite will be saving cookies in it, and one doctest may see cookies for
@@ -34,26 +33,26 @@ created.
   >>> len(http.cookies)
   2
 
-  >>> http.cookies['green'].OutputString()
-  'green=grass_fromCookieTestOne; Path=/foo;'
+  >>> http.cookies['proton'].OutputString()
+  'proton=fromCookieTestOne; Path=/foo;'
 
   >>> http.cookies
-  <SimpleCookie: green='grass_fromCookieTestOne' red='keychain_fromCookieTestOne'>
+  <SimpleCookie: neutron='fromCookieTestOne' proton='fromCookieTestOne'>
 
-  >>> http.cookies['green'] = 'grass_fromCookieTestOne'
-  >>> http.cookies['green']['path'] = '/foo'
-  >>> http.cookies['blue'] = 'cottage_fromCookieTestOne'
-  >>> http.cookies['blue']['path'] = '/foo/baz'
-  >>> http.cookies['red'] = 'keychain_fromCookieTestOne'
+  >>> http.cookies['proton'] = 'fromCookieTestOne'
+  >>> http.cookies['proton']['path'] = '/foo'
+  >>> http.cookies['electron'] = 'fromCookieTestOne'
+  >>> http.cookies['electron']['path'] = '/foo/baz'
+  >>> http.cookies['neutron'] = 'fromCookieTestOne'
 
   >>> cookieHeader = http.httpCookie('/foo/bar')
   >>> parts = cookieHeader.split('; ')
   >>> parts.sort()
   >>> parts
-  ['green=grass_fromCookieTestOne', 'red=keychain_fromCookieTestOne']
+  ['neutron=fromCookieTestOne', 'proton=fromCookieTestOne']
 
   >>> cookieHeader = http.httpCookie('/foo/baz')
   >>> parts = cookieHeader.split('; ')
   >>> parts.sort()
   >>> parts
-  ['blue=cottage_fromCookieTestOne', 'green=grass_fromCookieTestOne', 'red=keychain_fromCookieTestOne']
+  ['electron=fromCookieTestOne', 'neutron=fromCookieTestOne', 'proton=fromCookieTestOne']
