@@ -143,3 +143,49 @@ Now we can see that the new folder was added:
 
   >>> list(root.keys())
   [u'f1']
+
+Now we will run tests to ensure that cookies are not saved across doctests.
+
+  >>> from zope.app.testing import functional
+  >>> from zope.app.testing.tests import DummyCookiesResponse
+
+
+We will create some cookie values and saved them in our 'http' value, which
+is a CookieHandler() object.
+
+  >>> response = DummyCookiesResponse(dict(
+  ...     green=dict(value='grass', path='/foo', comment='rest is ignored'),
+  ...     red=dict(value='keychain')))
+
+If 'http' is created as a global variable, then every doctest in this
+suite will be saving cookies in it, and one doctest may see cookies for
+another doctest. We only want two cookies in 'http' - the ones we just
+created.
+
+  >>> http.saveCookies(response)
+  >>> len(http.cookies)
+  2
+
+  >>> http.cookies['green'].OutputString()
+  'green=grass; Path=/foo;'
+
+  >>> http.cookies
+  <SimpleCookie: green='grass' red='keychain'>
+
+  >>> http.cookies['green'] = 'grass'
+  >>> http.cookies['green']['path'] = '/foo'
+  >>> http.cookies['blue'] = 'cottage'
+  >>> http.cookies['blue']['path'] = '/foo/baz'
+  >>> http.cookies['red'] = 'keychain'
+
+  >>> cookieHeader = http.httpCookie('/foo/bar')
+  >>> parts = cookieHeader.split('; ')
+  >>> parts.sort()
+  >>> parts
+  ['green=grass', 'red=keychain']
+
+  >>> cookieHeader = http.httpCookie('/foo/baz')
+  >>> parts = cookieHeader.split('; ')
+  >>> parts.sort()
+  >>> parts
+  ['blue=cottage', 'green=grass', 'red=keychain']
