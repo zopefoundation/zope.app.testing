@@ -143,4 +143,3 @@ Now we can see that the new folder was added:
 
   >>> list(root.keys())
   [u'f1']
-
