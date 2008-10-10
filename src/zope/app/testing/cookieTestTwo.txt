@@ -5,7 +5,7 @@ DocTest Functional Tests
 This file documents and tests doctest-based functional tests and basic
 Zope web-application functionality.
 
-This second DocTest, zope/app/testing/doctest2.txt, has specifically
+This second DocTest, zope/app/testing/cookieTestTwo.txt, has specifically
 been created in order to make sure cookie information is not being saved
 across a test suite. If we are saving these via a global 'http' instance,
 we will see more results than those listed below. 'http' is instead
@@ -16,33 +16,33 @@ global declarations.
   >>> from zope.app.testing.tests import DummyCookiesResponse
 
   >>> response = DummyCookiesResponse(dict(
-  ...     cobalt=dict(value='ocean', path='/foo', comment='rest is ignored'),
-  ...     crimson=dict(value='campfire')))
+  ...     cobalt=dict(value='ocean_fromCookieTestTwo', path='/foo', comment='rest is ignored'),
+  ...     crimson=dict(value='campfire_fromCookieTestTwo')))
 
   >>> http.saveCookies(response)
   >>> len(http.cookies)
   2
         
   >>> http.cookies['cobalt'].OutputString()
-  'cobalt=ocean; Path=/foo;'
+  'cobalt=ocean_fromCookieTestTwo; Path=/foo;'
 
   >>> http.cookies
-  <SimpleCookie: cobalt='ocean' crimson='campfire'>
+  <SimpleCookie: cobalt='ocean_fromCookieTestTwo' crimson='campfire_fromCookieTestTwo'>
 
-  >>> http.cookies['cobalt'] = 'ocean'
+  >>> http.cookies['cobalt'] = 'ocean_fromCookieTestTwo'
   >>> http.cookies['cobalt']['path'] = '/foo'
-  >>> http.cookies['amber'] = 'coast'
+  >>> http.cookies['amber'] = 'coast_fromCookieTestTwo'
   >>> http.cookies['amber']['path'] = '/foo/baz'
-  >>> http.cookies['crimson'] = 'campfire'
+  >>> http.cookies['crimson'] = 'campfire_fromCookieTestTwo'
 
   >>> cookieHeader = http.httpCookie('/foo/bar')
   >>> parts = cookieHeader.split('; ')
   >>> parts.sort()
   >>> parts
-  ['cobalt=ocean', 'crimson=campfire']
+  ['cobalt=ocean_fromCookieTestTwo', 'crimson=campfire_fromCookieTestTwo']
 
   >>> cookieHeader = http.httpCookie('/foo/baz')
   >>> parts = cookieHeader.split('; ')
   >>> parts.sort()
   >>> parts
-  ['amber=coast', 'cobalt=ocean', 'crimson=campfire']
+  ['amber=coast_fromCookieTestTwo', 'cobalt=ocean_fromCookieTestTwo', 'crimson=campfire_fromCookieTestTwo']

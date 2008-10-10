@@ -781,7 +781,6 @@ def FunctionalDocTestSuite(*paths, **kw):
 def _prepare_doctest_keywords(kw):
     globs = kw.setdefault('globs', {})
     globs['getRootFolder'] = getRootFolder
-    # globs['http'] = HTTPCaller()
     globs['sync'] = sync
 
     kwsetUp = kw.get('setUp')
