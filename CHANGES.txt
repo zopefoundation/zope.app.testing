@@ -2,6 +2,13 @@
 CHANGES
 =======
 
+3.5.5 (2008-10-10)
+------------------
+
+- Re-configured functional test setup to create test-specific instances
+  of HTTPCaller to ensure that cookies are not shared by doctests
+  in a test suite.
+
 3.5.4 (2008-08-25)
 ------------------
 
