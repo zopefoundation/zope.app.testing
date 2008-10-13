@@ -62,13 +62,15 @@ def setDefaultViewName(for_, name, layer=IDefaultBrowserLayer,
     gsm.registerAdapter(name, (for_, layer), IDefaultViewName, '')
 
 stypes = list, tuple
-def provideAdapter(required, provided, factory, name='', with=()):
+def provideAdapter(required, provided, factory, name='', with_=(), **kw):
+    if with_ is None and kw.has_key('with'):
+        with_ = kw['with']
     if isinstance(factory, (list, tuple)):
         raise ValueError("Factory cannot be a list or tuple")
     gsm = zope.component.getGlobalSiteManager()
 
-    if with:
-        required = (required, ) + tuple(with)
+    if with_:
+        required = (required, ) + tuple(with_)
     elif not isinstance(required, stypes):
         required = (required,)
 
