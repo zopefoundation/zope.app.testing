@@ -5,7 +5,8 @@ CHANGES
 3.5.7 (Unreleased)
 ------------------
 
-- ...
+- Fix AttributeError in zope.app.testing.setup.setUpTestAsModule (when
+  called without name argument.
 
 3.5.6 (2008-10-13)
 ------------------
