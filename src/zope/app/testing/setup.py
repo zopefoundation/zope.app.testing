@@ -43,8 +43,8 @@ def setUpDependable():
 #------------------------------------------------------------------------
 # Traversal
 from zope.traversing.interfaces import ITraversable
-from zope.app.container.interfaces import ISimpleReadContainer
-from zope.app.container.traversal import ContainerTraversable
+from zope.container.interfaces import ISimpleReadContainer
+from zope.container.traversal import ContainerTraversable
 def setUpTraversal():
     from zope.traversing.testing import setUp
     setUp()

@@ -23,7 +23,7 @@ from zope.traversing.browser.interfaces import IAbsoluteURL
 from zope.traversing.browser.absoluteurl import AbsoluteURL
 
 from zope.app.testing import ztapi
-from zope.app.container.tests.placelesssetup \
+from zope.container.testing \
     import PlacelessSetup as ContainerPlacelessSetup
 from zope.app.authentication.placelesssetup \
     import PlacelessSetup as AuthenticationPlacelessSetup
