@@ -2,7 +2,7 @@
 CHANGES
 =======
 
-3.5.7 (Unreleased)
+3.6.0 (Unreleased)
 ------------------
 
 - Fix AttributeError in zope.app.testing.setup.setUpTestAsModule (when
