@@ -5,10 +5,13 @@ CHANGES
 3.6.0 (Unreleased)
 ------------------
 
-- Fix AttributeError in zope.app.testing.setup.setUpTestAsModule (when
-  called without name argument.
-- Use zope.container instead of zope.app.container.
-- Make tests work with location of Folder in zope.site.
+- Fix AttributeError in ``zope.app.testing.setup.setUpTestAsModule``
+  (when called without name argument.
+
+- Use ``zope.container`` instead of ``zope.app.container``.
+
+- Use ``zope.site`` instead of ``zope.app.folder`` and
+  ``zope.app.component`` for some parts.
 
 3.5.6 (2008-10-13)
 ------------------

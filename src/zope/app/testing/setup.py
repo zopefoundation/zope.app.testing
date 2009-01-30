@@ -53,7 +53,7 @@ def setUpTraversal():
 
 #------------------------------------------------------------------------
 # ISiteManager lookup
-from zope.app.component.site import SiteManagerAdapter
+from zope.site.site import SiteManagerAdapter
 from zope.component.interfaces import IComponentLookup
 from zope.interface import Interface
 def setUpSiteManagerLookup():
@@ -62,12 +62,12 @@ def setUpSiteManagerLookup():
 
 #------------------------------------------------------------------------
 # Placeful setup
-import zope.app.component.hooks
+import zope.site.hooks
 from zope.app.testing.placelesssetup import setUp as placelessSetUp
 from zope.app.testing.placelesssetup import tearDown as placelessTearDown
 def placefulSetUp(site=False):
     placelessSetUp()
-    zope.app.component.hooks.setHooks()
+    zope.site.hooks.setHooks()
     setUpAnnotations()
     setUpDependable()
     setUpTraversal()
@@ -78,15 +78,15 @@ def placefulSetUp(site=False):
         createSiteManager(site, setsite=True)
         return site
 
-from zope.app.component.hooks import setSite
+from zope.site.hooks import setSite
 def placefulTearDown():
     placelessTearDown()
-    zope.app.component.hooks.resetHooks()
+    zope.site.hooks.resetHooks()
     setSite()
 
 #------------------------------------------------------------------------
 # Sample Folder Creation
-from zope.app.folder import Folder, rootFolder
+from zope.site.folder import Folder, rootFolder
 def buildSampleFolderTree():
     # set up a reasonably complex folder structure
     #
@@ -129,8 +129,8 @@ def buildSampleFolderTree():
 
 #------------------------------------------------------------------------
 # Sample Folder Creation
-from zope.app.component.site import LocalSiteManager
-from zope.app.component.interfaces import ISite
+from zope.site.site import LocalSiteManager
+from zope.location.interfaces import ISite
 def createSiteManager(folder, setsite=False):
     if not ISite.providedBy(folder):
         folder.setSiteManager(LocalSiteManager(folder))
