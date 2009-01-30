@@ -118,7 +118,7 @@ You can use the `getRootFolder()` function:
 
   >>> root = getRootFolder()
   >>> root
-  <zope.app.folder.folder.Folder object at ...>
+  <zope.site.folder.Folder object at ...>
 
 You can intermix HTTP requests with regular Python calls.  Note,
 however, that making an `http()` call implied a transaction commit.
@@ -131,7 +131,8 @@ transaction before the HTTP request.
   ... Content-Length: 73
   ... Content-Type: application/x-www-form-urlencoded
   ...
-  ... type_name=BrowserAdd__zope.app.folder.folder.Folder&new_value=f1""")
+  ... type_name=BrowserAdd__zope.site.folder.Folder&new_value=f1""",
+  ... handle_errors=False)
   HTTP/1.1 303 See Other
   Content-Length: ...
   Content-Type: text/html;charset=utf-8

@@ -8,6 +8,7 @@ CHANGES
 - Fix AttributeError in zope.app.testing.setup.setUpTestAsModule (when
   called without name argument.
 - Use zope.container instead of zope.app.container.
+- Make tests work with location of Folder in zope.site.
 
 3.5.6 (2008-10-13)
 ------------------
