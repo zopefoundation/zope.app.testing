@@ -2,11 +2,11 @@
 CHANGES
 =======
 
-3.6.0 (Unreleased)
+3.6.0 (2009-02-01)
 ------------------
 
 - Fix AttributeError in ``zope.app.testing.setup.setUpTestAsModule``
-  (when called without name argument.
+  (when called without name argument).
 
 - Use ``zope.container`` instead of ``zope.app.container``.
 
