@@ -5,7 +5,8 @@ CHANGES
 3.6.1 (unreleased)
 ------------------
 
-- ...
+- Adapt to the move of IDefaultViewName from zope.component.interfaces
+  to zope.publisher.interfaces.
 
 3.6.0 (2009-02-01)
 ------------------

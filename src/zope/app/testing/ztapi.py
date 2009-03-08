@@ -17,8 +17,8 @@ $Id$
 """
 import zope.interface
 import zope.component
-from zope.component.interfaces import IDefaultViewName
 from zope.publisher.browser import IBrowserRequest
+from zope.publisher.interfaces import IDefaultViewName
 from zope.publisher.interfaces.browser import IDefaultBrowserLayer
 from zope.traversing.interfaces import ITraversable
 
