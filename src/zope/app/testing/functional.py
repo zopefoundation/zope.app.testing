@@ -33,9 +33,11 @@ from ZODB.DemoStorage import DemoStorage
 from ZODB.interfaces import IDatabase
 
 from zope import component
-from zope.publisher.browser import BrowserRequest, setDefaultSkin
+from zope.publisher.interfaces import ISkinnable
+from zope.publisher.browser import BrowserRequest
 from zope.publisher.http import HTTPRequest
 from zope.publisher.publish import publish
+from zope.publisher.skinnable import setDefaultSkin
 from zope.security.interfaces import Forbidden, Unauthorized
 from zope.testing import doctest
 
@@ -47,7 +49,6 @@ from zope.app.publication.http import HTTPPublication
 from zope.app.publication.zopepublication import ZopePublication
 from zope.app.publication.http import HTTPPublication
 from zope.app.publication.httpfactory import chooseClasses
-from zope.publisher.interfaces.browser import IBrowserRequest
 from zope.site.hooks import setSite, getSite
 
 class ResponseWrapper(object):
@@ -730,8 +731,8 @@ class HTTPCaller(CookieHandler):
             path, instream,
             environment=environment,
             request=request_cls, publication=publication_cls)
-        if IBrowserRequest.providedBy(request):
-            # only browser requests have skins
+        if ISkinnable.providedBy(request):
+            # only ISkinnable requests have skins
             setDefaultSkin(request)
 
         if form is not None:

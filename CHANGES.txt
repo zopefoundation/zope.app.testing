@@ -5,6 +5,10 @@ CHANGES
 3.6.1 (unreleased)
 ------------------
 
+- Use ISkinnable.providedBy(request) instead of IBrowserRequest as condition
+  for calling setDefaultSkin in HTTPCaller. This at the same time removes
+  dependency to the browser part of zope.publisher.
+
 - Adapt to the move of IDefaultViewName from zope.component.interfaces
   to zope.publisher.interfaces.
 
