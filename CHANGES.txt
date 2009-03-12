@@ -2,7 +2,7 @@
 CHANGES
 =======
 
-3.6.1 (unreleased)
+3.6.1 (2009-03-12)
 ------------------
 
 - Use ISkinnable.providedBy(request) instead of IBrowserRequest as condition
@@ -11,6 +11,8 @@ CHANGES
 
 - Adapt to the move of IDefaultViewName from zope.component.interfaces
   to zope.publisher.interfaces.
+
+- Remove the DEPENDENCIES.cfg file for zpkg.
 
 3.6.0 (2009-02-01)
 ------------------

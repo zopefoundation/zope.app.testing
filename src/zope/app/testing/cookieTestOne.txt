@@ -34,7 +34,7 @@ created.
   2
 
   >>> http.cookies['proton'].OutputString()
-  'proton=fromCookieTestOne; Path=/foo;'
+  'proton=fromCookieTestOne; Path=/foo'
 
   >>> http.cookies
   <SimpleCookie: neutron='fromCookieTestOne' proton='fromCookieTestOne'>
