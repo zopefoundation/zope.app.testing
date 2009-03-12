@@ -24,7 +24,7 @@ global declarations.
   2
         
   >>> http.cookies['cobalt'].OutputString()
-  'cobalt=fromCookieTestTwo; Path=/foo;'
+  'cobalt=fromCookieTestTwo; Path=/foo'
 
   >>> http.cookies
   <SimpleCookie: cobalt='fromCookieTestTwo' crimson='fromCookieTestTwo'>
