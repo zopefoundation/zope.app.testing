@@ -27,7 +27,6 @@ from zope.container.testing \
     import PlacelessSetup as ContainerPlacelessSetup
 from zope.app.authentication.placelesssetup \
     import PlacelessSetup as AuthenticationPlacelessSetup
-from zope.app.security._protections import protect
 
 class PlacelessSetup(CAPlacelessSetup,
                      EventPlacelessSetup,
@@ -41,13 +40,11 @@ class PlacelessSetup(CAPlacelessSetup,
         ContainerPlacelessSetup.setUp(self)
         I18nPlacelessSetup.setUp(self)
         AuthenticationPlacelessSetup.setUp(self)
-        # Register app-specific security declarations
-        protect()
 
         ztapi.browserView(None, 'absolute_url', AbsoluteURL)
         ztapi.browserViewProviding(None, AbsoluteURL, IAbsoluteURL)
 
-        from zope.app.security.tests import addCheckerPublic
+        from zope.security.testing import addCheckerPublic
         addCheckerPublic()
 
         from zope.security.management import newInteraction

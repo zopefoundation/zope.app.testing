@@ -5,7 +5,8 @@ CHANGES
 3.6.2 (unreleased)
 ------------------
 
-- ...
+- Adapt to latest ``zope.app.security`` refactoring. We don't need this
+  package anymore.
 
 3.6.1 (2009-03-12)
 ------------------
