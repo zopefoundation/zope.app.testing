@@ -5,6 +5,9 @@ CHANGES
 3.6.2 (unreleased)
 ------------------
 
+- Adapt to ``zope.app.authentication`` refactoring. We depend on
+  ``zope.password`` now instead.
+
 - Adapt to latest ``zope.app.security`` refactoring. We don't need this
   package anymore.
 
