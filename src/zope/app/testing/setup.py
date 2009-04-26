@@ -18,13 +18,6 @@ $Id$
 import zope.component
 import zope.traversing.api
 
-import zope.deferredimport
-zope.deferredimport.deprecatedFrom(
-    "Goes away in Zope 3.5",
-    "zope.app.testing.back35",
-    "addService",
-    )
-
 #------------------------------------------------------------------------
 # Annotations
 from zope.annotation.attribute import AttributeAnnotations

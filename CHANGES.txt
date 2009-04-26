@@ -5,6 +5,9 @@ CHANGES
 3.6.2 (unreleased)
 ------------------
 
+- Removed deprecated back35 module and loose the dependency on
+  ``zope.deferredimport``.
+
 - Adapt to ``zope.app.authentication`` refactoring. We depend on
   ``zope.password`` now instead.
 
