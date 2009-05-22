@@ -2,36 +2,6 @@
 CHANGES
 =======
 
-3.6.3 (unreleased)
-------------------
-
-- Fix broken import of `IDefaultViewName` to use its new location in
-  ``zope.publisher.interfaces``.
-
-3.6.2 (2009-04-26)
-------------------
-
-- Removed deprecated back35 module and loose the dependency on
-  ``zope.deferredimport``.
-
-- Adapt to ``zope.app.authentication`` refactoring. We depend on
-  ``zope.password`` now instead.
-
-- Adapt to latest ``zope.app.security`` refactoring. We don't need this
-  package anymore.
-
-3.6.1 (2009-03-12)
-------------------
-
-- Use ISkinnable.providedBy(request) instead of IBrowserRequest as condition
-  for calling setDefaultSkin in HTTPCaller. This at the same time removes
-  dependency to the browser part of zope.publisher.
-
-- Adapt to the move of IDefaultViewName from zope.component.interfaces
-  to zope.publisher.interfaces.
-
-- Remove the DEPENDENCIES.cfg file for zpkg.
-
 3.6.0 (2009-02-01)
 ------------------
 
