@@ -2,6 +2,12 @@
 CHANGES
 =======
 
+3.6.1 (unreleased)
+------------------
+
+- Fix broken import of `IDefaultViewName` to use its new location in
+  ``zope.publisher.interfaces``.
+
 3.6.0 (2009-02-01)
 ------------------
 
