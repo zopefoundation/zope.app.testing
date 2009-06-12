@@ -473,7 +473,7 @@ def doctest_FunctionalTestSetup_supports_product_config():
 
         >>> def handle_database_open(event):
         ...     global config
-        ...     IDbOE = zope.app.appsetup.interfaces.IDatabaseOpenedEvent
+        ...     IDbOE = zope.processlifetime.IDatabaseOpened
         ...     if IDbOE.providedBy(event):
         ...         config = zope.app.appsetup.product.getProductConfiguration(
         ...             'abc')

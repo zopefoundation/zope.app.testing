@@ -5,6 +5,8 @@ CHANGES
 3.6.3 (unreleased)
 ------------------
 
+- Depend on new ``zope.processlifetime`` interfaces instead of using
+  BBB imports from ``zope.app.appsetup``.
 
 3.6.2 (2009-04-26)
 ------------------
