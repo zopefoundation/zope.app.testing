@@ -8,6 +8,9 @@ CHANGES
 - Depend on new ``zope.processlifetime`` interfaces instead of using
   BBB imports from ``zope.app.appsetup``.
 
+- Removed unused dependency on ``zope.app.component``.
+
+
 3.6.2 (2009-04-26)
 ------------------
 

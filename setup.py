@@ -28,10 +28,7 @@ setup(name='zope.app.testing',
       description='Zope Application Testing Support',
       long_description=(
           read('README.txt')
-          + '\n\n' +
-          'Detailed Documentation\n' +
-          '======================\n'
-          + '\n\n' +
+          + '\n\n.. contents::\n\n' +
           read('src', 'zope', 'app', 'testing', 'dochttp.txt')
           + '\n\n' +
           read('src', 'zope', 'app', 'testing', 'doctest.txt')
@@ -65,7 +62,6 @@ setup(name='zope.app.testing',
                         'zope.annotation',
                         'zope.app.appsetup >=3.11.0',
                         'zope.processlifetime',
-                        'zope.app.component',
                         'zope.app.debug',
                         'zope.app.dependable',
                         'zope.app.publication',
