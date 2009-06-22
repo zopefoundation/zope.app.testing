@@ -785,7 +785,7 @@ def _prepare_doctest_keywords(kw):
 
     kwsetUp = kw.get('setUp')
     def setUp(test):
-	test.globs['http'] = HTTPCaller()
+        test.globs['http'] = HTTPCaller()
         FunctionalTestSetup().setUp()
         if kwsetUp is not None:
             kwsetUp(test)
