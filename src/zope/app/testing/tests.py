@@ -412,6 +412,8 @@ def doctest_FunctionalTestSetup_clears_global_utilities():
     Leaving global IDatabase utilities makes a nice juicy memory leak.
     See https://bugs.launchpad.net/zope3/+bug/251273
 
+    This bug has now been fixed and this test exercises the fixed version.
+
         >>> setup = FunctionalTestSetup(ftesting_zcml)
 
     At this point, there are registrations for the base databases created by
@@ -424,27 +426,21 @@ def doctest_FunctionalTestSetup_clears_global_utilities():
         >>> setup.setUp()
         >>> dbs = list(getAllUtilitiesRegisteredFor(IDatabase))
         >>> len(dbs)
-        2
+        1
         >>> base in dbs
-        True
-        >>> dbs.remove(base)
+        False
         >>> override, = dbs
 
     Tearing down the test context causes the overriding database to be
     removed:
 
         >>> setup.tearDown()
-        >>> list(getAllUtilitiesRegisteredFor(IDatabase)) == [base]
-        True
-
-    Tearing down the fixture causes the base database registration to be
-    removed:
-
-        >>> setup.tearDownCompletely()
-
         >>> list(getAllUtilitiesRegisteredFor(IDatabase))
         []
 
+    Tearing down completely:
+
+        >>> setup.tearDownCompletely()
     """
 
 
