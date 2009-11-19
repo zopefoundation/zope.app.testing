@@ -55,12 +55,12 @@ def setUpSiteManagerLookup():
 
 #------------------------------------------------------------------------
 # Placeful setup
-import zope.site.hooks
+import zope.component.hooks
 from zope.app.testing.placelesssetup import setUp as placelessSetUp
 from zope.app.testing.placelesssetup import tearDown as placelessTearDown
 def placefulSetUp(site=False):
     placelessSetUp()
-    zope.site.hooks.setHooks()
+    zope.component.hooks.setHooks()
     setUpAnnotations()
     setUpDependable()
     setUpTraversal()
@@ -71,11 +71,10 @@ def placefulSetUp(site=False):
         createSiteManager(site, setsite=True)
         return site
 
-from zope.site.hooks import setSite
 def placefulTearDown():
     placelessTearDown()
-    zope.site.hooks.resetHooks()
-    setSite()
+    zope.component.hooks.resetHooks()
+    zope.component.hooks.setSite()
 
 #------------------------------------------------------------------------
 # Sample Folder Creation
@@ -123,12 +122,13 @@ def buildSampleFolderTree():
 #------------------------------------------------------------------------
 # Sample Folder Creation
 from zope.site.site import LocalSiteManager
-from zope.location.interfaces import ISite
+import zope.component.interfaces
+
 def createSiteManager(folder, setsite=False):
-    if not ISite.providedBy(folder):
+    if not zope.component.interfaces.ISite.providedBy(folder):
         folder.setSiteManager(LocalSiteManager(folder))
     if setsite:
-        setSite(folder)
+        zope.component.hooks.setSite(folder)
     return zope.traversing.api.traverse(folder, "++etc++site")
 
 

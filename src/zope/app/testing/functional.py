@@ -49,7 +49,8 @@ from zope.app.publication.http import HTTPPublication
 from zope.app.publication.zopepublication import ZopePublication
 from zope.app.publication.http import HTTPPublication
 from zope.app.publication.httpfactory import chooseClasses
-from zope.site.hooks import setSite, getSite
+from zope.component.hooks import setSite, getSite
+
 
 class ResponseWrapper(object):
     """A wrapper that adds several introspective methods to a response."""

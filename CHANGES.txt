@@ -2,10 +2,14 @@
 CHANGES
 =======
 
-3.7.3 (unreleased)
+3.7.4 (unreleased)
 ------------------
 
-- ...
+- Import hooks functionality from zope.component after it was moved there from
+  zope.site.
+
+- Import ISite from zope.component after it was moved there from
+  zope.location. This lifts the dependency on zope.location.
 
 3.7.3 (2009-08-20)
 ------------------
