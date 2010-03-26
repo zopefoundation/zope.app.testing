@@ -19,8 +19,8 @@ import os
 import re
 import unittest
 import StringIO
+from doctest import DocTestSuite
 
-from zope.testing.doctestunit import DocTestSuite
 from zope.testing.renormalizing import RENormalizing
 from zope.component import getAllUtilitiesRegisteredFor
 from ZODB.interfaces import IDatabase

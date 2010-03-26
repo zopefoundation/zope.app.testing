@@ -24,6 +24,7 @@ import rfc822
 import sys
 import traceback
 import unittest
+import doctest
 from StringIO import StringIO
 from Cookie import SimpleCookie
 from transaction import abort, commit
@@ -36,7 +37,6 @@ from zope.publisher.browser import BrowserRequest, setDefaultSkin
 from zope.publisher.http import HTTPRequest
 from zope.publisher.publish import publish
 from zope.security.interfaces import Forbidden, Unauthorized
-from zope.testing import doctest
 
 import zope.app.testing.setup
 from zope.app.appsetup.appsetup import multi_database
