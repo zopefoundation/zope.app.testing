@@ -2,7 +2,7 @@
 CHANGES
 =======
 
-3.4.5 (unreleased)
+3.4.5 (2010-03-26)
 ------------------
 
 - Use doctest instead of deprecated zope.testing.doctest.
