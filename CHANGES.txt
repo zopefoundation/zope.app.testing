@@ -5,7 +5,8 @@ CHANGES
 3.7.5 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Switch doctests to use the stdlib ``doctest`` module, rather than the
+  deprecated ``zope.testing.doctest`` variant.
 
 
 3.7.4 (2010-01-08)

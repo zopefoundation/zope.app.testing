@@ -18,6 +18,7 @@ There should be a file 'ftesting.zcml' in the current directory.
 $Id$
 """
 import copy
+import doctest
 import logging
 import os.path
 import re
@@ -39,7 +40,6 @@ from zope.publisher.http import HTTPRequest
 from zope.publisher.publish import publish
 from zope.publisher.skinnable import setDefaultSkin
 from zope.security.interfaces import Forbidden, Unauthorized
-from zope.testing import doctest
 
 import zope.app.appsetup.product
 import zope.app.testing.setup
@@ -47,7 +47,6 @@ from zope.app.appsetup.appsetup import multi_database
 from zope.app.debug import Debugger
 from zope.app.publication.http import HTTPPublication
 from zope.app.publication.zopepublication import ZopePublication
-from zope.app.publication.http import HTTPPublication
 from zope.app.publication.httpfactory import chooseClasses
 from zope.component.hooks import setSite, getSite
 
