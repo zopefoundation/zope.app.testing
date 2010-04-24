@@ -73,7 +73,7 @@ class ResponseWrapper(object):
         statusline = '%s %s' % (self._response._request['SERVER_PROTOCOL'],
                                 self._response.getStatusString())
         if body:
-            return '%s\n%s\n\n%s' %(statusline, headers, body)
+            return '%s\n%s\n\n%s' % (statusline, headers, body)
         else:
             return '%s\n%s\n' % (statusline, headers)
 
@@ -105,6 +105,7 @@ class IManagerSetup(zope.interface.Interface):
     def setUpManager():
         """Set up the manager, zope.mgr
         """
+
 
 class BaseDatabaseFactory(object):
     """Factory object for passing to appsetup.multi_databases
@@ -164,7 +165,7 @@ class DerivedDatabaseFactory(object):
 class FunctionalTestSetup(object):
     """Keeps shared state across several functional test cases."""
 
-    __shared_state = { '_init': False }
+    __shared_state = {'_init': False}
 
     def __init__(self, config_file=None, database_names=None,
                  product_config=None):
@@ -199,16 +200,14 @@ class FunctionalTestSetup(object):
                     StringIO(product_config))
                 configs = [
                     zope.app.appsetup.product.FauxConfiguration(name, values)
-                    for name, values in configs.items()
-                    ]
+                    for name, values in configs.items()]
             self.local_product_config = configs
             zope.app.appsetup.product.setProductConfigurations(configs)
 
             self._base_storages = {}
             self.db = multi_database(
                 BaseDatabaseFactory(name, self._base_storages)
-                for name in database_names
-                )[0][0]
+                for name in database_names)[0][0]
             # This handles anything added by generations or other bootstrap
             # subscribers.
             commit()
@@ -247,12 +246,12 @@ class FunctionalTestSetup(object):
     # BBB: Simulate the old base_storage attribute, but only when not using
     # multiple databases. There *is* code in the wild that uses the attribute.
     def _get_base_storage(self):
-        if len(self._database_names)!=1:
+        if len(self._database_names) != 1:
             raise AttributeError('base_storage')
         return self._base_storages[self._database_names[0]]
 
     def _set_base_storage(self, value):
-        if len(self._database_names)!=1:
+        if len(self._database_names) != 1:
             raise AttributeError('base_storage')
         self._base_storages[self._database_names[0]] = value
 
@@ -286,8 +285,7 @@ class FunctionalTestSetup(object):
             self.local_product_config)
         self.db = self.app.db = multi_database(
             DerivedDatabaseFactory(name, self._base_storages)
-            for name in self._database_names
-            )[0][0]
+            for name in self._database_names)[0][0]
 
     def tearDown(self):
         """Cleans up after a functional test case."""
@@ -381,6 +379,7 @@ Functional = ZCMLLayer(Functional, __name__, 'Functional')
 FunctionalNoDevMode = ZCMLLayer(FunctionalNoDevMode, __name__,
                                 'FunctionalNoDevMode')
 
+
 class FunctionalTestCase(unittest.TestCase):
     """Functional test case."""
 
@@ -414,12 +413,11 @@ class CookieHandler(object):
         self.cookies = SimpleCookie()
         super(CookieHandler, self).__init__(*args, **kw)
 
-
     def httpCookie(self, path):
-         """Return self.cookies as an HTTP_COOKIE environment value."""
-         l = [m.OutputString().split(';')[0] for m in self.cookies.values()
-              if path.startswith(m['path'])]
-         return '; '.join(l)
+        """Return self.cookies as an HTTP_COOKIE environment value."""
+        l = [m.OutputString().split(';')[0] for m in self.cookies.values()
+             if path.startswith(m['path'])]
+        return '; '.join(l)
 
     def loadCookies(self, envstring):
         self.cookies.load(envstring)
@@ -431,10 +429,10 @@ class CookieHandler(object):
         # TODO: extend the IHTTPRequest interface to allow access to all
         # cookies
         # TODO: handle cookie expirations
-        for k,v in response._cookies.items():
+        for k, v in response._cookies.items():
             k = k.encode('utf8')
             self.cookies[k] = v['value'].encode('utf8')
-            if v.has_key('path'):
+            if 'path' in v:
                 self.cookies[k]['path'] = v['path']
 
 
@@ -493,12 +491,12 @@ class BrowserTestCase(CookieHandler, FunctionalTestCase):
         # in this test also send the cookie, as this is what browsers do.
         # We pull it apart and reassemble the header to block cookies
         # with invalid paths going through, which may or may not be correct
-        if env.has_key('HTTP_COOKIE'):
+        if 'HTTP_COOKIE' in env:
             self.loadCookies(env['HTTP_COOKIE'])
-            del env['HTTP_COOKIE'] # Added again in makeRequest
+            del env['HTTP_COOKIE']  # Added again in makeRequest
 
         request = self.makeRequest(path, basic=basic, form=form, env=env)
-        if env.has_key('HTTP_COOKIE'):
+        if 'HTTP_COOKIE' in env:
             self.loadCookies(env['HTTP_COOKIE'])
 
         request = publish(request, handle_errors=handle_errors)
@@ -513,17 +511,20 @@ class BrowserTestCase(CookieHandler, FunctionalTestCase):
         """Looks for broken links in a page by trying to traverse relative
         URIs.
         """
-        if not body: return
+        if not body:
+            return
 
         old_site = self.getSite()
         self.setSite(None)
 
         from htmllib import HTMLParser
         from formatter import NullFormatter
+
         class SimpleHTMLParser(HTMLParser):
             def __init__(self, fmt, base):
                 HTMLParser.__init__(self, fmt)
                 self.base = base
+
             def do_base(self, attrs):
                 self.base = dict(attrs).get('href', self.base)
 
@@ -604,8 +605,10 @@ class HTTPTestCase(FunctionalTestCase):
         app = FunctionalTestSetup().getApplication()
         request = app._request(path, instream,
                                environment=environment,
-                               basic=basic, form=form,
-                               request=HTTPRequest, publication=HTTPPublication)
+                               basic=basic,
+                               form=form,
+                               request=HTTPRequest,
+                               publication=HTTPPublication)
         return request
 
     def publish(self, path, basic=None, form=None, env={},
@@ -630,10 +633,13 @@ class HTTPTestCase(FunctionalTestCase):
 
 
 headerre = re.compile(r'(\S+): (.+)$')
+basicre = re.compile('Basic (.+)?:(.+)?$')
+
+
 def split_header(header):
     return headerre.match(header).group(1, 2)
 
-basicre = re.compile('Basic (.+)?:(.+)?$')
+
 def auth_header(header):
     match = basicre.match(header)
     if match:
@@ -647,15 +653,16 @@ def auth_header(header):
         return 'Basic %s' % auth[:-1]
     return header
 
+
 def getRootFolder():
     return FunctionalTestSetup().getRootFolder()
+
 
 def sync():
     getRootFolder()._p_jar.sync()
 
-#
 # Sample functional test case
-#
+
 
 class SampleFunctionalTest(BrowserTestCase):
 
@@ -696,7 +703,7 @@ class HTTPCaller(CookieHandler):
         # split off and parse the command line
         l = request_string.find('\n')
         command_line = request_string[:l].rstrip()
-        request_string = request_string[l+1:]
+        request_string = request_string[l + 1:]
         method, path, protocol = command_line.split()
 
         instream = StringIO(request_string)
@@ -715,7 +722,7 @@ class HTTPCaller(CookieHandler):
             environment[name] = value.rstrip()
 
         auth_key = 'HTTP_AUTHORIZATION'
-        if environment.has_key(auth_key):
+        if auth_key in environment:
             environment[auth_key] = auth_header(environment[auth_key])
 
         old_site = getSite()
@@ -803,7 +810,3 @@ def _prepare_doctest_keywords(kw):
                              | doctest.ELLIPSIS
                              | doctest.REPORT_NDIFF
                              | doctest.NORMALIZE_WHITESPACE)
-
-
-if __name__ == '__main__':
-    unittest.main()

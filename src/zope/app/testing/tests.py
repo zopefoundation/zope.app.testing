@@ -41,7 +41,6 @@ from zope.app.testing.testing import AppTestingLayer
 from zope.app.testing.testing import FailingKlass
 
 
-
 HEADERS = """\
 HTTP/1.1 200 OK
 Content-Type: text/plain
@@ -197,6 +196,7 @@ class HTTPCallerTestCase(unittest.TestCase):
         self.assert_(IRequest.implementedBy(request_class))
         self.assert_(IPublication.implementedBy(publication_class))
 
+
 class DummyCookiesResponse(object):
     # Ugh, this simulates the *internals* of a HTTPResponse object
     # TODO: expand the IHTTPResponse interface to give access to all cookies
@@ -219,9 +219,9 @@ class CookieHandlerTestCase(unittest.TestCase):
         self.handler.saveCookies(response)
         self.assertEqual(len(self.handler.cookies), 2)
         self.assert_(self.handler.cookies['spam'].OutputString() in
-                         ('spam=eggs; Path=/foo;','spam=eggs; Path=/foo'))
+                         ('spam=eggs; Path=/foo;', 'spam=eggs; Path=/foo'))
         self.assert_(self.handler.cookies['monty'].OutputString() in
-                         ('monty=python;','monty=python'))
+                         ('monty=python;', 'monty=python'))
 
     def test_httpCookie(self):
         cookies = self.handler.cookies
@@ -289,8 +289,7 @@ class CookieFunctionalTest(BrowserTestCase):
         super(CookieFunctionalTest, self).setUp()
         self.assertEqual(
                 len(self.cookies.keys()), 0,
-                'cookies store should be empty'
-                )
+                'cookies store should be empty')
 
         root = self.getRootFolder()
 
@@ -342,16 +341,16 @@ class CookieFunctionalTest(BrowserTestCase):
         response = self.publish('/')
 
         self.assertEquals(response.getStatus(), 200)
-        self.assert_(not response._request._cookies.has_key('aid'))
+        self.assert_('aid' not in response._request._cookies)
         self.assertEquals(response._request._cookies['bid'], 'bval')
 
     def testHttpCookieHeader(self):
         # Passing an HTTP_COOKIE header to publish adds cookies
         response = self.publish('/', env={
-            'HTTP_COOKIE': '$Version=1, aid=aval; $Path=/sub/folder, bid=bval'
-            })
+            'HTTP_COOKIE':
+                '$Version=1, aid=aval; $Path=/sub/folder, bid=bval'})
         self.assertEquals(response.getStatus(), 200)
-        self.failIf(response._request._cookies.has_key('aid'))
+        self.failIf('aid' in response._request._cookies)
         self.assertEquals(response._request._cookies['bid'], 'bval')
 
     def testStickyCookies(self):
@@ -381,6 +380,7 @@ class SkinsAndHTTPCaller(FunctionalTestCase):
         response = http("GET /++skin++Basic HTTP/1.1\n\n")
         self.assert_("zopetopBasic.css" in str(response))
 
+
 class RetryProblemFunctional(FunctionalTestCase):
 
     def setUp(self):
@@ -409,6 +409,7 @@ Authorization: Basic mgr:mgrpw
         self.assertNotEqual(response.getStatus(), 599)
         self.assertEqual(response.getStatus(), 500)
 
+
 class RetryProblemBrowser(BrowserTestCase):
     def setUp(self):
         super(RetryProblemBrowser, self).setUp()
@@ -432,6 +433,7 @@ class RetryProblemBrowser(BrowserTestCase):
 
 
 ftesting_zcml = os.path.join(here, 'ftesting.zcml')
+
 
 def doctest_FunctionalTestSetup_clears_global_utilities():
     """Test that FunctionalTestSetup doesn't leave global utilities.
@@ -472,6 +474,7 @@ def doctest_FunctionalTestSetup_clears_global_utilities():
 
 
 empty_zcml = os.path.join(here, 'empty.zcml')
+
 
 def doctest_FunctionalTestSetup_supports_product_config():
     """Test that FunctionalTestSetup configures products.
@@ -627,8 +630,7 @@ def doctest_ZCMLLayer_carries_product_configuration():
 
 def test_suite():
     checker = RENormalizing([
-        (re.compile(r'^HTTP/1.1 (\d{3}) .*?\n'), 'HTTP/1.1 \\1\n')
-        ])
+        (re.compile(r'^HTTP/1.1 (\d{3}) .*?\n'), 'HTTP/1.1 \\1\n')])
     SampleFunctionalTest.layer = AppTestingLayer
     CookieFunctionalTest.layer = AppTestingLayer
     SkinsAndHTTPCaller.layer = AppTestingLayer
