@@ -31,7 +31,8 @@ from zope.app.publication.requestpublicationfactories import BrowserFactory
 from zope.app.testing import functional
 from zope.app.testing.dochttp import dochttp
 import transaction
-from zope.app.testing.functional import SampleFunctionalTest, BrowserTestCase
+from zope.app.testing.functional import SampleFunctionalTest
+from zope.app.testing.functional import BrowserTestCase, HTTPTestCase
 from zope.app.testing.functional import FunctionalDocFileSuite
 from zope.app.testing.functional import FunctionalTestCase
 from zope.app.testing.functional import FunctionalTestSetup
@@ -196,7 +197,6 @@ class HTTPCallerTestCase(unittest.TestCase):
         self.assert_(IRequest.implementedBy(request_class))
         self.assert_(IPublication.implementedBy(publication_class))
 
-
 class DummyCookiesResponse(object):
     # Ugh, this simulates the *internals* of a HTTPResponse object
     # TODO: expand the IHTTPResponse interface to give access to all cookies
@@ -244,6 +244,33 @@ class CookieHandlerTestCase(unittest.TestCase):
     # There is no test for CookieHandler.loadCookies because it that method
     # only passes the arguments on to Cookie.BaseCookie.load, which the
     # standard library has tests for (we hope).
+
+
+class HTTPFunctionalTest(HTTPTestCase):
+
+    def testNoDefaultReferer(self):
+        # There should be no referer set in the request by default.
+        r = self.makeRequest()
+        self.assertRaises(KeyError, r.environment.__getitem__, 'HTTP_REFERER')
+
+
+class BrowserFunctionalTest(BrowserTestCase):
+
+    def testNoDefaultReferer(self):
+        # There should be no referer set in the request by default.
+        r = self.makeRequest()
+        self.assertRaises(KeyError, r.environment.__getitem__, 'HTTP_REFERER')
+
+
+class HTTPCallerFunctionalTest(FunctionalTestCase):
+
+    def testNoDefaultReferer(self):
+        # There should be no referer set in the request by default.
+        from zope.app.testing.functional import HTTPCaller
+        http = HTTPCaller()
+        response = http("GET /++skin++Basic HTTP/1.1\n\n")
+        self.assertRaises(KeyError, response._request.environment.__getitem__,
+                          'HTTP_REFERER')
 
 
 class CookieFunctionalTest(BrowserTestCase):
@@ -607,6 +634,9 @@ def test_suite():
     SkinsAndHTTPCaller.layer = AppTestingLayer
     RetryProblemFunctional.layer = AppTestingLayer
     RetryProblemBrowser.layer = AppTestingLayer
+    HTTPFunctionalTest.layer = AppTestingLayer
+    BrowserFunctionalTest.layer = AppTestingLayer
+    HTTPCallerFunctionalTest.layer = AppTestingLayer
 
     doc_test = FunctionalDocFileSuite('doctest.txt', 'cookieTestOne.txt',
         'cookieTestTwo.txt', checker=checker)
@@ -619,6 +649,9 @@ def test_suite():
         unittest.makeSuite(CookieHandlerTestCase),
         DocTestSuite(),
         unittest.makeSuite(SampleFunctionalTest),
+        unittest.makeSuite(HTTPFunctionalTest),
+        unittest.makeSuite(BrowserFunctionalTest),
+        unittest.makeSuite(HTTPCallerFunctionalTest),
         unittest.makeSuite(CookieFunctionalTest),
         unittest.makeSuite(SkinsAndHTTPCaller),
         unittest.makeSuite(RetryProblemFunctional),

@@ -5,7 +5,9 @@ CHANGES
 3.7.6 (unreleased)
 ------------------
 
-- No changes yet.
+- Remove invalid HTTP_REFERER default. (We both don't want a default to allow
+  others testing without a referer and 'localhost' is not a reasonable
+  default anyway.) This improves the situation for #98437
 
 3.7.5 (2010-04-10)
 ------------------

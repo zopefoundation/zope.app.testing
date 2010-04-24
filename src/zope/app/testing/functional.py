@@ -54,9 +54,10 @@ from zope.component.hooks import setSite, getSite
 class ResponseWrapper(object):
     """A wrapper that adds several introspective methods to a response."""
 
-    def __init__(self, response, path, omit=()):
+    def __init__(self, response, path, request, omit=()):
         self._response = response
         self._path = path
+        self._request = request
         self.omit = omit
         self._body = None
 
@@ -462,7 +463,6 @@ class BrowserTestCase(CookieHandler, FunctionalTestCase):
                      by adding 'HTTP_X_HEADER': 'foo' to env)
         """
         environment = {"HTTP_HOST": 'localhost',
-                       "HTTP_REFERER": 'localhost',
                        "HTTP_COOKIE": self.httpCookie(path)}
         environment.update(env)
         app = FunctionalTestSetup().getApplication()
@@ -503,7 +503,7 @@ class BrowserTestCase(CookieHandler, FunctionalTestCase):
 
         request = publish(request, handle_errors=handle_errors)
 
-        response = ResponseWrapper(request.response, path)
+        response = ResponseWrapper(request.response, path, request)
 
         self.saveCookies(response)
         self.setSite(old_site)
@@ -599,8 +599,7 @@ class HTTPTestCase(FunctionalTestCase):
         """
         if instream is None:
             instream = ''
-        environment = {"HTTP_HOST": 'localhost',
-                       "HTTP_REFERER": 'localhost'}
+        environment = {"HTTP_HOST": 'localhost'}
         environment.update(env)
         app = FunctionalTestSetup().getApplication()
         request = app._request(path, instream,
@@ -625,7 +624,7 @@ class HTTPTestCase(FunctionalTestCase):
         """
         request = self.makeRequest(path, basic=basic, form=form, env=env,
                                    instream=request_body)
-        response = ResponseWrapper(request.response, path)
+        response = ResponseWrapper(request.response, path, request)
         publish(request, handle_errors=handle_errors)
         return response
 
@@ -703,7 +702,6 @@ class HTTPCaller(CookieHandler):
         instream = StringIO(request_string)
         environment = {"HTTP_COOKIE": self.httpCookie(path),
                        "HTTP_HOST": 'localhost',
-                       "HTTP_REFERER": 'localhost',
                        "REQUEST_METHOD": method,
                        "SERVER_PROTOCOL": protocol,
                        }
@@ -743,7 +741,7 @@ class HTTPCaller(CookieHandler):
         request = publish(request, handle_errors=handle_errors)
 
         response = ResponseWrapper(
-            request.response, path,
+            request.response, path, request,
             omit=('x-content-type-warning', 'x-powered-by'),
             )
 
