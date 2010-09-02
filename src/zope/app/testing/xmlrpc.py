@@ -16,10 +16,20 @@
 $Id$
 """
 
+import httplib
 import StringIO
-import xmlrpclib 
+import xmlrpclib
 
 from zope.app.testing.functional import HTTPCaller
+
+
+class FakeSocket(object):
+
+    def __init__(self, data):
+        self.data = data
+
+    def makefile(self, mode, bufsize=None):
+        return StringIO.StringIO(self.data)
 
 
 class ZopeTestTransport(xmlrpclib.Transport):
@@ -58,9 +68,9 @@ class ZopeTestTransport(xmlrpclib.Transport):
                 errcode, errmsg,
                 headers
                 )
-
-        return self._parse_response(
-            StringIO.StringIO(response.getBody()), sock=None)
+        res = httplib.HTTPResponse(FakeSocket(response.getBody()))
+        res.begin()
+        return self.parse_response(res)
 
 
 def ServerProxy(uri, transport=None, encoding=None,

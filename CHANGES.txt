@@ -9,6 +9,8 @@ CHANGES
   others testing without a referer and 'localhost' is not a reasonable
   default anyway.) This improves the situation for #98437
 
+- Make the xmlrpc code compatible with Python 2.7.
+
 3.7.5 (2010-04-10)
 ------------------
 
