@@ -273,6 +273,23 @@ class HTTPCallerFunctionalTest(FunctionalTestCase):
                           'HTTP_REFERER')
 
 
+class GetCookies(object):
+    """Get all cookies set."""
+
+    def __call__(self):
+        cookies = ['%s=%s'%(k, v)
+                   for k, v in self.request.getCookies().items()]
+        cookies.sort()
+        return ';'.join(cookies)
+
+
+class SetCookies(object):
+    """Set a specific cookie."""
+
+    def __call__(self):
+        self.request.response.setCookie('bid', 'bval')
+
+
 class CookieFunctionalTest(BrowserTestCase):
 
     """Functional tests should handle cookies like a web browser
@@ -286,40 +303,32 @@ class CookieFunctionalTest(BrowserTestCase):
     """
 
     def setUp(self):
+        import zope.configuration.xmlconfig
+
         super(CookieFunctionalTest, self).setUp()
         self.assertEqual(
                 len(self.cookies.keys()), 0,
                 'cookies store should be empty')
 
-        root = self.getRootFolder()
+        zope.configuration.xmlconfig.string(r'''
+        <configure xmlns="http://namespaces.zope.org/browser">
 
-        from zope.app.zptpage.zptpage import ZPTPage
+           <include package="zope.browserpage" file="meta.zcml" />
 
-        page = ZPTPage()
+           <page
+              name="getcookies"
+              for="*"
+              permission="zope.Public"
+              class="zope.app.testing.tests.GetCookies" />
 
-        page.source = u'''<tal:tag tal:define="
-        cookies python:['%s=%s'%(k,v) for k,v in request.getCookies().items()]"
-        ><tal:tag tal:define="
-        ignored python:cookies.sort()"
-        /><span tal:replace="python:';'.join(cookies)" /></tal:tag>'''
+           <page
+              name="setcookie"
+              for="*"
+              permission="zope.Public"
+              class="zope.app.testing.tests.SetCookies" />
 
-        root['getcookies'] = page
-
-        page = ZPTPage()
-
-        page.source = u'''<tal:tag tal:define="
-            ignored python:request.response.setCookie('bid','bval')" >
-            <h1 tal:condition="ignored" />
-            </tal:tag>'''
-
-        root['setcookie'] = page
-        transaction.commit()
-
-    def tearDown(self):
-        root = self.getRootFolder()
-        del root['getcookies']
-        del root['setcookie']
-        super(CookieFunctionalTest, self).tearDown()
+        </configure>
+        ''')
 
     def testDefaultCookies(self):
         # By default no cookies are set
