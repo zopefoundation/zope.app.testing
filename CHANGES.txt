@@ -2,13 +2,7 @@
 CHANGES
 =======
 
-3.7.7 (unreleased)
-------------------
-
-- Nothing changed yet.
-
-
-3.7.6 (2010-09-14)
+3.8.0 (2010-09-14)
 ------------------
 
 - Remove invalid HTTP_REFERER default. (We both don't want a default to allow
@@ -21,6 +15,18 @@ CHANGES
 
 - Switched test dependency from ``zope.app.securitypolicy`` to
   ``zope.securitypolicy``.
+
+
+3.7.7 (2010-09-14)
+------------------
+
+- Rereleasing 3.7.5 as 3.7.7 to fix brown bag release.
+
+
+3.7.6 (2010-09-14)
+------------------
+
+- Brown bag release: It broke the tests of ``zope.testbrowser``.
 
 
 3.7.5 (2010-04-10)
