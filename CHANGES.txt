@@ -2,7 +2,7 @@
 CHANGES
 =======
 
-3.7.8 (unreleased)
+3.7.8 (2010-09-17)
 ------------------
 
 - Removed test dependency on ``zope.app.zptpage``.
