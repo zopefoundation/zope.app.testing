@@ -2,6 +2,14 @@
 CHANGES
 =======
 
+3.7.8 (unreleased)
+------------------
+
+- Removed test dependency on ``zope.app.zptpage``.
+
+- Switched test dependency from ``zope.app.securitypolicy`` to
+  ``zope.securitypolicy``.
+
 3.7.7 (2010-09-14)
 ------------------
 
@@ -12,6 +20,7 @@ CHANGES
 ------------------
 
 - Brown bag release: It broke the tests of ``zope.testbrowser``.
+
 
 3.7.5 (2010-04-10)
 ------------------
