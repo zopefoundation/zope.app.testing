@@ -2,7 +2,7 @@
 CHANGES
 =======
 
-3.8.1 (unreleased)
+3.8.1 (2011-01-07)
 ------------------
 
 - Include REMOTE_ADDR ('127.0.0.1') in the request environment.
