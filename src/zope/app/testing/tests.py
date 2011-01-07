@@ -272,6 +272,14 @@ class HTTPCallerFunctionalTest(FunctionalTestCase):
         self.assertRaises(KeyError, response._request.environment.__getitem__,
                           'HTTP_REFERER')
 
+    def testRemoteAddr(self):
+        # There should be a REMOTE_ADDR in the request by default.
+        from zope.app.testing.functional import HTTPCaller
+        http = HTTPCaller()
+        response = http("GET / HTTP/1.1\n\n")
+        self.assertEqual(response._request.environment['REMOTE_ADDR'],
+                         '127.0.0.1')
+
 
 class GetCookies(object):
     """Get all cookies set."""

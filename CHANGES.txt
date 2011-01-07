@@ -5,7 +5,7 @@ CHANGES
 3.8.1 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Include REMOTE_ADDR ('127.0.0.1') in the request environment.
 
 
 3.8.0 (2010-09-14)

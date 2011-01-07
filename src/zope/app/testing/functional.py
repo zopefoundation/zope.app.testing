@@ -711,6 +711,7 @@ class HTTPCaller(CookieHandler):
                        "HTTP_HOST": 'localhost',
                        "REQUEST_METHOD": method,
                        "SERVER_PROTOCOL": protocol,
+                       "REMOTE_ADDR": '127.0.0.1',
                        }
 
         headers = [split_header(header)
