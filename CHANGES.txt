@@ -2,11 +2,11 @@
 CHANGES
 =======
 
-3.8.2 (unreleased)
+3.9.0 (unreleased)
 ------------------
 
-- Nothing changed yet.
-
+- Move zope.app.testing testbrowser functionality into zope.app.testing. This
+  requires zope.testbrowser version 4.0.0 or above.
 
 3.8.1 (2011-01-07)
 ------------------

@@ -298,6 +298,28 @@ class SetCookies(object):
         self.request.response.setCookie('bid', 'bval')
 
 
+class Echo(object):
+    """Simply echo the interesting parts of the request"""
+
+    def __call__(self):
+        items = []
+        for k in sorted(self.request.keys()):
+            if k in self.request.form:
+                continue
+            v = self.request.get(k, None)
+            items.append('%s: %s' % (k, v))
+        items.extend('%s: %s' % x for x in sorted(self.request.form.items())) 
+        items.append('Body: %r' % self.request.bodyStream.read())
+        return '\n'.join(items)
+
+
+class EchoOne(object):
+    """Echo one variable from the request"""
+
+    def __call__(self):
+        return repr(self.request.get(self.request.form['var']))
+
+
 class CookieFunctionalTest(BrowserTestCase):
 
     """Functional tests should handle cookies like a web browser
@@ -644,6 +666,29 @@ def doctest_ZCMLLayer_carries_product_configuration():
 
     """
 
+def testbrowserSetUp(test):
+    import zope.configuration.xmlconfig
+
+    zope.configuration.xmlconfig.string(r'''
+    <configure xmlns="http://namespaces.zope.org/browser">
+
+       <include package="zope.browserpage" file="meta.zcml" />
+
+       <page
+          name="echo"
+          for="*"
+          permission="zope.Public"
+          class="zope.app.testing.tests.Echo" />
+
+       <page
+          name="echo_one"
+          for="*"
+          permission="zope.Public"
+          class="zope.app.testing.tests.EchoOne" />
+
+    </configure>
+    ''')
+
 
 def test_suite():
     checker = RENormalizing([
@@ -656,6 +701,17 @@ def test_suite():
     HTTPFunctionalTest.layer = AppTestingLayer
     BrowserFunctionalTest.layer = AppTestingLayer
     HTTPCallerFunctionalTest.layer = AppTestingLayer
+
+    testbrowser_checker = RENormalizing([
+        (re.compile(r'Status: 200.*'), 'Status: 200 OK'),
+        (re.compile(r'HTTP_USER_AGENT:\s+\S+'),
+         'HTTP_USER_AGENT: Python-urllib/2.4'),
+        (re.compile(r'Content-[Ll]ength:.*'), 'Content-Length: 123'),
+        ])
+    testbrowser_test = FunctionalDocFileSuite('testbrowser.txt',
+                                              setUp=testbrowserSetUp,
+                                              checker=testbrowser_checker)
+    testbrowser_test.layer = AppTestingLayer
 
     doc_test = FunctionalDocFileSuite('doctest.txt', 'cookieTestOne.txt',
         'cookieTestTwo.txt', checker=checker)
@@ -676,6 +732,7 @@ def test_suite():
         unittest.makeSuite(RetryProblemFunctional),
         unittest.makeSuite(RetryProblemBrowser),
         doc_test,
+        testbrowser_test,
         ))
 
 if __name__ == '__main__':
