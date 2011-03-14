@@ -27,7 +27,7 @@ def read(*rnames):
     return open(os.path.join(os.path.dirname(__file__), *rnames)).read()
 
 setup(name='zope.app.testing',
-      version = '3.8.2dev',
+      version = '3.9.0',
       author='Zope Foundation and Contributors',
       author_email='zope-dev@zope.org',
       description='Zope Application Testing Support',
@@ -81,6 +81,7 @@ setup(name='zope.app.testing',
                         'zope.security',
                         'zope.site',
                         'zope.testing',
+                        'zope.testbrowser >= 4.0.0dev',
                         'zope.traversing',
                         ],
       include_package_data = True,
