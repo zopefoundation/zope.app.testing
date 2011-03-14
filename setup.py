@@ -27,7 +27,7 @@ def read(*rnames):
     return open(os.path.join(os.path.dirname(__file__), *rnames)).read()
 
 setup(name='zope.app.testing',
-      version = '3.9.0',
+      version = '3.9.1dev',
       author='Zope Foundation and Contributors',
       author_email='zope-dev@zope.org',
       description='Zope Application Testing Support',
