@@ -58,7 +58,6 @@ setup(name='zope.app.testing',
       namespace_packages=['zope', 'zope.app'],
       extras_require=dict(test=[
           'ZODB3',
-          'zope.app.authentication',
           'zope.app.zcmlfiles',
           'zope.login',
           'zope.publisher >= 3.12',

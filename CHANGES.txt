@@ -5,7 +5,8 @@ CHANGES
 3.9.1 (unreleased)
 ------------------
 
-- No changes yet.
+- Removed test dependency on ``zope.app.authentication``.
+
 
 3.9.0 (2011-03-14)
 ------------------
