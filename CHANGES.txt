@@ -2,11 +2,13 @@
 CHANGES
 =======
 
-3.9.1 (unreleased)
+3.9.1 (2012-01-13)
 ------------------
 
 - Removed test dependency on ``zope.app.authentication``.
 
+  zope.testbrowser 4 depends on this change (seriously) if it find
+  zope.app.testing.
 
 3.9.0 (2011-03-14)
 ------------------
