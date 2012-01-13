@@ -2,8 +2,8 @@
 CHANGES
 =======
 
-3.9.1 (2012-01-13)
-------------------
+3.10.0 (2012-01-13)
+-------------------
 
 - Removed test dependency on ``zope.app.authentication``.
 
