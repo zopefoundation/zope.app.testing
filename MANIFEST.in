@@ -1,0 +1,7 @@
+include *.py
+include *.txt
+include buildout.cfg
+recursive-include src *.request
+recursive-include src *.response
+recursive-include src *.txt
+recursive-include src *.zcml
