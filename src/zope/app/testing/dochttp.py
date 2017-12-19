@@ -110,7 +110,7 @@ def dochttp(args=sys.argv[1:], default=None):
                 else:
                     if ext in skip_extensions:
                         continue
-            
+
             for skip_url in skip_urls:
                 if skip_url.search(request.path):
                     break
@@ -121,7 +121,7 @@ def dochttp(args=sys.argv[1:], default=None):
                     if e.errno == errno.EPIPE:
                         return
                     raise
-    
+
 
 def output_test(request, response, clean_redirects=False):
     print
@@ -204,19 +204,19 @@ def messages(cls, file, skip_headers):
             yield message
         else:
             break
-        
+
 class Request(Message):
 
     path = ''
-    
+
     def __init__(self, file, skip_headers):
         Message.__init__(self, file, skip_headers)
         if self.start:
             self.command, self.path, self.protocol = self.start.split()
-    
+
 def Requests(file, skip_headers):
     return messages(Request, file, skip_headers)
-    
+
 def Responses(file, skip_headers):
     return messages(Message, file, skip_headers)
 
