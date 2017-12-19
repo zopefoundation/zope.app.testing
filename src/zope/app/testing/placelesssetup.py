@@ -30,9 +30,9 @@ class PlacelessSetup(EventPlacelessSetup,
                      ContainerPlacelessSetup):
 
     def setUp(self, doctesttest=None):
+        I18nPlacelessSetup.setUp(self)
         EventPlacelessSetup.setUp(self)
         ContainerPlacelessSetup.setUp(self)
-        I18nPlacelessSetup.setUp(self)
 
         setUpPasswordManagers()
         ztapi.browserView(None, 'absolute_url', AbsoluteURL)
