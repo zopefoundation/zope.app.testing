@@ -1,17 +1,17 @@
-=======
-CHANGES
-=======
+=========
+ CHANGES
+=========
 
 3.11.0 (unreleased)
--------------------
+===================
 
 - Move the dependency on ``zope.testbrowser`` to a new 'testbrowser'
   extra, where it is pinned to version 4. This package is not
   compatible with version 5. If ``zope.testbrowser`` is not installed,
-  the ``zope.app.testing.testbrowser`` package will not be available.
+  the ``zope.app.testing.testbrowser`` module will not be available.
 
 3.10.0 (2012-01-13)
--------------------
+===================
 
 - Removed test dependency on ``zope.app.authentication``.
 
@@ -19,19 +19,19 @@ CHANGES
   zope.app.testing.
 
 3.9.0 (2011-03-14)
-------------------
+==================
 
 - Move zope.app.testing testbrowser functionality into zope.app.testing. This
   requires zope.testbrowser version 4.0.0 or above.
 
 3.8.1 (2011-01-07)
-------------------
+==================
 
 - Include REMOTE_ADDR ('127.0.0.1') in the request environment.
 
 
 3.8.0 (2010-09-14)
-------------------
+==================
 
 - Remove invalid HTTP_REFERER default. (We both don't want a default to allow
   others testing without a referer and 'localhost' is not a reasonable
@@ -46,26 +46,26 @@ CHANGES
 
 
 3.7.7 (2010-09-14)
-------------------
+==================
 
 - Rereleasing 3.7.5 as 3.7.7 to fix brown bag release.
 
 
 3.7.6 (2010-09-14)
-------------------
+==================
 
 - Brown bag release: It broke the tests of ``zope.testbrowser``.
 
 
 3.7.5 (2010-04-10)
-------------------
+==================
 
 - Switch doctests to use the stdlib ``doctest`` module, rather than the
   deprecated ``zope.testing.doctest`` variant.
 
 
 3.7.4 (2010-01-08)
-------------------
+==================
 
 - Import hooks functionality from zope.component after it was moved there from
   zope.site.
@@ -76,27 +76,27 @@ CHANGES
 - Fix tests using a newer zope.publisher that requires zope.login.
 
 3.7.3 (2009-08-20)
-------------------
+==================
 
 - Fixed tests for python 2.4 as well as python 2.5 and 2.6; the change in
   version 3.7.1 introduced test regressions in python 2.4.
 
 3.7.2 (2009-07-24)
-------------------
+==================
 
 - Adjusted tests after the referenced memory leak problem has been fixed in
   ``zope.component``.
 
 
 3.7.1 (2009-07-21)
-------------------
+==================
 
 - Fixed failing tests. The code revealed that the tests expected the wrong
   value.
 
 
 3.7.0 (2009-06-19)
-------------------
+==================
 
 - Depend on new ``zope.processlifetime`` interfaces instead of using
   BBB imports from ``zope.app.appsetup``.
@@ -105,7 +105,7 @@ CHANGES
 
 
 3.6.2 (2009-04-26)
-------------------
+==================
 
 - Removed deprecated back35 module and loose the dependency on
   ``zope.deferredimport``.
@@ -117,7 +117,7 @@ CHANGES
   package anymore.
 
 3.6.1 (2009-03-12)
-------------------
+==================
 
 - Use ISkinnable.providedBy(request) instead of IBrowserRequest as condition
   for calling setDefaultSkin in HTTPCaller. This at the same time removes
@@ -129,7 +129,7 @@ CHANGES
 - Remove the DEPENDENCIES.cfg file for zpkg.
 
 3.6.0 (2009-02-01)
-------------------
+==================
 
 - Fix AttributeError in ``zope.app.testing.setup.setUpTestAsModule``
   (when called without name argument).
@@ -140,30 +140,30 @@ CHANGES
   ``zope.app.component`` for some parts.
 
 3.5.6 (2008-10-13)
-------------------
+==================
 
 - Change argument variable name in provideAdapter to not conflict with
   buitin keyword in Python 2.6.
 
 3.5.5 (2008-10-10)
-------------------
+==================
 
 - Re-configured functional test setup to create test-specific instances
   of HTTPCaller to ensure that cookies are not shared by doctests
   in a test suite.
 
 3.5.4 (2008-08-25)
-------------------
+==================
 
 - Clean up some transaction management in the functional test setup.
 
 3.5.3 (2008-08-22)
-------------------
+==================
 
 - Fix isolation enforcement for product configuration around individual tests.
 
 3.5.2 (2008-08-21)
-------------------
+==================
 
 - Added missing dependency information in setup.py.
 
@@ -173,34 +173,34 @@ CHANGES
   generations.
 
 3.5.1 (2008-08-20)
-------------------
+==================
 
 - Correct Fred's "I'm a doofus" release.
 
 3.5.0 (2008-08-20)
-------------------
+==================
 
 - Add support for product-configuration as part of functional layers; this
   more closely mirrors the configuration order for normal operation.
 
 3.4.3 (2008-07-25)
-------------------
+==================
 
 - Fix memory leak in all functional tests.
   see: https://bugs.launchpad.net/zope3/+bug/251273
 
 3.4.2 (2008-02-02)
-------------------
+==================
 
 - Fix of 599 error on conflict error in request
   see: http://mail.zope.org/pipermail/zope-dev/2008-January/030844.html
 
 3.4.1 (2007-10-31)
-------------------
+==================
 
 - Fixed deprecation warning for ``ZopeSecurityPolicy``.
 
 3.4.0 (2007-10-27)
-------------------
+==================
 
 - Initial release independent of the main Zope tree.
