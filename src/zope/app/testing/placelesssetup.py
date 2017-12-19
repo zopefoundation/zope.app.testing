@@ -13,7 +13,7 @@
 ##############################################################################
 """Unit test logic for setting up and tearing down basic infrastructure
 
-$Id$
+
 """
 from zope.schema.vocabulary import setVocabularyRegistry
 from zope.component.testing import PlacelessSetup as CAPlacelessSetup
