@@ -5,9 +5,12 @@ python:
     - pypy
 install:
     - pip install -U pip setuptools
+    - pip install -U coverage coveralls
     - pip install -U -e .[test]
 script:
-    - zope-testrunner --test-path=src
+    - coverage run -m zope.testrunner --test-path=src
+after_success:
+    - coveralls
 notifications:
     email: false
 cache: pip
