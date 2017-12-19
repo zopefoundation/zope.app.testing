@@ -2,6 +2,12 @@
 CHANGES
 =======
 
+3.11.0 (unreleased)
+-------------------
+
+- Pin dependency of zope.testbrowser to version 4 because this package
+  doesn't work with version 5.
+
 3.10.0 (2012-01-13)
 -------------------
 

@@ -13,10 +13,9 @@
 ##############################################################################
 """Unit test logic for setting up and tearing down basic infrastructure
 
-$Id$
+
 """
 from zope.schema.vocabulary import setVocabularyRegistry
-from zope.component.testing import PlacelessSetup as CAPlacelessSetup
 from zope.component.eventtesting import PlacelessSetup as EventPlacelessSetup
 from zope.i18n.testing import PlacelessSetup as I18nPlacelessSetup
 from zope.password.testing import setUpPasswordManagers
@@ -26,16 +25,14 @@ from zope.traversing.browser.absoluteurl import AbsoluteURL
 from zope.app.testing import ztapi
 from zope.container.testing import PlacelessSetup as ContainerPlacelessSetup
 
-class PlacelessSetup(CAPlacelessSetup,
-                     EventPlacelessSetup,
+class PlacelessSetup(EventPlacelessSetup,
                      I18nPlacelessSetup,
                      ContainerPlacelessSetup):
 
     def setUp(self, doctesttest=None):
-        CAPlacelessSetup.setUp(self)
+        I18nPlacelessSetup.setUp(self)
         EventPlacelessSetup.setUp(self)
         ContainerPlacelessSetup.setUp(self)
-        I18nPlacelessSetup.setUp(self)
 
         setUpPasswordManagers()
         ztapi.browserView(None, 'absolute_url', AbsoluteURL)

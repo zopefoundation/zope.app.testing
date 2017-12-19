@@ -1,9 +1,13 @@
 language: python
+sudo: false
 python:
     - 2.7
+    - pypy
 install:
-    - pip install .
+    - pip install -U pip setuptools
+    - pip install -U -e .[test]
 script:
-    - python setup.py test -q
+    - zope-testrunner --test-path=src
 notifications:
     email: false
+cache: pip
