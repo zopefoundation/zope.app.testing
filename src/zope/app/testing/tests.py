@@ -308,7 +308,7 @@ class Echo(object):
                 continue
             v = self.request.get(k, None)
             items.append('%s: %s' % (k, v))
-        items.extend('%s: %s' % x for x in sorted(self.request.form.items())) 
+        items.extend('%s: %s' % x for x in sorted(self.request.form.items()))
         items.append('Body: %r' % self.request.bodyStream.read())
         return '\n'.join(items)
 
@@ -708,13 +708,13 @@ def test_suite():
          'HTTP_USER_AGENT: Python-urllib/2.4'),
         (re.compile(r'Content-[Ll]ength:.*'), 'Content-Length: 123'),
         ])
-    testbrowser_test = FunctionalDocFileSuite('testbrowser.txt',
+    testbrowser_test = FunctionalDocFileSuite('testbrowser.rst',
                                               setUp=testbrowserSetUp,
                                               checker=testbrowser_checker)
     testbrowser_test.layer = AppTestingLayer
 
-    doc_test = FunctionalDocFileSuite('doctest.txt', 'cookieTestOne.txt',
-        'cookieTestTwo.txt', checker=checker)
+    doc_test = FunctionalDocFileSuite('doctest.rst', 'cookieTestOne.rst',
+        'cookieTestTwo.rst', checker=checker)
     doc_test.layer = AppTestingLayer
 
     return unittest.TestSuite((

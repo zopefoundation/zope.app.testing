@@ -1,6 +1,6 @@
-=================
-FDocTest (How-To)
-=================
+===================
+ FDocTest (How-To)
+===================
 
 Steps to get started:
 
@@ -29,9 +29,7 @@ Steps to get started:
 9. Edit the generated text file to add explanations and elide
    uninteresting portions of the output.
 
-10. In a functional test module (usually ftests.py), import 
-    FunctionalDocFileSuite from zope.app.testing.functional and 
-    instantiate it, passing the name of the text file containing 
+10. In a functional test module (usually ftests.py), import
+    FunctionalDocFileSuite from zope.app.testing.functional and
+    instantiate it, passing the name of the text file containing
     the test.
-
-

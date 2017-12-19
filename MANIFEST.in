@@ -1,5 +1,6 @@
 include *.py
 include *.txt
+include *.rst
 include buildout.cfg
 include tox.ini
 include .travis.yml
@@ -7,4 +8,5 @@ include .travis.yml
 recursive-include src *.request
 recursive-include src *.response
 recursive-include src *.txt
+recursive-include src *.rst
 recursive-include src *.zcml

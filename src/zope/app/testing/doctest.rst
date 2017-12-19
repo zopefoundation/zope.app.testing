@@ -1,12 +1,12 @@
-========================
-DocTest Functional Tests
-========================
+==========================
+ DocTest Functional Tests
+==========================
 
 This file documents and tests doctest-based functional tests and basic
 Zope web-application functionality.
 
 Request/Response Functional Tests
----------------------------------
+=================================
 
 You can create Functional tests as doctests.  Typically, this is done
 by using a script such as src/zope/app/testing/dochttp.py to convert
@@ -112,7 +112,7 @@ Finally, lets access the default page for the site:
   <!DOCTYPE html PUBLIC ...
 
 Access to the object system
----------------------------
+===========================
 
 You can use the `getRootFolder()` function:
 

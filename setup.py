@@ -39,13 +39,13 @@ setup(name='zope.app.testing',
       author_email='zope-dev@zope.org',
       description='Zope Application Testing Support',
       long_description=(
-          read('README.txt')
+          read('README.rst')
           + '\n\n.. contents::\n\n' +
-          read('src', 'zope', 'app', 'testing', 'dochttp.txt')
+          read('src', 'zope', 'app', 'testing', 'dochttp.rst')
           + '\n\n' +
-          read('src', 'zope', 'app', 'testing', 'doctest.txt')
+          read('src', 'zope', 'app', 'testing', 'doctest.rst')
           + '\n\n' +
-          read('CHANGES.txt')
+          read('CHANGES.rst')
           ),
       keywords="zope3 test testing setup functional",
       classifiers=[

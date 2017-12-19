@@ -5,7 +5,7 @@ DocTest Functional Tests
 This file documents and tests doctest-based functional tests and basic
 Zope web-application functionality.
 
-This second DocTest, zope/app/testing/cookieTestOne.txt, has specifically
+This second DocTest, zope/app/testing/cookieTestOne.rst, has specifically
 been created in order to make sure cookie information is not being saved
 across a test suite. If we are saving these via a global 'http' instance,
 we will see more results than those listed below. 'http' is instead
