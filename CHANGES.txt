@@ -2,6 +2,14 @@
 CHANGES
 =======
 
+3.11.0 (unreleased)
+-------------------
+
+- Move the dependency on ``zope.testbrowser`` to a new 'testbrowser'
+  extra, where it is pinned to version 4. This package is not
+  compatible with version 5. If ``zope.testbrowser`` is not installed,
+  the ``zope.app.testing.testbrowser`` package will not be available.
+
 3.10.0 (2012-01-13)
 -------------------
 
