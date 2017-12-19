@@ -203,9 +203,7 @@ class DummyCookiesResponse(object):
     _cookies = None
 
     def __init__(self, cookies=None):
-        if not cookies:
-            cookies = {}
-        self._cookies = cookies
+        self._cookies = cookies or {}
 
 
 class CookieHandlerTestCase(unittest.TestCase):
@@ -218,10 +216,10 @@ class CookieHandlerTestCase(unittest.TestCase):
             monty=dict(value='python')))
         self.handler.saveCookies(response)
         self.assertEqual(len(self.handler.cookies), 2)
-        self.assert_(self.handler.cookies['spam'].OutputString() in
-                         ('spam=eggs; Path=/foo;', 'spam=eggs; Path=/foo'))
-        self.assert_(self.handler.cookies['monty'].OutputString() in
-                         ('monty=python;', 'monty=python'))
+        self.assertIn(self.handler.cookies['spam'].OutputString(),
+                      ('spam=eggs; Path=/foo;', 'spam=eggs; Path=/foo'))
+        self.assertIn(self.handler.cookies['monty'].OutputString(),
+                      ('monty=python;', 'monty=python'))
 
     def test_httpCookie(self):
         cookies = self.handler.cookies
@@ -666,29 +664,6 @@ def doctest_ZCMLLayer_carries_product_configuration():
 
     """
 
-def testbrowserSetUp(test):
-    import zope.configuration.xmlconfig
-
-    zope.configuration.xmlconfig.string(r'''
-    <configure xmlns="http://namespaces.zope.org/browser">
-
-       <include package="zope.browserpage" file="meta.zcml" />
-
-       <page
-          name="echo"
-          for="*"
-          permission="zope.Public"
-          class="zope.app.testing.tests.Echo" />
-
-       <page
-          name="echo_one"
-          for="*"
-          permission="zope.Public"
-          class="zope.app.testing.tests.EchoOne" />
-
-    </configure>
-    ''')
-
 
 def test_suite():
     checker = RENormalizing([
@@ -702,16 +677,6 @@ def test_suite():
     BrowserFunctionalTest.layer = AppTestingLayer
     HTTPCallerFunctionalTest.layer = AppTestingLayer
 
-    testbrowser_checker = RENormalizing([
-        (re.compile(r'Status: 200.*'), 'Status: 200 OK'),
-        (re.compile(r'HTTP_USER_AGENT:\s+\S+'),
-         'HTTP_USER_AGENT: Python-urllib/2.4'),
-        (re.compile(r'Content-[Ll]ength:.*'), 'Content-Length: 123'),
-        ])
-    testbrowser_test = FunctionalDocFileSuite('testbrowser.rst',
-                                              setUp=testbrowserSetUp,
-                                              checker=testbrowser_checker)
-    testbrowser_test.layer = AppTestingLayer
 
     doc_test = FunctionalDocFileSuite('doctest.rst', 'cookieTestOne.rst',
         'cookieTestTwo.rst', checker=checker)
@@ -732,7 +697,6 @@ def test_suite():
         unittest.makeSuite(RetryProblemFunctional),
         unittest.makeSuite(RetryProblemBrowser),
         doc_test,
-        testbrowser_test,
         ))
 
 if __name__ == '__main__':

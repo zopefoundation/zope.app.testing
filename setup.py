@@ -27,14 +27,8 @@ def read(*rnames):
     with open(os.path.join(os.path.dirname(__file__), *rnames)) as f:
         return f.read()
 
-TESTBROWSER_REQUIRES = [
-    # zope.testbrowser version 5 has a new API and
-    # doesn't have the 'connection' module
-    'zope.testbrowser >=4,<5',
-]
-
 setup(name='zope.app.testing',
-      version='3.11.0.dev0',
+      version='4.0.0.dev0',
       author='Zope Foundation and Contributors',
       author_email='zope-dev@zope.org',
       description='Zope Application Testing Support',
@@ -76,8 +70,7 @@ setup(name='zope.app.testing',
               'zope.publisher >= 3.12',
               'zope.securitypolicy',
               'zope.testrunner',
-          ] + TESTBROWSER_REQUIRES,
-          'testbrowser': TESTBROWSER_REQUIRES,
+          ],
       },
       install_requires=[
           'setuptools',
