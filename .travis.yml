@@ -3,6 +3,7 @@ sudo: false
 python:
     - 2.7
     - pypy
+    - 3.6
 install:
     - pip install -U pip setuptools
     - pip install -U coverage coveralls

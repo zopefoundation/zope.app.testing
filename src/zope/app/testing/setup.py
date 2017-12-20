@@ -171,7 +171,7 @@ class FakeModule:
 
 def setUpTestAsModule(test, name=None):
     if name is None:
-        if test.globs.has_key('__name__'):
+        if '__name__' in test.globs:
             name = test.globs['__name__']
         else:
             name = test.globs.name

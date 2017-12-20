@@ -13,7 +13,6 @@
 ##############################################################################
 """Test tcpdoc
 
-$Id$
 """
 from doctest import DocTestSuite
 import os
@@ -678,26 +677,16 @@ def test_suite():
     HTTPCallerFunctionalTest.layer = AppTestingLayer
 
 
-    doc_test = FunctionalDocFileSuite('doctest.rst', 'cookieTestOne.rst',
+    doc_test = FunctionalDocFileSuite(
+        'doctest.rst', 'cookieTestOne.rst',
         'cookieTestTwo.rst', checker=checker)
     doc_test.layer = AppTestingLayer
 
     return unittest.TestSuite((
-        unittest.makeSuite(FunctionalHTTPDocTest),
-        unittest.makeSuite(AuthHeaderTestCase),
-        unittest.makeSuite(HTTPCallerTestCase),
-        unittest.makeSuite(CookieHandlerTestCase),
+        unittest.defaultTestLoader.loadTestsFromName(__name__),
         DocTestSuite(),
-        unittest.makeSuite(SampleFunctionalTest),
-        unittest.makeSuite(HTTPFunctionalTest),
-        unittest.makeSuite(BrowserFunctionalTest),
-        unittest.makeSuite(HTTPCallerFunctionalTest),
-        unittest.makeSuite(CookieFunctionalTest),
-        unittest.makeSuite(SkinsAndHTTPCaller),
-        unittest.makeSuite(RetryProblemFunctional),
-        unittest.makeSuite(RetryProblemBrowser),
         doc_test,
-        ))
+    ))
 
 if __name__ == '__main__':
     unittest.main(defaultTest='test_suite')

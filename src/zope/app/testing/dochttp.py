@@ -13,8 +13,8 @@
 ##############################################################################
 """Convert an http tcpwatch session to a doctest
 
-$Id$
 """
+from __future__ import print_function
 
 import errno
 import optparse
@@ -79,25 +79,27 @@ def dochttp(args=sys.argv[1:], default=None):
     names = [name[:-len(".request")]
              for name in os.listdir(directory)
              if name.startswith(options.prefix) and name.endswith('.request')
-             ]
+    ]
     names.sort()
 
-    extre = re.compile("[.](\w+)$")
+    extre = re.compile(r"[.](\w+)$")
 
     for name in names:
-        requests =  Requests(
-                        open(os.path.join(directory, name + ".request"), 'rb'),
-                        options.skip_request_header,
-                        )
-        responses = Responses(
-                        open(os.path.join(directory, name + ".response"), 'rb'),
-                        options.skip_response_header,
-                        )
+        with open(os.path.join(directory, name + ".request"), 'rb') as f:
+            requests = list(Requests(
+                f,
+                options.skip_request_header,
+            ))
+        with open(os.path.join(directory, name + ".response"), 'rb') as f:
+            responses = list(Responses(
+                f,
+                options.skip_response_header,
+            ))
 
-        # We use map so as *not* to truncate at shortest input.
-        # We want an error if the number of requests and responses
-        # is different.
-        for request, response in map(None, requests, responses):
+        if len(requests) != len(responses):
+            raise ValueError("Expected equal length requests and responses")
+
+        for request, response in zip(requests, responses):
             assert (request and response) or not (request or response)
 
             path = request.path
@@ -117,17 +119,17 @@ def dochttp(args=sys.argv[1:], default=None):
             else:
                 try:
                     output_test(request, response, options.clean_redirects)
-                except IOError, e:
+                except IOError as e:
                     if e.errno == errno.EPIPE:
                         return
                     raise
 
 
 def output_test(request, response, clean_redirects=False):
-    print
-    print
-    print '  >>> print http(r"""'
-    print '  ...', '\n  ... '.join(request.lines())+'""")'
+    print()
+    print()
+    print('  >>> print http(r"""')
+    print('  ...', '\n  ... '.join(request.lines())+'""")')
     if response.code in (301, 302, 303) and clean_redirects:
         content_length = None
         if response.headers:
@@ -141,10 +143,10 @@ def output_test(request, response, clean_redirects=False):
             lines.append("...")
     else:
         lines = response.lines()
-    print ' ', '\n  '.join([line.rstrip() and line or '<BLANKLINE>'
-                             for line in lines])
+    print(' ', '\n  '.join([line.rstrip() and line or '<BLANKLINE>'
+                            for line in lines]))
 
-class Message:
+class Message(object):
 
     start = ''
 
@@ -157,7 +159,7 @@ class Message:
                 self.code = int(start.split()[1])
             headers = [split_header(header)
                        for header in rfc822.Message(file).headers
-                       ]
+            ]
             headers = [
                 ('-'.join([s.capitalize() for s in name.split('-')]),
                  v.rstrip()
@@ -192,13 +194,13 @@ class Message:
             output = []
         return output
 
-headerre = re.compile('(\S+): (.+)$')
+headerre = re.compile(r'(\S+): (.+)$')
 def split_header(header):
     return headerre.match(header).group(1, 2)
 
 def messages(cls, file, skip_headers):
     skip_headers = [name.lower() for name in (skip_headers or ())]
-    while 1:
+    while True:
         message = cls(file, skip_headers)
         if message:
             yield message

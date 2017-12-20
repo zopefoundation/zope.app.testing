@@ -63,7 +63,7 @@ def setDefaultViewName(for_, name, layer=IDefaultBrowserLayer,
 
 stypes = list, tuple
 def provideAdapter(required, provided, factory, name='', with_=(), **kw):
-    if with_ is None and kw.has_key('with'):
+    if with_ is None and 'with' in kw:
         with_ = kw['with']
     if isinstance(factory, (list, tuple)):
         raise ValueError("Factory cannot be a list or tuple")
