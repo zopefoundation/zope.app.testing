@@ -18,7 +18,6 @@ from doctest import DocTestSuite
 import os
 import re
 import unittest
-import StringIO
 
 from zope.testing.renormalizing import RENormalizing
 from zope.component import getAllUtilitiesRegisteredFor
@@ -38,7 +37,7 @@ from zope.app.testing.functional import FunctionalTestSetup
 from zope.app.testing.testing import AppTestingLayer
 
 from zope.app.testing.testing import FailingKlass
-
+from zope.app.testing._compat import NativeStringIO
 
 HEADERS = """\
 HTTP/1.1 200 OK
@@ -145,7 +144,7 @@ class FunctionalHTTPDocTest(unittest.TestCase):
     def test_dochttp(self):
         import sys
         old = sys.stdout
-        sys.stdout = StringIO.StringIO()
+        sys.stdout = NativeStringIO()
         dochttp(['-p', 'test', directory])
         got = sys.stdout.getvalue()
         sys.stdout = old

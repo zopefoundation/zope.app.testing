@@ -20,8 +20,9 @@ import errno
 import optparse
 import os
 import re
-import rfc822
 import sys
+
+from zope.app.testing._compat import headers_factory
 
 usage = """usage: %prog <options> directory
 
@@ -69,7 +70,7 @@ def dochttp(args=sys.argv[1:], default=None):
         directory, = args
     except:
         parser.print_help()
-        sys.exit(1)
+        raise
 
     skip_extensions = options.skip_extension or ()
     extensions = [ext for ext in (options.extension or ())
@@ -158,7 +159,7 @@ class Message(object):
                 # This is a response; extract the response code:
                 self.code = int(start.split()[1])
             headers = [split_header(header)
-                       for header in rfc822.Message(file).headers
+                       for header in headers_factory(file).headers
             ]
             headers = [
                 ('-'.join([s.capitalize() for s in name.split('-')]),

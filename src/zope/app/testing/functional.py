@@ -15,19 +15,20 @@
 
 There should be a file 'ftesting.zcml' in the current directory.
 
-$Id$
 """
 import copy
 import doctest
 import logging
 import os.path
 import re
-import rfc822
+
+
 import sys
 import traceback
 import unittest
-from StringIO import StringIO
-from Cookie import SimpleCookie
+
+from six.moves.http_cookies import SimpleCookie
+
 from transaction import abort, commit
 from ZODB.DB import DB
 from ZODB.DemoStorage import DemoStorage
@@ -43,6 +44,8 @@ from zope.security.interfaces import Forbidden, Unauthorized
 
 import zope.app.appsetup.product
 import zope.app.testing.setup
+from zope.app.testing._compat import NativeStringIO
+from zope.app.testing._compat import headers_factory
 from zope.app.appsetup.appsetup import multi_database
 from zope.app.debug import Debugger
 from zope.app.publication.http import HTTPPublication
@@ -188,7 +191,7 @@ class FunctionalTestSetup(object):
                 config_file = 'ftesting.zcml'
             if database_names is None:
                 database_names = ('unnamed',)
-            self.log = StringIO()
+            self.log = NativeStringIO()
             # Make it silent but keep the log available for debugging
             logging.root.addHandler(logging.StreamHandler(self.log))
 
@@ -197,7 +200,7 @@ class FunctionalTestSetup(object):
             configs = []
             if product_config:
                 configs = zope.app.appsetup.product.loadConfiguration(
-                    StringIO(product_config))
+                    NativeStringIO(product_config))
                 configs = [
                     zope.app.appsetup.product.FauxConfiguration(name, values)
                     for name, values in configs.items()]
@@ -430,8 +433,10 @@ class CookieHandler(object):
         # cookies
         # TODO: handle cookie expirations
         for k, v in response._cookies.items():
-            k = k.encode('utf8')
-            self.cookies[k] = v['value'].encode('utf8')
+            k = k.encode('utf8') if bytes is str else k
+            val = v['value']
+            val = val.encode('utf8') if bytes is str else val
+            self.cookies[k] = val
             if 'path' in v:
                 self.cookies[k]['path'] = v['path']
 
@@ -649,7 +654,9 @@ def auth_header(header):
             u = ''
         if p is None:
             p = ''
-        auth = base64.encodestring('%s:%s' % (u, p))
+        user_pass = '%s:%s' % (u, p)
+        auth = base64.encodestring(user_pass.encode("latin-1"))
+        auth = auth.decode('ascii')
         return 'Basic %s' % auth[:-1]
     return header
 
@@ -706,7 +713,7 @@ class HTTPCaller(CookieHandler):
         request_string = request_string[l + 1:]
         method, path, protocol = command_line.split()
 
-        instream = StringIO(request_string)
+        instream = NativeStringIO(request_string)
         environment = {"HTTP_COOKIE": self.httpCookie(path),
                        "HTTP_HOST": 'localhost',
                        "REQUEST_METHOD": method,
@@ -715,7 +722,7 @@ class HTTPCaller(CookieHandler):
                        }
 
         headers = [split_header(header)
-                   for header in rfc822.Message(instream).headers]
+                   for header in headers_factory(instream).headers]
         for name, value in headers:
             name = ('_'.join(name.upper().split('-')))
             if name not in ('CONTENT_TYPE', 'CONTENT_LENGTH'):

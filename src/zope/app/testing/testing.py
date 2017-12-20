@@ -13,7 +13,6 @@
 ##############################################################################
 """zope.app.testing common test related classes/functions/objects.
 
-$Id$
 """
 
 __docformat__ = "reStructuredText"
@@ -33,16 +32,17 @@ AppTestingLayer = ZCMLLayer(
 class IFailingKlass(interface.Interface):
     pass
 
+@interface.implementer(IFailingKlass)
 class FailingKlass(object):
-    interface.implements(IFailingKlass)
+    pass
 
 
+@interface.implementer(zope.publisher.interfaces.browser.IBrowserPublisher)
+@component.adapter(interface.Interface,
+                   zope.publisher.interfaces.browser.IBrowserRequest)
 class ConflictRaisingView(object):
     __used_for__ = IFailingKlass
 
-    interface.implements(zope.publisher.interfaces.browser.IBrowserPublisher)
-    component.adapts(interface.Interface,
-                     zope.publisher.interfaces.browser.IBrowserRequest)
 
 
     def __init__(self, context, request):
