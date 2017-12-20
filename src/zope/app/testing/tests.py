@@ -663,6 +663,25 @@ def doctest_ZCMLLayer_carries_product_configuration():
 
     """
 
+class TestXMLRPCTransport(unittest.TestCase):
+
+    def _makeOne(self):
+        from zope.app.testing.xmlrpc import ZopeTestTransport
+        return ZopeTestTransport()
+
+    def test_construct(self):
+        self._makeOne()
+
+
+class TestXMLRPCServerProxy(unittest.TestCase):
+
+    def _makeOne(self, uri, **kwargs):
+        from zope.app.testing.xmlrpc import ServerProxy
+        return ServerProxy(uri, **kwargs)
+
+    def test_conscruct(self):
+        self._makeOne("http://example.com")
+
 
 def test_suite():
     checker = RENormalizing([
