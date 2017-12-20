@@ -66,11 +66,10 @@ def dochttp(args=sys.argv[1:], default=None, output_fp=None):
         default = default_options
 
     options, args = parser.parse_args(default + args)
-    try:
-        directory, = args
-    except: # pragma: no cover
-        parser.print_help()
-        raise
+    if not args or not len(args) == 1:
+        parser.error("Exactly one argument expected: directory")
+
+    directory = args[0]
 
     skip_extensions = options.skip_extension or ()
     extensions = [ext for ext in (options.extension or ())
@@ -97,8 +96,9 @@ def dochttp(args=sys.argv[1:], default=None, output_fp=None):
                 options.skip_response_header,
             ))
 
-        if len(requests) != len(responses): # pragma: no cover
-            raise ValueError("Expected equal length requests and responses")
+        if len(requests) != len(responses):
+            sys.exit("Expected equal numbers of requests and responses in %r"
+                     % (os.path.join(directory, name + '.*')))
 
         for request, response in zip(requests, responses):
             assert (request and response) or not (request or response)

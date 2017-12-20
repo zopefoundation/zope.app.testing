@@ -141,12 +141,43 @@ expected = r'''
 class FunctionalHTTPDocTest(unittest.TestCase):
     maxDiff = None
 
+    assertRaisesRegex = getattr(unittest.TestCase, 'assertRaisesRegex',
+                                unittest.TestCase.assertRaisesRegexp)
+
     def test_dochttp(self):
         capture = NativeStringIO()
         dochttp(['-p', 'test', directory], output_fp=capture)
         got = capture.getvalue()
-
         self.assertEqual(expected, got)
+
+    def test_no_argument(self):
+        import sys
+        old_stderr = sys.stderr
+        sys.stderr = NativeStringIO()
+        try:
+            with self.assertRaises(SystemExit) as exc:
+                dochttp(["-p", 'test'])
+        finally:
+            sys.stderr = old_stderr
+
+        e = exc.exception
+        self.assertEqual(e.args, (2,))
+
+    def test_bad_directory_argument(self):
+        import tempfile
+        import shutil
+        d = tempfile.mkdtemp('.zope.app.testing')
+        self.addCleanup(shutil.rmtree, d)
+
+        with open(os.path.join(d, 'test1.request'), 'wt') as f:
+            f.write("Fake request file")
+        with open(os.path.join(d, 'test1.response'), 'wt') as f:
+            f.write("")
+
+        with self.assertRaisesRegex(SystemExit,
+                                    "Expected equal numbers of requests and responses in "
+                                    "'" + d) as exc:
+            dochttp(["-p", 'test', d])
 
 
 class AuthHeaderTestCase(unittest.TestCase):
@@ -657,7 +688,7 @@ class TestXMLRPCServerProxy(unittest.TestCase):
         from zope.app.testing.xmlrpc import ServerProxy
         return ServerProxy(uri, **kwargs)
 
-    def test_conscruct(self):
+    def test_construct(self):
         self._makeOne("http://example.com")
 
 class TestConflictRaisingView(unittest.TestCase):
