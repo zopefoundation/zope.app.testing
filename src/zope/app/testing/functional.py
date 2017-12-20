@@ -16,6 +16,7 @@
 There should be a file 'ftesting.zcml' in the current directory.
 
 """
+from __future__ import print_function
 import copy
 import doctest
 import logging
@@ -84,7 +85,20 @@ class ResponseWrapper(object):
     def getBody(self):
         """Returns the response body"""
         if self._body is None:
-            b = self._response.consumeBody()
+            try:
+                b = self._response.consumeBody()
+            except TypeError:
+                from zope.publisher.http import DirectResult
+                from zope.publisher.xmlrpc import XMLRPCResponse
+                if (isinstance(self._response, XMLRPCResponse)
+                    and isinstance(getattr(self._response, '_result', None), DirectResult)):
+                    # Somewhere in the publisher we're getting a DirectResult
+                    # whose '_result' body is a sequence of strings, but we're expecting
+                    # bytes
+                    b = ''.join(self._response._result.body)
+                else:
+                    raise
+
             if isinstance(b, bytes) and bytes is not str:
                 b = b.decode("utf-8")
             self._body = ''.join(b)

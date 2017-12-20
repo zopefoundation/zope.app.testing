@@ -43,8 +43,6 @@ class FailingKlass(object):
 class ConflictRaisingView(object):
     __used_for__ = IFailingKlass
 
-
-
     def __init__(self, context, request):
         pass
 

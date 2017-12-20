@@ -17,15 +17,16 @@
 # XXX: This code is duplicated in zope.app.publisher.xmlrpc.tests
 
 try:
-    from http.client import HTTPResponse
-except ImportError:
     from httplib import HTTPResponse
+except ImportError:
+    from http.client import HTTPResponse
+
 import io
 
 try:
-    import xmlrpc.client as xmlrpclib
-except ImportError:
     import xmlrpclib
+except ImportError:
+    import xmlrpc.client as xmlrpclib
 
 from zope.app.testing.functional import HTTPCaller
 
@@ -36,7 +37,10 @@ class FakeSocket(object):
         self.data = data
 
     def makefile(self, mode, bufsize=None):
-        return io.BytesIO(self.data)
+        assert 'b' in mode
+        data = self.data
+        data = data.encode('iso-8859-1') if not isinstance(data, bytes) else data
+        return io.BytesIO(data)
 
 
 class ZopeTestTransport(xmlrpclib.Transport):
@@ -55,12 +59,19 @@ class ZopeTestTransport(xmlrpclib.Transport):
         request += "Content-Length: %i\n" % len(request_body)
         request += "Content-Type: text/xml\n"
 
-        host, extra_headers, x509 = self.get_host_info(host)
+        host, extra_headers, _x509 = self.get_host_info(host)
         if extra_headers:
             request += "Authorization: %s\n" % (
                 dict(extra_headers)["Authorization"],)
 
-        request += "\n" + request_body
+        request += "\n"
+
+        if isinstance(request_body, bytes) and str is not bytes:
+            # Python 3
+            request = request.encode("ascii")
+        request += request_body
+        if not isinstance(request, str) and str is not bytes:
+            request = request.decode("utf-8")
         response = HTTPCaller()(request, handle_errors=self.handleErrors)
 
         errcode = response.getStatus()
@@ -69,13 +80,14 @@ class ZopeTestTransport(xmlrpclib.Transport):
         # headers.
         headers = response.getHeaders()
 
-        if errcode != 200:
+        if errcode != 200: # pragma: no cover
             raise xmlrpclib.ProtocolError(
                 host + handler,
                 errcode, errmsg,
                 headers
                 )
-        res = HTTPResponse(FakeSocket(response.getBody()))
+        content = 'HTTP/1.0 ' + errmsg + '\n\n' + response.getBody()
+        res = HTTPResponse(FakeSocket(content))
         res.begin()
         return self.parse_response(res)
 

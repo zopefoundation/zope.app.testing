@@ -68,7 +68,7 @@ def dochttp(args=sys.argv[1:], default=None, output_fp=None):
     options, args = parser.parse_args(default + args)
     try:
         directory, = args
-    except:
+    except: # pragma: no cover
         parser.print_help()
         raise
 
@@ -97,7 +97,7 @@ def dochttp(args=sys.argv[1:], default=None, output_fp=None):
                 options.skip_response_header,
             ))
 
-        if len(requests) != len(responses):
+        if len(requests) != len(responses): # pragma: no cover
             raise ValueError("Expected equal length requests and responses")
 
         for request, response in zip(requests, responses):
@@ -201,14 +201,13 @@ class Message(object):
 
     def header_lines(self):
         # A sequence of str lines
+        output = []
         if self.start:
-            output = [self.start]
+            output.append(self.start)
             headers = ["%s: %s" % (name, v) for (name, v) in self.headers]
             headers.sort()
             output.extend(headers)
             output.append('')
-        else:
-            output = []
         return output
 
 headerre = re.compile(r'(\S+): (.+)$')

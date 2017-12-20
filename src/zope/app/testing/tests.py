@@ -292,28 +292,6 @@ class SetCookies(object):
         self.request.response.setCookie('bid', 'bval')
 
 
-class Echo(object):
-    """Simply echo the interesting parts of the request"""
-
-    def __call__(self):
-        items = []
-        for k in sorted(self.request.keys()):
-            if k in self.request.form:
-                continue
-            v = self.request.get(k, None)
-            items.append('%s: %s' % (k, v))
-        items.extend('%s: %s' % x for x in sorted(self.request.form.items()))
-        items.append('Body: %r' % self.request.bodyStream.read())
-        return '\n'.join(items)
-
-
-class EchoOne(object):
-    """Echo one variable from the request"""
-
-    def __call__(self):
-        return repr(self.request.get(self.request.form['var']))
-
-
 class CookieFunctionalTest(BrowserTestCase):
 
     """Functional tests should handle cookies like a web browser
@@ -682,8 +660,49 @@ class TestXMLRPCServerProxy(unittest.TestCase):
     def test_conscruct(self):
         self._makeOne("http://example.com")
 
+class TestConflictRaisingView(unittest.TestCase):
+
+    def _makeOne(self, context=None, request=None):
+        from zope.app.testing.testing import ConflictRaisingView
+        return ConflictRaisingView(context, request)
+
+    def test_browserDefault(self):
+        view = self._makeOne()
+        self.assertEqual(view.browserDefault(), (view, ()))
+
+    def test_call(self):
+        from ZODB.POSException import ConflictError
+        view = self._makeOne()
+        with self.assertRaises(ConflictError):
+            view()
+
+class TestPlacefulSetUp(unittest.TestCase):
+
+    def setUp(self):
+        from zope.app.testing.setup import placefulSetUp
+        self.site = placefulSetUp(True)
+
+    def tearDown(self):
+        from zope.app.testing.setup import placefulTearDown
+        placefulTearDown()
+        self.site = None
+
+    def testSite(self):
+        from zope.component.hooks import getSite
+        self.assertEqual(self.site, getSite())
+
+    def test_buildSampleFolderTree(self):
+        from zope.app.testing.setup import buildSampleFolderTree
+
+        t = buildSampleFolderTree()
+        self.assertTrue(t)
 
 def test_suite():
+    from zope.app.testing.setup import setUpTestAsModule
+    from zope.app.testing.setup import tearDownTestAsModule
+    import doctest
+    from zope.testing import renormalizing
+
     checker = RENormalizing([
         (re.compile(r'^HTTP/1.1 (\d{3}) .*?\n'), 'HTTP/1.1 \\1\n')])
     SampleFunctionalTest.layer = AppTestingLayer
@@ -701,10 +720,49 @@ def test_suite():
         'cookieTestTwo.rst', checker=checker)
     doc_test.layer = AppTestingLayer
 
+    xml_checker = RENormalizing((
+        (re.compile('<DateTime \''), '<DateTime u\''),
+        (re.compile('at [-0-9a-fA-F]+'), 'at <SOME ADDRESS>'),
+        (re.compile("HTTP/1.0"), "HTTP/1.1"),
+    ))
+
+    def xmlSetUp(test):
+        setUpTestAsModule(test, 'zope.app.testing.xmlrpc.README')
+
+    def xmlTearDown(test):
+        # clean up the views we registered:
+
+        # we use the fact that registering None unregisters whatever is
+        # registered. We can't use an unregistration call because that
+        # requires the object that was registered and we don't have that handy.
+        # (OK, we could get it if we want. Maybe later.)
+        from zope.site.interfaces import IFolder
+        from zope.publisher.interfaces.xmlrpc import IXMLRPCRequest
+
+        zope.component.provideAdapter(None, (
+            IFolder,
+            IXMLRPCRequest
+        ), zope.interface, 'contents')
+
+        tearDownTestAsModule(test)
+
+
+    xmlrpcsuite = FunctionalDocFileSuite(
+        'xmlrpc.rst',
+        setUp=xmlSetUp,
+        tearDown=xmlTearDown,
+        checker=xml_checker,
+        optionflags=(doctest.ELLIPSIS
+                     | doctest.NORMALIZE_WHITESPACE
+                     | renormalizing.IGNORE_EXCEPTION_MODULE_IN_PYTHON2)
+    )
+    xmlrpcsuite.layer = AppTestingLayer
+
     return unittest.TestSuite((
         unittest.defaultTestLoader.loadTestsFromName(__name__),
         DocTestSuite(),
         doc_test,
+        xmlrpcsuite,
     ))
 
 if __name__ == '__main__':

@@ -13,10 +13,11 @@
 ##############################################################################
 """Setting up an environment for testing context-dependent objects
 
-$Id$
 """
 import zope.component
 import zope.traversing.api
+
+from zope.testing.module import FakeModule
 
 #------------------------------------------------------------------------
 # Annotations
@@ -156,18 +157,6 @@ class NoCopyDict(dict):
     def copy(self):
         return self
 
-class FakeModule:
-    """A fake module."""
-    
-    def __init__(self, dict):
-        self.__dict = dict
-
-    def __getattr__(self, name):
-        try:
-            return self.__dict[name]
-        except KeyError:
-            raise AttributeError(name)
-
 
 def setUpTestAsModule(test, name=None):
     if name is None:
@@ -176,7 +165,7 @@ def setUpTestAsModule(test, name=None):
         else:
             name = test.globs.name
 
-    test.globs['__name__'] = name 
+    test.globs['__name__'] = name
     test.globs = NoCopyDict(test.globs)
     sys.modules[name] = FakeModule(test.globs)
 
@@ -184,4 +173,3 @@ def setUpTestAsModule(test, name=None):
 def tearDownTestAsModule(test):
     del sys.modules[test.globs['__name__']]
     test.globs.clear()
-
