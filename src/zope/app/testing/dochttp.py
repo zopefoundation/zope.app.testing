@@ -60,12 +60,12 @@ default_options = [
 
     ]
 
-def dochttp(args=sys.argv[1:], default=None):
+def dochttp(args=sys.argv[1:], default=None, output_fp=None):
     """Convert a tcpwatch recorded sesssion to a doctest file"""
     if default is None:
         default = default_options
 
-    options, args = parser.parse_args(default+args)
+    options, args = parser.parse_args(default + args)
     try:
         directory, = args
     except:
@@ -107,6 +107,7 @@ def dochttp(args=sys.argv[1:], default=None):
             ext = extre.search(path)
             if ext:
                 ext = ext.group(1)
+
                 if extensions:
                     if ext not in extensions:
                         continue
@@ -119,18 +120,22 @@ def dochttp(args=sys.argv[1:], default=None):
                     break
             else:
                 try:
-                    output_test(request, response, options.clean_redirects)
+                    output_test(request, response, options.clean_redirects, output_fp)
                 except IOError as e:
                     if e.errno == errno.EPIPE:
                         return
                     raise
 
 
-def output_test(request, response, clean_redirects=False):
-    print()
-    print()
-    print('  >>> print http(r"""')
-    print('  ...', '\n  ... '.join(request.lines())+'""")')
+def output_test(request, response, clean_redirects=False, output_fp=None):
+    if output_fp is None:
+        output_fp = sys.stdout
+    request_lines = [x.decode("latin-1") if not isinstance(x, str) else x
+                     for x in request.lines()]
+    print(file=output_fp)
+    print(file=output_fp)
+    print('  >>> print(http(r"""', file=output_fp)
+    print('  ...', '\n  ... '.join(request_lines) + '"""))', file=output_fp)
     if response.code in (301, 302, 303) and clean_redirects:
         content_length = None
         if response.headers:
@@ -144,47 +149,58 @@ def output_test(request, response, clean_redirects=False):
             lines.append("...")
     else:
         lines = response.lines()
-    print(' ', '\n  '.join([line.rstrip() and line or '<BLANKLINE>'
-                            for line in lines]))
+        lines = [x.decode("latin-1") if not isinstance(x, str) else x
+                 for x in lines]
+    print(' ', '\n  '.join([line if line.rstrip() else '<BLANKLINE>'
+                            for line in lines]),
+          file=output_fp)
 
 class Message(object):
 
+    # Always a native string
     start = ''
 
     def __init__(self, file, skip_headers):
         start = file.readline().rstrip()
         if start:
+            start = start.decode("latin-1") if not isinstance(start, str) else start
             self.start = start
             if start.startswith("HTTP/"):
                 # This is a response; extract the response code:
                 self.code = int(start.split()[1])
-            headers = [split_header(header)
-                       for header in headers_factory(file).headers
+            headers = [
+                split_header(header)
+                for header in headers_factory(file).headers
             ]
             headers = [
                 ('-'.join([s.capitalize() for s in name.split('-')]),
                  v.rstrip()
-                 )
+                )
                 for (name, v) in headers
                 if name.lower() not in skip_headers
             ]
             self.headers = headers
             content_length = int(dict(headers).get('Content-Length', '0'))
             if content_length:
-                self.body = file.read(content_length).split('\n')
+                self.body = file.read(content_length).split(b'\n')
             else:
                 self.body = []
 
     def __nonzero__(self):
         return bool(self.start)
 
+    __bool__ = __nonzero__
+
     def lines(self):
-        output = self.header_lines()
+        # A sequence of byte lines
+        output = [x.encode("latin-1") if not isinstance(x, bytes) else x
+                  for x in self.header_lines()]
         if output:
             output.extend(self.body)
         return output
 
     def header_lines(self):
+        # A sequence of str lines
         if self.start:
             output = [self.start]
             headers = ["%s: %s" % (name, v) for (name, v) in self.headers]

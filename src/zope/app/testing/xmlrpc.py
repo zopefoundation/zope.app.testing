@@ -13,12 +13,19 @@
 ##############################################################################
 """XMLRPC testing helpers for Zope 3.
 
-$Id$
 """
+# XXX: This code is duplicated in zope.app.publisher.xmlrpc.tests
 
-import httplib
-import StringIO
-import xmlrpclib
+try:
+    from http.client import HTTPResponse
+except ImportError:
+    from httplib import HTTPResponse
+import io
+
+try:
+    import xmlrpc.client as xmlrpclib
+except ImportError:
+    import xmlrpclib
 
 from zope.app.testing.functional import HTTPCaller
 
@@ -29,7 +36,7 @@ class FakeSocket(object):
         self.data = data
 
     def makefile(self, mode, bufsize=None):
-        return StringIO.StringIO(self.data)
+        return io.BytesIO(self.data)
 
 
 class ZopeTestTransport(xmlrpclib.Transport):
@@ -68,7 +75,7 @@ class ZopeTestTransport(xmlrpclib.Transport):
                 errcode, errmsg,
                 headers
                 )
-        res = httplib.HTTPResponse(FakeSocket(response.getBody()))
+        res = HTTPResponse(FakeSocket(response.getBody()))
         res.begin()
         return self.parse_response(res)
 

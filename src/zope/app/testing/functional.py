@@ -21,6 +21,7 @@ import doctest
 import logging
 import os.path
 import re
+import io
 
 
 import sys
@@ -83,7 +84,10 @@ class ResponseWrapper(object):
     def getBody(self):
         """Returns the response body"""
         if self._body is None:
-            self._body = ''.join(self._response.consumeBody())
+            b = self._response.consumeBody()
+            if isinstance(b, bytes) and bytes is not str:
+                b = b.decode("utf-8")
+            self._body = ''.join(b)
 
         return self._body
 
@@ -522,18 +526,37 @@ class BrowserTestCase(CookieHandler, FunctionalTestCase):
         old_site = self.getSite()
         self.setSite(None)
 
-        from htmllib import HTMLParser
-        from formatter import NullFormatter
+        try:
+            from html.parser import HTMLParser
+            NullFormatter = None
+        except ImportError:
+            from htmllib import HTMLParser
+            from formatter import NullFormatter
 
         class SimpleHTMLParser(HTMLParser):
-            def __init__(self, fmt, base):
-                HTMLParser.__init__(self, fmt)
+            def __init__(self, base):
+                if NullFormatter:
+                    HTMLParser.__init__(self, NullFormatter())
+                else:
+                    super(SimpleHTMLParser, self).__init__()
                 self.base = base
+                self.anchorlist = []
 
             def do_base(self, attrs):
                 self.base = dict(attrs).get('href', self.base)
 
-        parser = SimpleHTMLParser(NullFormatter(), path)
+            if sys.version_info[0] >= 3:
+                # Version 3 stopped automatically building the anchorlist
+                def handle_starttag(self, tag, attrs):
+                    if tag == 'a':
+                        attrs = dict(attrs)
+                        if 'href' in attrs:
+                            self.anchorlist.append(attrs['href'])
+
+
+        parser = SimpleHTMLParser(path)
+        if bytes is not str and not isinstance(body, str):
+            body = body.decode("utf-8")
         parser.feed(body)
         parser.close()
         base = parser.base
@@ -655,7 +678,8 @@ def auth_header(header):
         if p is None:
             p = ''
         user_pass = '%s:%s' % (u, p)
-        auth = base64.encodestring(user_pass.encode("latin-1"))
+        encoder = getattr(base64, 'encodebytes', base64.encodestring)
+        auth = encoder(user_pass.encode("latin-1"))
         auth = auth.decode('ascii')
         return 'Basic %s' % auth[:-1]
     return header
@@ -675,19 +699,19 @@ class SampleFunctionalTest(BrowserTestCase):
 
     def testRootPage(self):
         response = self.publish('/')
-        self.assertEquals(response.getStatus(), 200)
+        self.assertEqual(response.getStatus(), 200)
 
     def testRootPage_preferred_languages(self):
         response = self.publish('/', env={'HTTP_ACCEPT_LANGUAGE': 'en'})
-        self.assertEquals(response.getStatus(), 200)
+        self.assertEqual(response.getStatus(), 200)
 
     def testNotExisting(self):
         response = self.publish('/nosuchthing', handle_errors=True)
-        self.assertEquals(response.getStatus(), 404)
+        self.assertEqual(response.getStatus(), 404)
 
     def testLinks(self):
         response = self.publish('/')
-        self.assertEquals(response.getStatus(), 200)
+        self.assertEqual(response.getStatus(), 200)
         self.checkForBrokenLinks(response.consumeBody(), response.getPath())
 
 
@@ -713,13 +737,18 @@ class HTTPCaller(CookieHandler):
         request_string = request_string[l + 1:]
         method, path, protocol = command_line.split()
 
-        instream = NativeStringIO(request_string)
-        environment = {"HTTP_COOKIE": self.httpCookie(path),
-                       "HTTP_HOST": 'localhost',
-                       "REQUEST_METHOD": method,
-                       "SERVER_PROTOCOL": protocol,
-                       "REMOTE_ADDR": '127.0.0.1',
-                       }
+        # If we don't feed bytes to Python 3, it gets stuck in a loop
+        # and ultimately raises HTTPException: got more than 100 headers.
+        instream = io.BytesIO(request_string.encode("latin-1")
+                              if not isinstance(request_string, bytes)
+                              else request_string)
+        environment = {
+            "HTTP_COOKIE": self.httpCookie(path),
+            "HTTP_HOST": 'localhost',
+            "REQUEST_METHOD": method,
+            "SERVER_PROTOCOL": protocol,
+            "REMOTE_ADDR": '127.0.0.1',
+        }
 
         headers = [split_header(header)
                    for header in headers_factory(instream).headers]

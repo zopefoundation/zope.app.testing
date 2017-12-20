@@ -20,7 +20,7 @@ import re
 import unittest
 
 from zope.testing.renormalizing import RENormalizing
-from zope.component import getAllUtilitiesRegisteredFor
+
 from ZODB.interfaces import IDatabase
 
 import zope.app.testing
@@ -33,7 +33,6 @@ from zope.app.testing.functional import SampleFunctionalTest
 from zope.app.testing.functional import BrowserTestCase, HTTPTestCase
 from zope.app.testing.functional import FunctionalDocFileSuite
 from zope.app.testing.functional import FunctionalTestCase
-from zope.app.testing.functional import FunctionalTestSetup
 from zope.app.testing.testing import AppTestingLayer
 
 from zope.app.testing.testing import FailingKlass
@@ -53,9 +52,9 @@ directory = os.path.join(here, 'recorded')
 
 expected = r'''
 
-  >>> print http(r"""
+  >>> print(http(r"""
   ... GET /@@contents.html HTTP/1.1
-  ... """)
+  ... """))
   HTTP/1.1 401 Unauthorized
   Content-Length: 89
   Content-Type: text/html;charset=utf-8
@@ -71,10 +70,10 @@ expected = r'''
   <BLANKLINE>
 
 
-  >>> print http(r"""
+  >>> print(http(r"""
   ... GET /@@contents.html HTTP/1.1
   ... Authorization: Basic bWdyOm1ncnB3
-  ... """)
+  ... """))
   HTTP/1.1 200 OK
   Content-Length: 89
   Content-Type: text/html;charset=utf-8
@@ -89,11 +88,11 @@ expected = r'''
   <BLANKLINE>
 
 
-  >>> print http(r"""
+  >>> print(http(r"""
   ... GET /++etc++site/@@manage HTTP/1.1
   ... Authorization: Basic bWdyOm1ncnB3
   ... Referer: http://localhost:8081/
-  ... """)
+  ... """))
   HTTP/1.1 303 See Other
   Content-Length: 0
   Content-Type: text/plain;charset=utf-8
@@ -101,10 +100,10 @@ expected = r'''
   <BLANKLINE>
 
 
-  >>> print http(r"""
+  >>> print(http(r"""
   ... GET / HTTP/1.1
   ... Authorization: Basic bWdyOm1ncnB3
-  ... """)
+  ... """))
   HTTP/1.1 200 OK
   Content-Length: 89
   Content-Type: text/html;charset=utf-8
@@ -119,11 +118,11 @@ expected = r'''
   <BLANKLINE>
 
 
-  >>> print http(r"""
+  >>> print(http(r"""
   ... GET /++etc++site/@@tasks.html HTTP/1.1
   ... Authorization: Basic bWdyOm1ncnB3
   ... Referer: http://localhost:8081/
-  ... """)
+  ... """))
   HTTP/1.1 200 OK
   Content-Length: 89
   Content-Type: text/html;charset=utf-8
@@ -140,15 +139,14 @@ expected = r'''
 
 
 class FunctionalHTTPDocTest(unittest.TestCase):
+    maxDiff = None
 
     def test_dochttp(self):
-        import sys
-        old = sys.stdout
-        sys.stdout = NativeStringIO()
-        dochttp(['-p', 'test', directory])
-        got = sys.stdout.getvalue()
-        sys.stdout = old
-        self.assertEquals(expected, got)
+        capture = NativeStringIO()
+        dochttp(['-p', 'test', directory], output_fp=capture)
+        got = capture.getvalue()
+
+        self.assertEqual(expected, got)
 
 
 class AuthHeaderTestCase(unittest.TestCase):
@@ -156,28 +154,28 @@ class AuthHeaderTestCase(unittest.TestCase):
     def test_auth_encoded(self):
         auth_header = functional.auth_header
         header = 'Basic Z2xvYmFsbWdyOmdsb2JhbG1ncnB3'
-        self.assertEquals(auth_header(header), header)
+        self.assertEqual(auth_header(header), header)
 
     def test_auth_non_encoded(self):
         auth_header = functional.auth_header
         header = 'Basic globalmgr:globalmgrpw'
         expected = 'Basic Z2xvYmFsbWdyOmdsb2JhbG1ncnB3'
-        self.assertEquals(auth_header(header), expected)
+        self.assertEqual(auth_header(header), expected)
 
     def test_auth_non_encoded_empty(self):
         auth_header = functional.auth_header
         header = 'Basic globalmgr:'
         expected = 'Basic Z2xvYmFsbWdyOg=='
-        self.assertEquals(auth_header(header), expected)
+        self.assertEqual(auth_header(header), expected)
         header = 'Basic :pass'
         expected = 'Basic OnBhc3M='
-        self.assertEquals(auth_header(header), expected)
+        self.assertEqual(auth_header(header), expected)
 
     def test_auth_non_encoded_colon(self):
         auth_header = zope.app.testing.functional.auth_header
         header = 'Basic globalmgr:pass:pass'
         expected = 'Basic Z2xvYmFsbWdyOnBhc3M6cGFzcw=='
-        self.assertEquals(auth_header(header), expected)
+        self.assertEqual(auth_header(header), expected)
 
 
 class HTTPCallerTestCase(unittest.TestCase):
@@ -191,8 +189,8 @@ class HTTPCallerTestCase(unittest.TestCase):
         request_class, publication_class = caller.chooseRequestClass(
             method='GET', path='/', environment={})
 
-        self.assert_(IRequest.implementedBy(request_class))
-        self.assert_(IPublication.implementedBy(publication_class))
+        self.assertTrue(IRequest.implementedBy(request_class))
+        self.assertTrue(IPublication.implementedBy(publication_class))
 
 
 class DummyCookiesResponse(object):
@@ -333,8 +331,8 @@ class CookieFunctionalTest(BrowserTestCase):
 
         super(CookieFunctionalTest, self).setUp()
         self.assertEqual(
-                len(self.cookies.keys()), 0,
-                'cookies store should be empty')
+            len(self.cookies.keys()), 0,
+            'cookies store should be empty')
 
         zope.configuration.xmlconfig.string(r'''
         <configure xmlns="http://namespaces.zope.org/browser">
@@ -359,14 +357,14 @@ class CookieFunctionalTest(BrowserTestCase):
     def testDefaultCookies(self):
         # By default no cookies are set
         response = self.publish('/')
-        self.assertEquals(response.getStatus(), 200)
-        self.assert_(not response._request._cookies)
+        self.assertEqual(response.getStatus(), 200)
+        self.assertFalse(response._request._cookies)
 
     def testSimpleCookies(self):
         self.cookies['aid'] = 'aval'
         response = self.publish('/')
-        self.assertEquals(response.getStatus(), 200)
-        self.assertEquals(response._request._cookies['aid'], 'aval')
+        self.assertEqual(response.getStatus(), 200)
+        self.assertEqual(response._request._cookies['aid'], 'aval')
 
     def testCookiePaths(self):
         # We only send cookies if the path is correct
@@ -375,35 +373,35 @@ class CookieFunctionalTest(BrowserTestCase):
         self.cookies['bid'] = 'bval'
         response = self.publish('/')
 
-        self.assertEquals(response.getStatus(), 200)
-        self.assert_('aid' not in response._request._cookies)
-        self.assertEquals(response._request._cookies['bid'], 'bval')
+        self.assertEqual(response.getStatus(), 200)
+        self.assertNotIn('aid', response._request._cookies)
+        self.assertEqual(response._request._cookies['bid'], 'bval')
 
     def testHttpCookieHeader(self):
         # Passing an HTTP_COOKIE header to publish adds cookies
         response = self.publish('/', env={
             'HTTP_COOKIE':
                 '$Version=1, aid=aval; $Path=/sub/folder, bid=bval'})
-        self.assertEquals(response.getStatus(), 200)
-        self.failIf('aid' in response._request._cookies)
-        self.assertEquals(response._request._cookies['bid'], 'bval')
+        self.assertEqual(response.getStatus(), 200)
+        self.assertNotIn('aid', response._request._cookies)
+        self.assertEqual(response._request._cookies['bid'], 'bval')
 
     def testStickyCookies(self):
         # Cookies should acumulate during the test
         response = self.publish('/', env={'HTTP_COOKIE': 'aid=aval;'})
-        self.assertEquals(response.getStatus(), 200)
+        self.assertEqual(response.getStatus(), 200)
 
         # Cookies are implicity passed to further requests in this test
         response = self.publish('/getcookies')
-        self.assertEquals(response.getStatus(), 200)
-        self.assertEquals(response.getBody().strip(), 'aid=aval')
+        self.assertEqual(response.getStatus(), 200)
+        self.assertEqual(response.getBody().strip(), 'aid=aval')
 
         # And cookies set in responses also acumulate
         response = self.publish('/setcookie')
-        self.assertEquals(response.getStatus(), 200)
+        self.assertEqual(response.getStatus(), 200)
         response = self.publish('/getcookies')
-        self.assertEquals(response.getStatus(), 200)
-        self.assertEquals(response.getBody().strip(), 'aid=aval;bid=bval')
+        self.assertEqual(response.getStatus(), 200)
+        self.assertEqual(response.getBody().strip(), 'aid=aval;bid=bval')
 
 
 class SkinsAndHTTPCaller(FunctionalTestCase):
@@ -413,7 +411,7 @@ class SkinsAndHTTPCaller(FunctionalTestCase):
         from zope.app.testing.functional import HTTPCaller
         http = HTTPCaller()
         response = http("GET /++skin++Basic HTTP/1.1\n\n")
-        self.assert_("zopetopBasic.css" in str(response))
+        self.assertIn("zopetopBasic.css", str(response))
 
 
 class RetryProblemFunctional(FunctionalTestCase):
@@ -478,11 +476,13 @@ def doctest_FunctionalTestSetup_clears_global_utilities():
 
     This bug has now been fixed and this test exercises the fixed version.
 
+        >>> from zope.app.testing.functional import FunctionalTestSetup
         >>> setup = FunctionalTestSetup(ftesting_zcml)
 
     At this point, there are registrations for the base databases created by
     the initialization:
 
+        >>> from zope.component import getAllUtilitiesRegisteredFor
         >>> base, = getAllUtilitiesRegisteredFor(IDatabase)
 
     Setting up for a test causes overriding registrations to be made:
@@ -546,6 +546,7 @@ def doctest_FunctionalTestSetup_supports_product_config():
 
         >>> import pprint
         >>> import zope.app.appsetup.product
+        >>> from zope.app.testing.functional import FunctionalTestSetup
 
         >>> setup = FunctionalTestSetup(
         ...     empty_zcml, product_config=product_config)
