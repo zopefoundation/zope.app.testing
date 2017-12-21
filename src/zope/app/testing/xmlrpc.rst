@@ -2,6 +2,9 @@
  XML-RPC views
 ===============
 
+.. This file is copied (with slight modifications) from
+   zope.app.publisher.xmlrpc:README.rst
+
 XML-RPC Methods
 ===============
 
@@ -14,7 +17,7 @@ Let's write a view that returns a folder listing:
 
   >>> class FolderListing(object):
   ...     def contents(self):
-  ...         return list(self.context.keys())
+  ...         return sorted(self.context.keys())
 
 Now we'll register it as a view:
 
@@ -96,7 +99,7 @@ they are trusted adapters.)
 
 The 'zope.app.publisher.xmlrpc' package provides a base class,
 `MethodPublisher`,  that provides the necessary traversal support.  In
-particulat, it has an adapter that simply traverses to attributes.
+particular, it has an adapter that simply traverses to attributes.
 
 If an XML-RPC view isn't going to be public, then it also has to
 implement 'zope.location.ILocation' so that security grants can be
@@ -110,7 +113,7 @@ Let's modify our view class to use `MethodPublisher`:
   >>> class FolderListing(MethodPublisher):
   ...
   ...     def contents(self):
-  ...         return list(self.context.keys())
+  ...         return sorted(self.context.keys())
 
 Note that `MethodPublisher` also provides a suitable `__init__`
 method, so we don't need one any more.  This time, we'll register it
@@ -244,9 +247,9 @@ Now, when we call it, we get a proper XML-RPC fault:
 DateTime values
 ===============
 
-Unfortunately, `xmlrpclib` does not support Python 2.3's new
-`datetime.datetime` class (it should be made to, really).  DateTime
-values need to be encoded as `xmlrpclib.DateTime` instances:
+In Python 2.7 and above, `xmlrpclib` supports the native
+`datetime.datetime` class.  Previously, DateTime
+values needed to be encoded as `xmlrpclib.DateTime` instances:
 
 
   >>> class DateTimeDemo:
@@ -254,8 +257,12 @@ values need to be encoded as `xmlrpclib.DateTime` instances:
   ...         self.context = context
   ...         self.request = request
   ...
-  ...     def epoch(self):
+  ...     def epoch_xml(self):
   ...         return xmlrpclib.DateTime("19700101T01:00:01")
+  ...
+  ...     def epoch_native(self):
+  ...         import datetime
+  ...         return datetime.datetime(1970, 1, 1, 1, 0, 1)
 
 Now we'll register it as a view:
 
@@ -271,18 +278,21 @@ Now we'll register it as a view:
   ...
   ...   <xmlrpc:view
   ...       for="zope.site.interfaces.IFolder"
-  ...       methods="epoch"
+  ...       methods="epoch_xml epoch_native"
   ...       class="zope.app.testing.xmlrpc.README.DateTimeDemo"
   ...       permission="zope.ManageContent"
   ...       />
   ... </configure>
   ... """)
 
-Now, when we call it, we get a DateTime value
+Now, when we call either method, we get a DateTime value
 
   >>> proxy = ServerProxy("http://mgr:mgrpw@localhost/")
-  >>> proxy.epoch()
+  >>> proxy.epoch_xml()
   <DateTime u'19700101T01:00:01' at ...>
+  >>> proxy.epoch_native()
+  <DateTime u'1970-01-01T01:00:01' at ...>
+
 
 Protecting XML/RPC views with class-based permissions
 =====================================================
