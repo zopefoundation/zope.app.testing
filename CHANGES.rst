@@ -8,6 +8,8 @@
 - Remove ``zope.app.testing.testbrowser``. It was not compatible with
   zope.testbrowser version 5.
 
+- Add basic support for Python 3.5 and 3.6.
+
 3.10.0 (2012-01-13)
 ===================
 

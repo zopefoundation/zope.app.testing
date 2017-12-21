@@ -13,15 +13,16 @@
 ##############################################################################
 """Convert an http tcpwatch session to a doctest
 
-$Id$
 """
+from __future__ import print_function
 
 import errno
 import optparse
 import os
 import re
-import rfc822
 import sys
+
+from zope.app.testing._compat import headers_factory
 
 usage = """usage: %prog <options> directory
 
@@ -59,17 +60,16 @@ default_options = [
 
     ]
 
-def dochttp(args=sys.argv[1:], default=None):
+def dochttp(args=sys.argv[1:], default=None, output_fp=None):
     """Convert a tcpwatch recorded sesssion to a doctest file"""
     if default is None:
         default = default_options
 
-    options, args = parser.parse_args(default+args)
-    try:
-        directory, = args
-    except:
-        parser.print_help()
-        sys.exit(1)
+    options, args = parser.parse_args(default + args)
+    if not args or not len(args) == 1:
+        parser.error("Exactly one argument expected: directory")
+
+    directory = args[0]
 
     skip_extensions = options.skip_extension or ()
     extensions = [ext for ext in (options.extension or ())
@@ -79,31 +79,35 @@ def dochttp(args=sys.argv[1:], default=None):
     names = [name[:-len(".request")]
              for name in os.listdir(directory)
              if name.startswith(options.prefix) and name.endswith('.request')
-             ]
+    ]
     names.sort()
 
-    extre = re.compile("[.](\w+)$")
+    extre = re.compile(r"[.](\w+)$")
 
     for name in names:
-        requests =  Requests(
-                        open(os.path.join(directory, name + ".request"), 'rb'),
-                        options.skip_request_header,
-                        )
-        responses = Responses(
-                        open(os.path.join(directory, name + ".response"), 'rb'),
-                        options.skip_response_header,
-                        )
+        with open(os.path.join(directory, name + ".request"), 'rb') as f:
+            requests = list(Requests(
+                f,
+                options.skip_request_header,
+            ))
+        with open(os.path.join(directory, name + ".response"), 'rb') as f:
+            responses = list(Responses(
+                f,
+                options.skip_response_header,
+            ))
 
-        # We use map so as *not* to truncate at shortest input.
-        # We want an error if the number of requests and responses
-        # is different.
-        for request, response in map(None, requests, responses):
+        if len(requests) != len(responses):
+            sys.exit("Expected equal numbers of requests and responses in %r"
+                     % (os.path.join(directory, name + '.*')))
+
+        for request, response in zip(requests, responses):
             assert (request and response) or not (request or response)
 
             path = request.path
             ext = extre.search(path)
             if ext:
                 ext = ext.group(1)
+
                 if extensions:
                     if ext not in extensions:
                         continue
@@ -116,18 +120,22 @@ def dochttp(args=sys.argv[1:], default=None):
                     break
             else:
                 try:
-                    output_test(request, response, options.clean_redirects)
-                except IOError, e:
+                    output_test(request, response, options.clean_redirects, output_fp)
+                except IOError as e:
                     if e.errno == errno.EPIPE:
                         return
                     raise
 
 
-def output_test(request, response, clean_redirects=False):
-    print
-    print
-    print '  >>> print http(r"""'
-    print '  ...', '\n  ... '.join(request.lines())+'""")'
+def output_test(request, response, clean_redirects=False, output_fp=None):
+    if output_fp is None:
+        output_fp = sys.stdout
+    request_lines = [x.decode("latin-1") if not isinstance(x, str) else x
+                     for x in request.lines()]
+    print(file=output_fp)
+    print(file=output_fp)
+    print('  >>> print(http(r"""', file=output_fp)
+    print('  ...', '\n  ... '.join(request_lines) + '"""))', file=output_fp)
     if response.code in (301, 302, 303) and clean_redirects:
         content_length = None
         if response.headers:
@@ -141,64 +149,74 @@ def output_test(request, response, clean_redirects=False):
             lines.append("...")
     else:
         lines = response.lines()
-    print ' ', '\n  '.join([line.rstrip() and line or '<BLANKLINE>'
-                             for line in lines])
+        lines = [x.decode("latin-1") if not isinstance(x, str) else x
+                 for x in lines]
+    print(' ', '\n  '.join([line if line.rstrip() else '<BLANKLINE>'
+                            for line in lines]),
+          file=output_fp)
 
-class Message:
+class Message(object):
 
+    # Always a native string
     start = ''
 
     def __init__(self, file, skip_headers):
         start = file.readline().rstrip()
         if start:
+            start = start.decode("latin-1") if not isinstance(start, str) else start
             self.start = start
             if start.startswith("HTTP/"):
                 # This is a response; extract the response code:
                 self.code = int(start.split()[1])
-            headers = [split_header(header)
-                       for header in rfc822.Message(file).headers
-                       ]
+            headers = [
+                split_header(header)
+                for header in headers_factory(file).headers
+            ]
             headers = [
                 ('-'.join([s.capitalize() for s in name.split('-')]),
                  v.rstrip()
-                 )
+                )
                 for (name, v) in headers
                 if name.lower() not in skip_headers
             ]
             self.headers = headers
             content_length = int(dict(headers).get('Content-Length', '0'))
             if content_length:
-                self.body = file.read(content_length).split('\n')
+                self.body = file.read(content_length).split(b'\n')
             else:
                 self.body = []
 
     def __nonzero__(self):
         return bool(self.start)
 
+    __bool__ = __nonzero__
+
     def lines(self):
-        output = self.header_lines()
+        # A sequence of byte lines
+        output = [x.encode("latin-1") if not isinstance(x, bytes) else x
+                  for x in self.header_lines()]
         if output:
             output.extend(self.body)
         return output
 
     def header_lines(self):
+        # A sequence of str lines
+        output = []
         if self.start:
-            output = [self.start]
+            output.append(self.start)
             headers = ["%s: %s" % (name, v) for (name, v) in self.headers]
             headers.sort()
             output.extend(headers)
             output.append('')
-        else:
-            output = []
         return output
 
-headerre = re.compile('(\S+): (.+)$')
+headerre = re.compile(r'(\S+): (.+)$')
 def split_header(header):
     return headerre.match(header).group(1, 2)
 
 def messages(cls, file, skip_headers):
     skip_headers = [name.lower() for name in (skip_headers or ())]
-    while 1:
+    while True:
         message = cls(file, skip_headers)
         if message:
             yield message

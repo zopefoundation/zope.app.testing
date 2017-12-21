@@ -15,19 +15,22 @@
 
 There should be a file 'ftesting.zcml' in the current directory.
 
-$Id$
 """
+from __future__ import print_function
 import copy
 import doctest
 import logging
 import os.path
 import re
-import rfc822
+import io
+
+
 import sys
 import traceback
 import unittest
-from StringIO import StringIO
-from Cookie import SimpleCookie
+
+from six.moves.http_cookies import SimpleCookie
+
 from transaction import abort, commit
 from ZODB.DB import DB
 from ZODB.DemoStorage import DemoStorage
@@ -43,6 +46,8 @@ from zope.security.interfaces import Forbidden, Unauthorized
 
 import zope.app.appsetup.product
 import zope.app.testing.setup
+from zope.app.testing._compat import NativeStringIO
+from zope.app.testing._compat import headers_factory
 from zope.app.appsetup.appsetup import multi_database
 from zope.app.debug import Debugger
 from zope.app.publication.http import HTTPPublication
@@ -80,7 +85,23 @@ class ResponseWrapper(object):
     def getBody(self):
         """Returns the response body"""
         if self._body is None:
-            self._body = ''.join(self._response.consumeBody())
+            try:
+                b = self._response.consumeBody()
+            except TypeError:
+                from zope.publisher.http import DirectResult
+                from zope.publisher.xmlrpc import XMLRPCResponse
+                if (isinstance(self._response, XMLRPCResponse)
+                    and isinstance(getattr(self._response, '_result', None), DirectResult)):
+                    # Somewhere in the publisher we're getting a DirectResult
+                    # whose '_result' body is a sequence of strings, but we're expecting
+                    # bytes
+                    b = ''.join(self._response._result.body)
+                else:
+                    raise
+
+            if isinstance(b, bytes) and bytes is not str:
+                b = b.decode("utf-8")
+            self._body = ''.join(b)
 
         return self._body
 
@@ -188,7 +209,7 @@ class FunctionalTestSetup(object):
                 config_file = 'ftesting.zcml'
             if database_names is None:
                 database_names = ('unnamed',)
-            self.log = StringIO()
+            self.log = NativeStringIO()
             # Make it silent but keep the log available for debugging
             logging.root.addHandler(logging.StreamHandler(self.log))
 
@@ -197,7 +218,7 @@ class FunctionalTestSetup(object):
             configs = []
             if product_config:
                 configs = zope.app.appsetup.product.loadConfiguration(
-                    StringIO(product_config))
+                    NativeStringIO(product_config))
                 configs = [
                     zope.app.appsetup.product.FauxConfiguration(name, values)
                     for name, values in configs.items()]
@@ -430,8 +451,10 @@ class CookieHandler(object):
         # cookies
         # TODO: handle cookie expirations
         for k, v in response._cookies.items():
-            k = k.encode('utf8')
-            self.cookies[k] = v['value'].encode('utf8')
+            k = k.encode('utf8') if bytes is str else k
+            val = v['value']
+            val = val.encode('utf8') if bytes is str else val
+            self.cookies[k] = val
             if 'path' in v:
                 self.cookies[k]['path'] = v['path']
 
@@ -517,18 +540,37 @@ class BrowserTestCase(CookieHandler, FunctionalTestCase):
         old_site = self.getSite()
         self.setSite(None)
 
-        from htmllib import HTMLParser
-        from formatter import NullFormatter
+        try:
+            from html.parser import HTMLParser
+            NullFormatter = None
+        except ImportError:
+            from htmllib import HTMLParser
+            from formatter import NullFormatter
 
         class SimpleHTMLParser(HTMLParser):
-            def __init__(self, fmt, base):
-                HTMLParser.__init__(self, fmt)
+            def __init__(self, base):
+                if NullFormatter:
+                    HTMLParser.__init__(self, NullFormatter())
+                else:
+                    super(SimpleHTMLParser, self).__init__()
                 self.base = base
+                self.anchorlist = []
 
             def do_base(self, attrs):
                 self.base = dict(attrs).get('href', self.base)
 
-        parser = SimpleHTMLParser(NullFormatter(), path)
+            if sys.version_info[0] >= 3:
+                # Version 3 stopped automatically building the anchorlist
+                def handle_starttag(self, tag, attrs):
+                    if tag == 'a':
+                        attrs = dict(attrs)
+                        if 'href' in attrs:
+                            self.anchorlist.append(attrs['href'])
+
+
+        parser = SimpleHTMLParser(path)
+        if bytes is not str and not isinstance(body, str):
+            body = body.decode("utf-8")
         parser.feed(body)
         parser.close()
         base = parser.base
@@ -649,7 +691,10 @@ def auth_header(header):
             u = ''
         if p is None:
             p = ''
-        auth = base64.encodestring('%s:%s' % (u, p))
+        user_pass = '%s:%s' % (u, p)
+        encoder = getattr(base64, 'encodebytes', base64.encodestring)
+        auth = encoder(user_pass.encode("latin-1"))
+        auth = auth.decode('ascii')
         return 'Basic %s' % auth[:-1]
     return header
 
@@ -668,19 +713,19 @@ class SampleFunctionalTest(BrowserTestCase):
 
     def testRootPage(self):
         response = self.publish('/')
-        self.assertEquals(response.getStatus(), 200)
+        self.assertEqual(response.getStatus(), 200)
 
     def testRootPage_preferred_languages(self):
         response = self.publish('/', env={'HTTP_ACCEPT_LANGUAGE': 'en'})
-        self.assertEquals(response.getStatus(), 200)
+        self.assertEqual(response.getStatus(), 200)
 
     def testNotExisting(self):
         response = self.publish('/nosuchthing', handle_errors=True)
-        self.assertEquals(response.getStatus(), 404)
+        self.assertEqual(response.getStatus(), 404)
 
     def testLinks(self):
         response = self.publish('/')
-        self.assertEquals(response.getStatus(), 200)
+        self.assertEqual(response.getStatus(), 200)
         self.checkForBrokenLinks(response.consumeBody(), response.getPath())
 
 
@@ -706,16 +751,21 @@ class HTTPCaller(CookieHandler):
         request_string = request_string[l + 1:]
         method, path, protocol = command_line.split()
 
-        instream = StringIO(request_string)
-        environment = {"HTTP_COOKIE": self.httpCookie(path),
-                       "HTTP_HOST": 'localhost',
-                       "REQUEST_METHOD": method,
-                       "SERVER_PROTOCOL": protocol,
-                       "REMOTE_ADDR": '127.0.0.1',
-                       }
+        # If we don't feed bytes to Python 3, it gets stuck in a loop
+        # and ultimately raises HTTPException: got more than 100 headers.
+        instream = io.BytesIO(request_string.encode("latin-1")
+                              if not isinstance(request_string, bytes)
+                              else request_string)
+        environment = {
+            "HTTP_COOKIE": self.httpCookie(path),
+            "HTTP_HOST": 'localhost',
+            "REQUEST_METHOD": method,
+            "SERVER_PROTOCOL": protocol,
+            "REMOTE_ADDR": '127.0.0.1',
+        }
 
         headers = [split_header(header)
-                   for header in rfc822.Message(instream).headers]
+                   for header in headers_factory(instream).headers]
         for name, value in headers:
             name = ('_'.join(name.upper().split('-')))
             if name not in ('CONTENT_TYPE', 'CONTENT_LENGTH'):

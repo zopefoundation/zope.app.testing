@@ -13,16 +13,14 @@
 ##############################################################################
 """Test tcpdoc
 
-$Id$
 """
 from doctest import DocTestSuite
 import os
 import re
 import unittest
-import StringIO
 
 from zope.testing.renormalizing import RENormalizing
-from zope.component import getAllUtilitiesRegisteredFor
+
 from ZODB.interfaces import IDatabase
 
 import zope.app.testing
@@ -35,11 +33,10 @@ from zope.app.testing.functional import SampleFunctionalTest
 from zope.app.testing.functional import BrowserTestCase, HTTPTestCase
 from zope.app.testing.functional import FunctionalDocFileSuite
 from zope.app.testing.functional import FunctionalTestCase
-from zope.app.testing.functional import FunctionalTestSetup
 from zope.app.testing.testing import AppTestingLayer
 
 from zope.app.testing.testing import FailingKlass
-
+from zope.app.testing._compat import NativeStringIO
 
 HEADERS = """\
 HTTP/1.1 200 OK
@@ -55,9 +52,9 @@ directory = os.path.join(here, 'recorded')
 
 expected = r'''
 
-  >>> print http(r"""
+  >>> print(http(r"""
   ... GET /@@contents.html HTTP/1.1
-  ... """)
+  ... """))
   HTTP/1.1 401 Unauthorized
   Content-Length: 89
   Content-Type: text/html;charset=utf-8
@@ -73,10 +70,10 @@ expected = r'''
   <BLANKLINE>
 
 
-  >>> print http(r"""
+  >>> print(http(r"""
   ... GET /@@contents.html HTTP/1.1
   ... Authorization: Basic bWdyOm1ncnB3
-  ... """)
+  ... """))
   HTTP/1.1 200 OK
   Content-Length: 89
   Content-Type: text/html;charset=utf-8
@@ -91,11 +88,11 @@ expected = r'''
   <BLANKLINE>
 
 
-  >>> print http(r"""
+  >>> print(http(r"""
   ... GET /++etc++site/@@manage HTTP/1.1
   ... Authorization: Basic bWdyOm1ncnB3
   ... Referer: http://localhost:8081/
-  ... """)
+  ... """))
   HTTP/1.1 303 See Other
   Content-Length: 0
   Content-Type: text/plain;charset=utf-8
@@ -103,10 +100,10 @@ expected = r'''
   <BLANKLINE>
 
 
-  >>> print http(r"""
+  >>> print(http(r"""
   ... GET / HTTP/1.1
   ... Authorization: Basic bWdyOm1ncnB3
-  ... """)
+  ... """))
   HTTP/1.1 200 OK
   Content-Length: 89
   Content-Type: text/html;charset=utf-8
@@ -121,11 +118,11 @@ expected = r'''
   <BLANKLINE>
 
 
-  >>> print http(r"""
+  >>> print(http(r"""
   ... GET /++etc++site/@@tasks.html HTTP/1.1
   ... Authorization: Basic bWdyOm1ncnB3
   ... Referer: http://localhost:8081/
-  ... """)
+  ... """))
   HTTP/1.1 200 OK
   Content-Length: 89
   Content-Type: text/html;charset=utf-8
@@ -142,15 +139,45 @@ expected = r'''
 
 
 class FunctionalHTTPDocTest(unittest.TestCase):
+    maxDiff = None
+
+    assertRaisesRegex = getattr(unittest.TestCase, 'assertRaisesRegex',
+                                unittest.TestCase.assertRaisesRegexp)
 
     def test_dochttp(self):
+        capture = NativeStringIO()
+        dochttp(['-p', 'test', directory], output_fp=capture)
+        got = capture.getvalue()
+        self.assertEqual(expected, got)
+
+    def test_no_argument(self):
         import sys
-        old = sys.stdout
-        sys.stdout = StringIO.StringIO()
-        dochttp(['-p', 'test', directory])
-        got = sys.stdout.getvalue()
-        sys.stdout = old
-        self.assertEquals(expected, got)
+        old_stderr = sys.stderr
+        sys.stderr = NativeStringIO()
+        try:
+            with self.assertRaises(SystemExit) as exc:
+                dochttp(["-p", 'test'])
+        finally:
+            sys.stderr = old_stderr
+
+        e = exc.exception
+        self.assertEqual(e.args, (2,))
+
+    def test_bad_directory_argument(self):
+        import tempfile
+        import shutil
+        d = tempfile.mkdtemp('.zope.app.testing')
+        self.addCleanup(shutil.rmtree, d)
+
+        with open(os.path.join(d, 'test1.request'), 'wt') as f:
+            f.write("Fake request file")
+        with open(os.path.join(d, 'test1.response'), 'wt') as f:
+            f.write("")
+
+        with self.assertRaisesRegex(SystemExit,
+                                    "Expected equal numbers of requests and responses in "
+                                    "'" + d) as exc:
+            dochttp(["-p", 'test', d])
 
 
 class AuthHeaderTestCase(unittest.TestCase):
@@ -158,28 +185,28 @@ class AuthHeaderTestCase(unittest.TestCase):
     def test_auth_encoded(self):
         auth_header = functional.auth_header
         header = 'Basic Z2xvYmFsbWdyOmdsb2JhbG1ncnB3'
-        self.assertEquals(auth_header(header), header)
+        self.assertEqual(auth_header(header), header)
 
     def test_auth_non_encoded(self):
         auth_header = functional.auth_header
         header = 'Basic globalmgr:globalmgrpw'
         expected = 'Basic Z2xvYmFsbWdyOmdsb2JhbG1ncnB3'
-        self.assertEquals(auth_header(header), expected)
+        self.assertEqual(auth_header(header), expected)
 
     def test_auth_non_encoded_empty(self):
         auth_header = functional.auth_header
         header = 'Basic globalmgr:'
         expected = 'Basic Z2xvYmFsbWdyOg=='
-        self.assertEquals(auth_header(header), expected)
+        self.assertEqual(auth_header(header), expected)
         header = 'Basic :pass'
         expected = 'Basic OnBhc3M='
-        self.assertEquals(auth_header(header), expected)
+        self.assertEqual(auth_header(header), expected)
 
     def test_auth_non_encoded_colon(self):
         auth_header = zope.app.testing.functional.auth_header
         header = 'Basic globalmgr:pass:pass'
         expected = 'Basic Z2xvYmFsbWdyOnBhc3M6cGFzcw=='
-        self.assertEquals(auth_header(header), expected)
+        self.assertEqual(auth_header(header), expected)
 
 
 class HTTPCallerTestCase(unittest.TestCase):
@@ -193,8 +220,8 @@ class HTTPCallerTestCase(unittest.TestCase):
         request_class, publication_class = caller.chooseRequestClass(
             method='GET', path='/', environment={})
 
-        self.assert_(IRequest.implementedBy(request_class))
-        self.assert_(IPublication.implementedBy(publication_class))
+        self.assertTrue(IRequest.implementedBy(request_class))
+        self.assertTrue(IPublication.implementedBy(publication_class))
 
 
 class DummyCookiesResponse(object):
@@ -296,28 +323,6 @@ class SetCookies(object):
         self.request.response.setCookie('bid', 'bval')
 
 
-class Echo(object):
-    """Simply echo the interesting parts of the request"""
-
-    def __call__(self):
-        items = []
-        for k in sorted(self.request.keys()):
-            if k in self.request.form:
-                continue
-            v = self.request.get(k, None)
-            items.append('%s: %s' % (k, v))
-        items.extend('%s: %s' % x for x in sorted(self.request.form.items()))
-        items.append('Body: %r' % self.request.bodyStream.read())
-        return '\n'.join(items)
-
-
-class EchoOne(object):
-    """Echo one variable from the request"""
-
-    def __call__(self):
-        return repr(self.request.get(self.request.form['var']))
-
-
 class CookieFunctionalTest(BrowserTestCase):
 
     """Functional tests should handle cookies like a web browser
@@ -335,8 +340,8 @@ class CookieFunctionalTest(BrowserTestCase):
 
         super(CookieFunctionalTest, self).setUp()
         self.assertEqual(
-                len(self.cookies.keys()), 0,
-                'cookies store should be empty')
+            len(self.cookies.keys()), 0,
+            'cookies store should be empty')
 
         zope.configuration.xmlconfig.string(r'''
         <configure xmlns="http://namespaces.zope.org/browser">
@@ -361,14 +366,14 @@ class CookieFunctionalTest(BrowserTestCase):
     def testDefaultCookies(self):
         # By default no cookies are set
         response = self.publish('/')
-        self.assertEquals(response.getStatus(), 200)
-        self.assert_(not response._request._cookies)
+        self.assertEqual(response.getStatus(), 200)
+        self.assertFalse(response._request._cookies)
 
     def testSimpleCookies(self):
         self.cookies['aid'] = 'aval'
         response = self.publish('/')
-        self.assertEquals(response.getStatus(), 200)
-        self.assertEquals(response._request._cookies['aid'], 'aval')
+        self.assertEqual(response.getStatus(), 200)
+        self.assertEqual(response._request._cookies['aid'], 'aval')
 
     def testCookiePaths(self):
         # We only send cookies if the path is correct
@@ -377,35 +382,35 @@ class CookieFunctionalTest(BrowserTestCase):
         self.cookies['bid'] = 'bval'
         response = self.publish('/')
 
-        self.assertEquals(response.getStatus(), 200)
-        self.assert_('aid' not in response._request._cookies)
-        self.assertEquals(response._request._cookies['bid'], 'bval')
+        self.assertEqual(response.getStatus(), 200)
+        self.assertNotIn('aid', response._request._cookies)
+        self.assertEqual(response._request._cookies['bid'], 'bval')
 
     def testHttpCookieHeader(self):
         # Passing an HTTP_COOKIE header to publish adds cookies
         response = self.publish('/', env={
             'HTTP_COOKIE':
                 '$Version=1, aid=aval; $Path=/sub/folder, bid=bval'})
-        self.assertEquals(response.getStatus(), 200)
-        self.failIf('aid' in response._request._cookies)
-        self.assertEquals(response._request._cookies['bid'], 'bval')
+        self.assertEqual(response.getStatus(), 200)
+        self.assertNotIn('aid', response._request._cookies)
+        self.assertEqual(response._request._cookies['bid'], 'bval')
 
     def testStickyCookies(self):
         # Cookies should acumulate during the test
         response = self.publish('/', env={'HTTP_COOKIE': 'aid=aval;'})
-        self.assertEquals(response.getStatus(), 200)
+        self.assertEqual(response.getStatus(), 200)
 
         # Cookies are implicity passed to further requests in this test
         response = self.publish('/getcookies')
-        self.assertEquals(response.getStatus(), 200)
-        self.assertEquals(response.getBody().strip(), 'aid=aval')
+        self.assertEqual(response.getStatus(), 200)
+        self.assertEqual(response.getBody().strip(), 'aid=aval')
 
         # And cookies set in responses also acumulate
         response = self.publish('/setcookie')
-        self.assertEquals(response.getStatus(), 200)
+        self.assertEqual(response.getStatus(), 200)
         response = self.publish('/getcookies')
-        self.assertEquals(response.getStatus(), 200)
-        self.assertEquals(response.getBody().strip(), 'aid=aval;bid=bval')
+        self.assertEqual(response.getStatus(), 200)
+        self.assertEqual(response.getBody().strip(), 'aid=aval;bid=bval')
 
 
 class SkinsAndHTTPCaller(FunctionalTestCase):
@@ -415,7 +420,7 @@ class SkinsAndHTTPCaller(FunctionalTestCase):
         from zope.app.testing.functional import HTTPCaller
         http = HTTPCaller()
         response = http("GET /++skin++Basic HTTP/1.1\n\n")
-        self.assert_("zopetopBasic.css" in str(response))
+        self.assertIn("zopetopBasic.css", str(response))
 
 
 class RetryProblemFunctional(FunctionalTestCase):
@@ -480,11 +485,13 @@ def doctest_FunctionalTestSetup_clears_global_utilities():
 
     This bug has now been fixed and this test exercises the fixed version.
 
+        >>> from zope.app.testing.functional import FunctionalTestSetup
         >>> setup = FunctionalTestSetup(ftesting_zcml)
 
     At this point, there are registrations for the base databases created by
     the initialization:
 
+        >>> from zope.component import getAllUtilitiesRegisteredFor
         >>> base, = getAllUtilitiesRegisteredFor(IDatabase)
 
     Setting up for a test causes overriding registrations to be made:
@@ -548,6 +555,7 @@ def doctest_FunctionalTestSetup_supports_product_config():
 
         >>> import pprint
         >>> import zope.app.appsetup.product
+        >>> from zope.app.testing.functional import FunctionalTestSetup
 
         >>> setup = FunctionalTestSetup(
         ...     empty_zcml, product_config=product_config)
@@ -664,8 +672,68 @@ def doctest_ZCMLLayer_carries_product_configuration():
 
     """
 
+class TestXMLRPCTransport(unittest.TestCase):
+
+    def _makeOne(self):
+        from zope.app.testing.xmlrpc import ZopeTestTransport
+        return ZopeTestTransport()
+
+    def test_construct(self):
+        self._makeOne()
+
+
+class TestXMLRPCServerProxy(unittest.TestCase):
+
+    def _makeOne(self, uri, **kwargs):
+        from zope.app.testing.xmlrpc import ServerProxy
+        return ServerProxy(uri, **kwargs)
+
+    def test_construct(self):
+        self._makeOne("http://example.com")
+
+class TestConflictRaisingView(unittest.TestCase):
+
+    def _makeOne(self, context=None, request=None):
+        from zope.app.testing.testing import ConflictRaisingView
+        return ConflictRaisingView(context, request)
+
+    def test_browserDefault(self):
+        view = self._makeOne()
+        self.assertEqual(view.browserDefault(), (view, ()))
+
+    def test_call(self):
+        from ZODB.POSException import ConflictError
+        view = self._makeOne()
+        with self.assertRaises(ConflictError):
+            view()
+
+class TestPlacefulSetUp(unittest.TestCase):
+
+    def setUp(self):
+        from zope.app.testing.setup import placefulSetUp
+        self.site = placefulSetUp(True)
+
+    def tearDown(self):
+        from zope.app.testing.setup import placefulTearDown
+        placefulTearDown()
+        self.site = None
+
+    def testSite(self):
+        from zope.component.hooks import getSite
+        self.assertEqual(self.site, getSite())
+
+    def test_buildSampleFolderTree(self):
+        from zope.app.testing.setup import buildSampleFolderTree
+
+        t = buildSampleFolderTree()
+        self.assertTrue(t)
 
 def test_suite():
+    from zope.app.testing.setup import setUpTestAsModule
+    from zope.app.testing.setup import tearDownTestAsModule
+    import doctest
+    from zope.testing import renormalizing
+
     checker = RENormalizing([
         (re.compile(r'^HTTP/1.1 (\d{3}) .*?\n'), 'HTTP/1.1 \\1\n')])
     SampleFunctionalTest.layer = AppTestingLayer
@@ -678,26 +746,55 @@ def test_suite():
     HTTPCallerFunctionalTest.layer = AppTestingLayer
 
 
-    doc_test = FunctionalDocFileSuite('doctest.rst', 'cookieTestOne.rst',
+    doc_test = FunctionalDocFileSuite(
+        'doctest.rst', 'cookieTestOne.rst',
         'cookieTestTwo.rst', checker=checker)
     doc_test.layer = AppTestingLayer
 
+    xml_checker = RENormalizing((
+        (re.compile('<DateTime \''), '<DateTime u\''),
+        (re.compile('at [-0-9a-fA-F]+'), 'at <SOME ADDRESS>'),
+        (re.compile("HTTP/1.0"), "HTTP/1.1"),
+    ))
+
+    def xmlSetUp(test):
+        setUpTestAsModule(test, 'zope.app.testing.xmlrpc.README')
+
+    def xmlTearDown(test):
+        # clean up the views we registered:
+
+        # we use the fact that registering None unregisters whatever is
+        # registered. We can't use an unregistration call because that
+        # requires the object that was registered and we don't have that handy.
+        # (OK, we could get it if we want. Maybe later.)
+        from zope.site.interfaces import IFolder
+        from zope.publisher.interfaces.xmlrpc import IXMLRPCRequest
+
+        zope.component.provideAdapter(None, (
+            IFolder,
+            IXMLRPCRequest
+        ), zope.interface, 'contents')
+
+        tearDownTestAsModule(test)
+
+
+    xmlrpcsuite = FunctionalDocFileSuite(
+        'xmlrpc.rst',
+        setUp=xmlSetUp,
+        tearDown=xmlTearDown,
+        checker=xml_checker,
+        optionflags=(doctest.ELLIPSIS
+                     | doctest.NORMALIZE_WHITESPACE
+                     | renormalizing.IGNORE_EXCEPTION_MODULE_IN_PYTHON2)
+    )
+    xmlrpcsuite.layer = AppTestingLayer
+
     return unittest.TestSuite((
-        unittest.makeSuite(FunctionalHTTPDocTest),
-        unittest.makeSuite(AuthHeaderTestCase),
-        unittest.makeSuite(HTTPCallerTestCase),
-        unittest.makeSuite(CookieHandlerTestCase),
+        unittest.defaultTestLoader.loadTestsFromName(__name__),
         DocTestSuite(),
-        unittest.makeSuite(SampleFunctionalTest),
-        unittest.makeSuite(HTTPFunctionalTest),
-        unittest.makeSuite(BrowserFunctionalTest),
-        unittest.makeSuite(HTTPCallerFunctionalTest),
-        unittest.makeSuite(CookieFunctionalTest),
-        unittest.makeSuite(SkinsAndHTTPCaller),
-        unittest.makeSuite(RetryProblemFunctional),
-        unittest.makeSuite(RetryProblemBrowser),
         doc_test,
-        ))
+        xmlrpcsuite,
+    ))
 
 if __name__ == '__main__':
     unittest.main(defaultTest='test_suite')
