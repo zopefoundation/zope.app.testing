@@ -2,7 +2,7 @@
  CHANGES
 =========
 
-4.0.0 (unreleased)
+4.0.0 (2018-10-24)
 ==================
 
 - Remove ``zope.app.testing.testbrowser``. It was not compatible with
