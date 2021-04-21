@@ -58,7 +58,8 @@ default_options = [
     '-O', 'Date', '-O', 'Server', '-O', 'X-Content-Type-Warning',
     '-O', 'X-Powered-By',
 
-    ]
+]
+
 
 def dochttp(args=sys.argv[1:], default=None, output_fp=None):
     """Convert a tcpwatch recorded sesssion to a doctest file"""
@@ -76,11 +77,10 @@ def dochttp(args=sys.argv[1:], default=None, output_fp=None):
                   if ext not in skip_extensions]
     skip_urls = [re.compile(pattern) for pattern in (options.skip_url or ())]
 
-    names = [name[:-len(".request")]
-             for name in os.listdir(directory)
-             if name.startswith(options.prefix) and name.endswith('.request')
-    ]
-    names.sort()
+    names = sorted([
+        name[:-len(".request")]
+        for name in os.listdir(directory)
+        if name.startswith(options.prefix) and name.endswith('.request')])
 
     extre = re.compile(r"[.](\w+)$")
 
@@ -120,7 +120,11 @@ def dochttp(args=sys.argv[1:], default=None, output_fp=None):
                     break
             else:
                 try:
-                    output_test(request, response, options.clean_redirects, output_fp)
+                    output_test(
+                        request,
+                        response,
+                        options.clean_redirects,
+                        output_fp)
                 except IOError as e:
                     if e.errno == errno.EPIPE:
                         return
@@ -155,6 +159,7 @@ def output_test(request, response, clean_redirects=False, output_fp=None):
                             for line in lines]),
           file=output_fp)
 
+
 class Message(object):
 
     # Always a native string
@@ -163,7 +168,8 @@ class Message(object):
     def __init__(self, file, skip_headers):
         start = file.readline().rstrip()
         if start:
-            start = start.decode("latin-1") if not isinstance(start, str) else start
+            start = start.decode(
+                "latin-1") if not isinstance(start, str) else start
             self.start = start
             if start.startswith("HTTP/"):
                 # This is a response; extract the response code:
@@ -175,7 +181,7 @@ class Message(object):
             headers = [
                 ('-'.join([s.capitalize() for s in name.split('-')]),
                  v.rstrip()
-                )
+                 )
                 for (name, v) in headers
                 if name.lower() not in skip_headers
             ]
@@ -204,15 +210,19 @@ class Message(object):
         output = []
         if self.start:
             output.append(self.start)
-            headers = ["%s: %s" % (name, v) for (name, v) in self.headers]
-            headers.sort()
+            headers = sorted(["%s: %s" % (name, v)
+                              for (name, v) in self.headers])
             output.extend(headers)
             output.append('')
         return output
 
+
 headerre = re.compile(r'(\S+): (.+)$')
+
+
 def split_header(header):
     return headerre.match(header).group(1, 2)
+
 
 def messages(cls, file, skip_headers):
     skip_headers = [name.lower() for name in (skip_headers or ())]
@@ -223,6 +233,7 @@ def messages(cls, file, skip_headers):
         else:
             break
 
+
 class Request(Message):
 
     path = ''
@@ -232,11 +243,14 @@ class Request(Message):
         if self.start:
             self.command, self.path, self.protocol = self.start.split()
 
+
 def Requests(file, skip_headers):
     return messages(Request, file, skip_headers)
 
+
 def Responses(file, skip_headers):
     return messages(Message, file, skip_headers)
+
 
 main = dochttp
 

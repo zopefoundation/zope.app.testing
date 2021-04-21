@@ -32,6 +32,7 @@ AppTestingLayer = ZCMLLayer(
 class IFailingKlass(interface.Interface):
     pass
 
+
 @interface.implementer(IFailingKlass)
 class FailingKlass(object):
     pass

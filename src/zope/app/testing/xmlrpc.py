@@ -39,7 +39,8 @@ class FakeSocket(object):
     def makefile(self, mode, bufsize=None):
         assert 'b' in mode
         data = self.data
-        data = data.encode('iso-8859-1') if not isinstance(data, bytes) else data
+        data = data.encode(
+            'iso-8859-1') if not isinstance(data, bytes) else data
         return io.BytesIO(data)
 
 
@@ -80,12 +81,12 @@ class ZopeTestTransport(xmlrpclib.Transport):
         # headers.
         headers = response.getHeaders()
 
-        if errcode != 200: # pragma: no cover
+        if errcode != 200:  # pragma: no cover
             raise xmlrpclib.ProtocolError(
                 host + handler,
                 errcode, errmsg,
                 headers
-                )
+            )
         content = 'HTTP/1.0 ' + errmsg + '\n\n' + response.getBody()
         res = HTTPResponse(FakeSocket(content))
         res.begin()

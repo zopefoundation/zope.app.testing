@@ -23,12 +23,14 @@
 import os
 from setuptools import setup, find_packages
 
+
 def read(*rnames):
     with open(os.path.join(os.path.dirname(__file__), *rnames)) as f:
         return f.read()
 
+
 setup(name='zope.app.testing',
-      version='4.0.1.dev0',
+      version='4.1.0.dev0',
       author='Zope Foundation and Contributors',
       author_email='zope-dev@zope.org',
       description='Zope Application Testing Support',
@@ -40,7 +42,7 @@ setup(name='zope.app.testing',
           read('src', 'zope', 'app', 'testing', 'doctest.rst')
           + '\n\n' +
           read('CHANGES.rst')
-          ),
+      ),
       keywords="zope3 test testing setup functional",
       classifiers=[
           'Development Status :: 5 - Production/Stable',
@@ -54,6 +56,8 @@ setup(name='zope.app.testing',
           'Programming Language :: Python :: 3.5',
           'Programming Language :: Python :: 3.6',
           'Programming Language :: Python :: 3.7',
+          'Programming Language :: Python :: 3.8',
+          'Programming Language :: Python :: 3.9',
           'Programming Language :: Python :: Implementation :: CPython',
           'Programming Language :: Python :: Implementation :: PyPy',
           'Natural Language :: English',
@@ -62,6 +66,11 @@ setup(name='zope.app.testing',
           'Framework :: Zope :: 3',
       ],
       url="https://github.com/zopefoundation/zope.app.testing",
+      project_urls={
+          'Issue Tracker': ('https://github.com/zopefoundation/'
+                            'zope.app.testing/issues'),
+          'Sources': 'https://github.com/zopefoundation/zope.app.testing',
+      },
       license='ZPL 2.1',
       packages=find_packages('src'),
       package_dir={'': 'src'},
@@ -76,6 +85,7 @@ setup(name='zope.app.testing',
               'zope.testrunner',
           ],
       },
+      python_requires='>=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*',
       install_requires=[
           'setuptools',
           'zope.annotation',
@@ -99,4 +109,4 @@ setup(name='zope.app.testing',
       ],
       include_package_data=True,
       zip_safe=False,
-)
+      )
