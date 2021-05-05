@@ -70,10 +70,9 @@ class ResponseWrapper(object):
         """Returns the full HTTP output (headers + body)"""
         body = self.getBody()
         omit = self.omit
-        headers = [x
-                   for x in self._response.getHeaders()
-                   if x[0].lower() not in omit]
-        headers.sort()
+        headers = sorted([x
+                          for x in self._response.getHeaders()
+                          if x[0].lower() not in omit])
         headers = '\n'.join([("%s: %s" % (n, v)) for (n, v) in headers])
         statusline = '%s %s' % (self._response._request['SERVER_PROTOCOL'],
                                 self._response.getStatusString())
@@ -91,10 +90,12 @@ class ResponseWrapper(object):
                 from zope.publisher.http import DirectResult
                 from zope.publisher.xmlrpc import XMLRPCResponse
                 if (isinstance(self._response, XMLRPCResponse)
-                    and isinstance(getattr(self._response, '_result', None), DirectResult)):
+                        and isinstance(
+                            getattr(self._response, '_result', None),
+                            DirectResult)):
                     # Somewhere in the publisher we're getting a DirectResult
-                    # whose '_result' body is a sequence of strings, but we're expecting
-                    # bytes
+                    # whose '_result' body is a sequence of strings, but we're
+                    # expecting bytes
                     b = ''.join(self._response._result.body)
                 else:
                     raise
@@ -377,7 +378,8 @@ def defineLayer(name, zcml='test.zcml', allow_teardown=False):
         globals['__name__'],
         name,
         allow_teardown=allow_teardown,
-        )
+    )
+
 
 if os.path.exists(os.path.join('zopeskel', 'etc', 'ftesting.zcml')):
     Functional = os.path.join('zopeskel', 'etc', 'ftesting.zcml')
@@ -436,9 +438,9 @@ class CookieHandler(object):
 
     def httpCookie(self, path):
         """Return self.cookies as an HTTP_COOKIE environment value."""
-        l = [m.OutputString().split(';')[0] for m in self.cookies.values()
-             if path.startswith(m['path'])]
-        return '; '.join(l)
+        list_ = [m.OutputString().split(';')[0] for m in self.cookies.values()
+                 if path.startswith(m['path'])]
+        return '; '.join(list_)
 
     def loadCookies(self, envstring):
         self.cookies.load(envstring)
@@ -567,7 +569,6 @@ class BrowserTestCase(CookieHandler, FunctionalTestCase):
                         if 'href' in attrs:
                             self.anchorlist.append(attrs['href'])
 
-
         parser = SimpleHTMLParser(path)
         if bytes is not str and not isinstance(body, str):
             body = body.decode("utf-8")
@@ -692,7 +693,9 @@ def auth_header(header):
         if p is None:
             p = ''
         user_pass = '%s:%s' % (u, p)
-        encoder = getattr(base64, 'encodebytes', base64.encodestring)
+        encoder = getattr(base64, 'encodebytes', None)
+        if encoder is None:
+            encoder = getattr(base64, 'encodestring')
         auth = encoder(user_pass.encode("latin-1"))
         auth = auth.decode('ascii')
         return 'Basic %s' % auth[:-1]
@@ -746,9 +749,9 @@ class HTTPCaller(CookieHandler):
         request_string = request_string.lstrip()
 
         # split off and parse the command line
-        l = request_string.find('\n')
-        command_line = request_string[:l].rstrip()
-        request_string = request_string[l + 1:]
+        line = request_string.find('\n')
+        command_line = request_string[:line].rstrip()
+        request_string = request_string[line + 1:]
         method, path, protocol = command_line.split()
 
         # If we don't feed bytes to Python 3, it gets stuck in a loop
@@ -801,7 +804,7 @@ class HTTPCaller(CookieHandler):
         response = ResponseWrapper(
             request.response, path, request,
             omit=('x-content-type-warning', 'x-powered-by'),
-            )
+        )
 
         self.saveCookies(response)
         setSite(old_site)
@@ -840,6 +843,7 @@ def _prepare_doctest_keywords(kw):
     globs['sync'] = sync
 
     kwsetUp = kw.get('setUp')
+
     def setUp(test):
         test.globs['http'] = HTTPCaller()
         FunctionalTestSetup().setUp()
@@ -848,6 +852,7 @@ def _prepare_doctest_keywords(kw):
     kw['setUp'] = setUp
 
     kwtearDown = kw.get('tearDown')
+
     def tearDown(test):
         if kwtearDown is not None:
             kwtearDown(test)

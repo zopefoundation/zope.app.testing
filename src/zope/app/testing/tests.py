@@ -174,9 +174,9 @@ class FunctionalHTTPDocTest(unittest.TestCase):
         with open(os.path.join(d, 'test1.response'), 'wt') as f:
             f.write("")
 
-        with self.assertRaisesRegex(SystemExit,
-                                    "Expected equal numbers of requests and responses in "
-                                    "'" + d) as exc:
+        with self.assertRaisesRegex(
+                SystemExit,
+                "Expected equal numbers of requests and responses in '" + d):
             dochttp(["-p", 'test', d])
 
 
@@ -257,8 +257,7 @@ class CookieHandlerTestCase(unittest.TestCase):
         cookies['monty'] = 'python'
 
         cookieHeader = self.handler.httpCookie('/foo/bar')
-        parts = cookieHeader.split('; ')
-        parts.sort()
+        parts = sorted(cookieHeader.split('; '))
         self.assertEqual(parts, ['monty=python', 'spam=eggs'])
 
         cookieHeader = self.handler.httpCookie('/foo/baz')
@@ -310,9 +309,8 @@ class GetCookies(object):
     """Get all cookies set."""
 
     def __call__(self):
-        cookies = ['%s=%s'%(k, v)
-                   for k, v in self.request.getCookies().items()]
-        cookies.sort()
+        cookies = sorted(['%s=%s' % (k, v)
+                          for k, v in self.request.getCookies().items()])
         return ';'.join(cookies)
 
 
@@ -672,6 +670,7 @@ def doctest_ZCMLLayer_carries_product_configuration():
 
     """
 
+
 class TestXMLRPCTransport(unittest.TestCase):
 
     def _makeOne(self):
@@ -691,6 +690,7 @@ class TestXMLRPCServerProxy(unittest.TestCase):
     def test_construct(self):
         self._makeOne("http://example.com")
 
+
 class TestConflictRaisingView(unittest.TestCase):
 
     def _makeOne(self, context=None, request=None):
@@ -706,6 +706,7 @@ class TestConflictRaisingView(unittest.TestCase):
         view = self._makeOne()
         with self.assertRaises(ConflictError):
             view()
+
 
 class TestPlacefulSetUp(unittest.TestCase):
 
@@ -728,6 +729,7 @@ class TestPlacefulSetUp(unittest.TestCase):
         t = buildSampleFolderTree()
         self.assertTrue(t)
 
+
 def test_suite():
     from zope.app.testing.setup import setUpTestAsModule
     from zope.app.testing.setup import tearDownTestAsModule
@@ -744,7 +746,6 @@ def test_suite():
     HTTPFunctionalTest.layer = AppTestingLayer
     BrowserFunctionalTest.layer = AppTestingLayer
     HTTPCallerFunctionalTest.layer = AppTestingLayer
-
 
     doc_test = FunctionalDocFileSuite(
         'doctest.rst', 'cookieTestOne.rst',
@@ -777,7 +778,6 @@ def test_suite():
 
         tearDownTestAsModule(test)
 
-
     xmlrpcsuite = FunctionalDocFileSuite(
         'xmlrpc.rst',
         setUp=xmlSetUp,
@@ -795,6 +795,7 @@ def test_suite():
         doc_test,
         xmlrpcsuite,
     ))
+
 
 if __name__ == '__main__':
     unittest.main(defaultTest='test_suite')

@@ -26,6 +26,7 @@ from zope.traversing.browser.absoluteurl import AbsoluteURL
 from zope.app.testing import ztapi
 from zope.container.testing import PlacelessSetup as ContainerPlacelessSetup
 
+
 class PlacelessSetup(CAPlacelessSetup,
                      EventPlacelessSetup,
                      I18nPlacelessSetup,
@@ -53,11 +54,14 @@ class PlacelessSetup(CAPlacelessSetup,
 ps = PlacelessSetup()
 setUp = ps.setUp
 
+
 def tearDown():
-    tearDown_ = ps.tearDown
+    tearDown_ = ps.tearDown  # noqa: F821 undefined name 'ps'
+
     def tearDown(doctesttest=None):
         tearDown_()
     return tearDown
+
 
 tearDown = tearDown()
 

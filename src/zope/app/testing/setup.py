@@ -14,51 +14,69 @@
 """Setting up an environment for testing context-dependent objects
 
 """
+import sys
+import zope.component.interfaces
+from zope.site.site import LocalSiteManager
+from zope.site.folder import Folder, rootFolder
+from zope.app.testing.placelesssetup import tearDown as placelessTearDown
+from zope.app.testing.placelesssetup import setUp as placelessSetUp
+import zope.component.hooks
+from zope.interface import Interface
+from zope.interface.interfaces import IComponentLookup
+from zope.site.site import SiteManagerAdapter
+from zope.container.traversal import ContainerTraversable
+from zope.container.interfaces import ISimpleReadContainer
+from zope.traversing.interfaces import ITraversable
+from zope.app.dependable.interfaces import IDependable
+from zope.app.dependable import Dependable
+from zope.annotation.interfaces import IAttributeAnnotatable
 import zope.component
 import zope.traversing.api
 
 from zope.testing.module import FakeModule
 
-#------------------------------------------------------------------------
+# ------------------------------------------------------------------------
 # Annotations
 from zope.annotation.attribute import AttributeAnnotations
+
+
 def setUpAnnotations():
     zope.component.provideAdapter(AttributeAnnotations)
 
-#------------------------------------------------------------------------
+
+# ------------------------------------------------------------------------
 # Dependencies
-from zope.annotation.interfaces import IAttributeAnnotatable
-from zope.app.dependable import Dependable
-from zope.app.dependable.interfaces import IDependable
+
+
 def setUpDependable():
     zope.component.provideAdapter(Dependable, (IAttributeAnnotatable,),
                                   IDependable)
 
-#------------------------------------------------------------------------
+
+# ------------------------------------------------------------------------
 # Traversal
-from zope.traversing.interfaces import ITraversable
-from zope.container.interfaces import ISimpleReadContainer
-from zope.container.traversal import ContainerTraversable
+
+
 def setUpTraversal():
     from zope.traversing.testing import setUp
     setUp()
     zope.component.provideAdapter(ContainerTraversable,
                                   (ISimpleReadContainer,), ITraversable)
 
-#------------------------------------------------------------------------
+
+# ------------------------------------------------------------------------
 # ISiteManager lookup
-from zope.site.site import SiteManagerAdapter
-from zope.interface.interfaces import IComponentLookup
-from zope.interface import Interface
+
+
 def setUpSiteManagerLookup():
     zope.component.provideAdapter(SiteManagerAdapter, (Interface,),
                                   IComponentLookup)
 
-#------------------------------------------------------------------------
+
+# ------------------------------------------------------------------------
 # Placeful setup
-import zope.component.hooks
-from zope.app.testing.placelesssetup import setUp as placelessSetUp
-from zope.app.testing.placelesssetup import tearDown as placelessTearDown
+
+
 def placefulSetUp(site=False):
     placelessSetUp()
     zope.component.hooks.setHooks()
@@ -72,14 +90,17 @@ def placefulSetUp(site=False):
         createSiteManager(site, setsite=True)
         return site
 
+
 def placefulTearDown():
     placelessTearDown()
     zope.component.hooks.resetHooks()
     zope.component.hooks.setSite()
 
-#------------------------------------------------------------------------
+
+# ------------------------------------------------------------------------
 # Sample Folder Creation
-from zope.site.folder import Folder, rootFolder
+
+
 def buildSampleFolderTree():
     # set up a reasonably complex folder structure
     #
@@ -111,19 +132,18 @@ def buildSampleFolderTree():
          u"\N{CYRILLIC SMALL LETTER PE}"
          u"\N{CYRILLIC SMALL LETTER KA}"
          u"\N{CYRILLIC SMALL LETTER A}3"][
-         u"\N{CYRILLIC SMALL LETTER PE}"
-         u"\N{CYRILLIC SMALL LETTER A}"
-         u"\N{CYRILLIC SMALL LETTER PE}"
-         u"\N{CYRILLIC SMALL LETTER KA}"
-         u"\N{CYRILLIC SMALL LETTER A}3_1"] = Folder()
+        u"\N{CYRILLIC SMALL LETTER PE}"
+        u"\N{CYRILLIC SMALL LETTER A}"
+        u"\N{CYRILLIC SMALL LETTER PE}"
+        u"\N{CYRILLIC SMALL LETTER KA}"
+        u"\N{CYRILLIC SMALL LETTER A}3_1"] = Folder()
 
     return root
 
 
-#------------------------------------------------------------------------
+# ------------------------------------------------------------------------
 # Sample Folder Creation
-from zope.site.site import LocalSiteManager
-import zope.component.interfaces
+
 
 def createSiteManager(folder, setsite=False):
     if not zope.component.interfaces.ISite.providedBy(folder):
@@ -133,7 +153,7 @@ def createSiteManager(folder, setsite=False):
     return zope.traversing.api.traverse(folder, "++etc++site")
 
 
-#------------------------------------------------------------------------
+# ------------------------------------------------------------------------
 # Local Utility Addition
 def addUtility(sitemanager, name, iface, utility, suffix=''):
     """Add a utility to a site manager
@@ -148,11 +168,11 @@ def addUtility(sitemanager, name, iface, utility, suffix=''):
     return utility
 
 
-#------------------------------------------------------------------------
+# ------------------------------------------------------------------------
 # Setup of test text files as modules
-import sys
 
 # Evil hack to make pickling work with classes defined in doc tests
+
 class NoCopyDict(dict):
     def copy(self):
         return self
