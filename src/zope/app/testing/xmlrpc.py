@@ -16,23 +16,14 @@
 """
 # XXX: This code is duplicated in zope.app.publisher.xmlrpc.tests
 
-try:
-    from httplib import HTTPResponse
-except ImportError:
-    from http.client import HTTPResponse
-
 import io
-
-
-try:
-    import xmlrpclib
-except ImportError:
-    import xmlrpc.client as xmlrpclib
+import xmlrpc.client as xmlrpclib
+from http.client import HTTPResponse
 
 from zope.app.testing.functional import HTTPCaller
 
 
-class FakeSocket(object):
+class FakeSocket:
 
     def __init__(self, data):
         self.data = data
@@ -57,19 +48,18 @@ class ZopeTestTransport(xmlrpclib.Transport):
     handleErrors = True
 
     def request(self, host, handler, request_body, verbose=0):
-        request = "POST %s HTTP/1.0\n" % (handler,)
+        request = "POST {} HTTP/1.0\n".format(handler)
         request += "Content-Length: %i\n" % len(request_body)
         request += "Content-Type: text/xml\n"
 
         host, extra_headers, _x509 = self.get_host_info(host)
         if extra_headers:
-            request += "Authorization: %s\n" % (
-                dict(extra_headers)["Authorization"],)
+            request += "Authorization: {}\n".format(
+                dict(extra_headers)["Authorization"])
 
         request += "\n"
 
-        if isinstance(request_body, bytes) and str is not bytes:
-            # Python 3
+        if isinstance(request_body, bytes):
             request = request.encode("ascii")
         request += request_body
         if not isinstance(request, str) and str is not bytes:

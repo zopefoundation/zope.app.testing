@@ -202,10 +202,7 @@ Faults
 If you need to raise an error, the prefered way to do it is via an
 `xmlrpclib.Fault`:
 
-  >>> try:
-  ...    import xmlrpclib
-  ... except ImportError:
-  ...    import xmlrpc.client as xmlrpclib
+  >>> import xmlrpc.client as xmlrpclib
 
   >>> class FaultDemo:
   ...     def __init__(self, context, request):
@@ -247,7 +244,7 @@ Now, when we call it, we get a proper XML-RPC fault:
 DateTime values
 ===============
 
-In Python 2.7 and above, `xmlrpclib` supports the native
+`xmlrpclib` supports the native
 `datetime.datetime` class.  Previously, DateTime
 values needed to be encoded as `xmlrpclib.DateTime` instances:
 

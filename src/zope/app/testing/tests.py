@@ -14,6 +14,7 @@
 """Test tcpdoc
 
 """
+import io
 import os
 import re
 import unittest
@@ -27,7 +28,6 @@ from zope.testing.renormalizing import RENormalizing
 
 import zope.app.testing
 from zope.app.testing import functional
-from zope.app.testing._compat import NativeStringIO
 from zope.app.testing.dochttp import dochttp
 from zope.app.testing.functional import BrowserTestCase
 from zope.app.testing.functional import FunctionalDocFileSuite
@@ -145,7 +145,7 @@ class FunctionalHTTPDocTest(unittest.TestCase):
                                 unittest.TestCase.assertRaisesRegexp)
 
     def test_dochttp(self):
-        capture = NativeStringIO()
+        capture = io.StringIO()
         dochttp(['-p', 'test', directory], output_fp=capture)
         got = capture.getvalue()
         self.assertEqual(expected, got)
@@ -153,7 +153,7 @@ class FunctionalHTTPDocTest(unittest.TestCase):
     def test_no_argument(self):
         import sys
         old_stderr = sys.stderr
-        sys.stderr = NativeStringIO()
+        sys.stderr = io.StringIO()
         try:
             with self.assertRaises(SystemExit) as exc:
                 dochttp(["-p", 'test'])
@@ -169,9 +169,9 @@ class FunctionalHTTPDocTest(unittest.TestCase):
         d = tempfile.mkdtemp('.zope.app.testing')
         self.addCleanup(shutil.rmtree, d)
 
-        with open(os.path.join(d, 'test1.request'), 'wt') as f:
+        with open(os.path.join(d, 'test1.request'), 'w') as f:
             f.write("Fake request file")
-        with open(os.path.join(d, 'test1.response'), 'wt') as f:
+        with open(os.path.join(d, 'test1.response'), 'w') as f:
             f.write("")
 
         with self.assertRaisesRegex(
@@ -225,7 +225,7 @@ class HTTPCallerTestCase(unittest.TestCase):
         self.assertTrue(IPublication.implementedBy(publication_class))
 
 
-class DummyCookiesResponse(object):
+class DummyCookiesResponse:
     # Ugh, this simulates the *internals* of a HTTPResponse object
     # TODO: expand the IHTTPResponse interface to give access to all cookies
     _cookies = None
@@ -306,16 +306,16 @@ class HTTPCallerFunctionalTest(FunctionalTestCase):
                          '127.0.0.1')
 
 
-class GetCookies(object):
+class GetCookies:
     """Get all cookies set."""
 
     def __call__(self):
-        cookies = sorted(['%s=%s' % (k, v)
+        cookies = sorted(['{}={}'.format(k, v)
                           for k, v in self.request.getCookies().items()])
         return ';'.join(cookies)
 
 
-class SetCookies(object):
+class SetCookies:
     """Set a specific cookie."""
 
     def __call__(self):
@@ -337,7 +337,7 @@ class CookieFunctionalTest(BrowserTestCase):
     def setUp(self):
         import zope.configuration.xmlconfig
 
-        super(CookieFunctionalTest, self).setUp()
+        super().setUp()
         self.assertEqual(
             len(self.cookies.keys()), 0,
             'cookies store should be empty')
@@ -425,7 +425,7 @@ class SkinsAndHTTPCaller(FunctionalTestCase):
 class RetryProblemFunctional(FunctionalTestCase):
 
     def setUp(self):
-        super(RetryProblemFunctional, self).setUp()
+        super().setUp()
 
         root = self.getRootFolder()
 
@@ -436,7 +436,7 @@ class RetryProblemFunctional(FunctionalTestCase):
     def tearDown(self):
         root = self.getRootFolder()
         del root['fail']
-        super(RetryProblemFunctional, self).tearDown()
+        super().tearDown()
 
     def test_retryOnConflictErrorFunctional(self):
         from zope.app.testing.functional import HTTPCaller
@@ -453,7 +453,7 @@ Authorization: Basic mgr:mgrpw
 
 class RetryProblemBrowser(BrowserTestCase):
     def setUp(self):
-        super(RetryProblemBrowser, self).setUp()
+        super().setUp()
 
         root = self.getRootFolder()
 
@@ -464,7 +464,7 @@ class RetryProblemBrowser(BrowserTestCase):
     def tearDown(self):
         root = self.getRootFolder()
         del root['fail']
-        super(RetryProblemBrowser, self).tearDown()
+        super().tearDown()
 
     def test_retryOnConflictErrorBrowser(self):
         response = self.publish('/@@test-conflict-raise-view.html',

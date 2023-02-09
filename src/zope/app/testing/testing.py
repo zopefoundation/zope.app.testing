@@ -37,14 +37,14 @@ class IFailingKlass(interface.Interface):
 
 
 @interface.implementer(IFailingKlass)
-class FailingKlass(object):
+class FailingKlass:
     pass
 
 
 @interface.implementer(zope.publisher.interfaces.browser.IBrowserPublisher)
 @component.adapter(interface.Interface,
                    zope.publisher.interfaces.browser.IBrowserRequest)
-class ConflictRaisingView(object):
+class ConflictRaisingView:
     __used_for__ = IFailingKlass
 
     def __init__(self, context, request):
