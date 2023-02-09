@@ -13,6 +13,8 @@
 ##############################################################################
 
 import io
+
+
 NativeStringIO = io.BytesIO if str is bytes else io.StringIO
 
 try:

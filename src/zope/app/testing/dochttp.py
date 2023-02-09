@@ -24,6 +24,7 @@ import sys
 
 from zope.app.testing._compat import headers_factory
 
+
 usage = """usage: %prog <options> directory
 
 Convert an http tcpwatch recorded sesssion to a doctest file, which is

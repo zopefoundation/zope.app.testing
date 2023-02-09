@@ -18,11 +18,14 @@
 __docformat__ = "reStructuredText"
 
 import os
-from ZODB.POSException import ConflictError
-from zope import interface
-from zope import component
+
 import zope.publisher.interfaces.browser
+from ZODB.POSException import ConflictError
+
+from zope import component
+from zope import interface
 from zope.app.testing.functional import ZCMLLayer
+
 
 AppTestingLayer = ZCMLLayer(
     os.path.join(os.path.split(__file__)[0], 'ftesting.zcml'),

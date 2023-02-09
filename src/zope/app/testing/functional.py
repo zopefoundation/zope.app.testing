@@ -17,43 +17,44 @@ There should be a file 'ftesting.zcml' in the current directory.
 
 """
 from __future__ import print_function
+
 import copy
 import doctest
+import io
 import logging
 import os.path
 import re
-import io
-
-
 import sys
 import traceback
 import unittest
 
 from six.moves.http_cookies import SimpleCookie
 
-from transaction import abort, commit
+import zope.app.appsetup.product
+from transaction import abort
+from transaction import commit
 from ZODB.DB import DB
 from ZODB.DemoStorage import DemoStorage
 from ZODB.interfaces import IDatabase
-
-from zope import component
-from zope.publisher.interfaces import ISkinnable
-from zope.publisher.browser import BrowserRequest
-from zope.publisher.http import HTTPRequest
-from zope.publisher.publish import publish
-from zope.publisher.skinnable import setDefaultSkin
-from zope.security.interfaces import Forbidden, Unauthorized
-
-import zope.app.appsetup.product
-import zope.app.testing.setup
-from zope.app.testing._compat import NativeStringIO
-from zope.app.testing._compat import headers_factory
 from zope.app.appsetup.appsetup import multi_database
 from zope.app.debug import Debugger
 from zope.app.publication.http import HTTPPublication
-from zope.app.publication.zopepublication import ZopePublication
 from zope.app.publication.httpfactory import chooseClasses
-from zope.component.hooks import setSite, getSite
+from zope.app.publication.zopepublication import ZopePublication
+from zope.component.hooks import getSite
+from zope.component.hooks import setSite
+from zope.publisher.browser import BrowserRequest
+from zope.publisher.http import HTTPRequest
+from zope.publisher.interfaces import ISkinnable
+from zope.publisher.publish import publish
+from zope.publisher.skinnable import setDefaultSkin
+from zope.security.interfaces import Forbidden
+from zope.security.interfaces import Unauthorized
+
+import zope.app.testing.setup
+from zope import component
+from zope.app.testing._compat import NativeStringIO
+from zope.app.testing._compat import headers_factory
 
 
 class ResponseWrapper(object):
@@ -546,8 +547,9 @@ class BrowserTestCase(CookieHandler, FunctionalTestCase):
             from html.parser import HTMLParser
             NullFormatter = None
         except ImportError:
-            from htmllib import HTMLParser
             from formatter import NullFormatter
+
+            from htmllib import HTMLParser
 
         class SimpleHTMLParser(HTMLParser):
             def __init__(self, base):

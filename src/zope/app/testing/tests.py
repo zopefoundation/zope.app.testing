@@ -14,29 +14,29 @@
 """Test tcpdoc
 
 """
-from doctest import DocTestSuite
 import os
 import re
 import unittest
+from doctest import DocTestSuite
 
+import transaction
+from ZODB.interfaces import IDatabase
+from zope.app.publication.requestpublicationfactories import BrowserFactory
+from zope.app.publication.requestpublicationregistry import factoryRegistry
 from zope.testing.renormalizing import RENormalizing
 
-from ZODB.interfaces import IDatabase
-
 import zope.app.testing
-from zope.app.publication.requestpublicationregistry import factoryRegistry
-from zope.app.publication.requestpublicationfactories import BrowserFactory
 from zope.app.testing import functional
+from zope.app.testing._compat import NativeStringIO
 from zope.app.testing.dochttp import dochttp
-import transaction
-from zope.app.testing.functional import SampleFunctionalTest
-from zope.app.testing.functional import BrowserTestCase, HTTPTestCase
+from zope.app.testing.functional import BrowserTestCase
 from zope.app.testing.functional import FunctionalDocFileSuite
 from zope.app.testing.functional import FunctionalTestCase
+from zope.app.testing.functional import HTTPTestCase
+from zope.app.testing.functional import SampleFunctionalTest
 from zope.app.testing.testing import AppTestingLayer
-
 from zope.app.testing.testing import FailingKlass
-from zope.app.testing._compat import NativeStringIO
+
 
 HEADERS = """\
 HTTP/1.1 200 OK
@@ -164,8 +164,8 @@ class FunctionalHTTPDocTest(unittest.TestCase):
         self.assertEqual(e.args, (2,))
 
     def test_bad_directory_argument(self):
-        import tempfile
         import shutil
+        import tempfile
         d = tempfile.mkdtemp('.zope.app.testing')
         self.addCleanup(shutil.rmtree, d)
 
@@ -212,7 +212,8 @@ class AuthHeaderTestCase(unittest.TestCase):
 class HTTPCallerTestCase(unittest.TestCase):
 
     def test_chooseRequestClass(self):
-        from zope.publisher.interfaces import IRequest, IPublication
+        from zope.publisher.interfaces import IPublication
+        from zope.publisher.interfaces import IRequest
 
         factoryRegistry.register('GET', '*', 'browser', 0, BrowserFactory())
 
@@ -731,10 +732,10 @@ class TestPlacefulSetUp(unittest.TestCase):
 
 
 def test_suite():
+    import doctest
+
     from zope.app.testing.setup import setUpTestAsModule
     from zope.app.testing.setup import tearDownTestAsModule
-    import doctest
-    from zope.testing import renormalizing
 
     checker = RENormalizing([
         (re.compile(r'^HTTP/1.1 (\d{3}) .*?\n'), 'HTTP/1.1 \\1\n')])
@@ -768,8 +769,8 @@ def test_suite():
         # registered. We can't use an unregistration call because that
         # requires the object that was registered and we don't have that handy.
         # (OK, we could get it if we want. Maybe later.)
-        from zope.site.interfaces import IFolder
         from zope.publisher.interfaces.xmlrpc import IXMLRPCRequest
+        from zope.site.interfaces import IFolder
 
         zope.component.provideAdapter(None, (
             IFolder,
@@ -783,9 +784,7 @@ def test_suite():
         setUp=xmlSetUp,
         tearDown=xmlTearDown,
         checker=xml_checker,
-        optionflags=(doctest.ELLIPSIS
-                     | doctest.NORMALIZE_WHITESPACE
-                     | renormalizing.IGNORE_EXCEPTION_MODULE_IN_PYTHON2)
+        optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE
     )
     xmlrpcsuite.layer = AppTestingLayer
 
@@ -795,7 +794,3 @@ def test_suite():
         doc_test,
         xmlrpcsuite,
     ))
-
-
-if __name__ == '__main__':
-    unittest.main(defaultTest='test_suite')

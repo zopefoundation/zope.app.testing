@@ -15,16 +15,16 @@
 
 
 """
-from zope.schema.vocabulary import setVocabularyRegistry
-from zope.component.testing import PlacelessSetup as CAPlacelessSetup
 from zope.component.eventtesting import PlacelessSetup as EventPlacelessSetup
+from zope.component.testing import PlacelessSetup as CAPlacelessSetup
+from zope.container.testing import PlacelessSetup as ContainerPlacelessSetup
 from zope.i18n.testing import PlacelessSetup as I18nPlacelessSetup
 from zope.password.testing import setUpPasswordManagers
-from zope.traversing.browser.interfaces import IAbsoluteURL
+from zope.schema.vocabulary import setVocabularyRegistry
 from zope.traversing.browser.absoluteurl import AbsoluteURL
+from zope.traversing.browser.interfaces import IAbsoluteURL
 
 from zope.app.testing import ztapi
-from zope.container.testing import PlacelessSetup as ContainerPlacelessSetup
 
 
 class PlacelessSetup(CAPlacelessSetup,
