@@ -16,47 +16,45 @@
 There should be a file 'ftesting.zcml' in the current directory.
 
 """
-from __future__ import print_function
+
 import copy
 import doctest
+import io
 import logging
 import os.path
 import re
-import io
-
-
 import sys
 import traceback
 import unittest
+from http.cookies import SimpleCookie
 
-from six.moves.http_cookies import SimpleCookie
-
-from transaction import abort, commit
+import zope.app.appsetup.product
+from transaction import abort
+from transaction import commit
 from ZODB.DB import DB
 from ZODB.DemoStorage import DemoStorage
 from ZODB.interfaces import IDatabase
-
-from zope import component
-from zope.publisher.interfaces import ISkinnable
-from zope.publisher.browser import BrowserRequest
-from zope.publisher.http import HTTPRequest
-from zope.publisher.publish import publish
-from zope.publisher.skinnable import setDefaultSkin
-from zope.security.interfaces import Forbidden, Unauthorized
-
-import zope.app.appsetup.product
-import zope.app.testing.setup
-from zope.app.testing._compat import NativeStringIO
-from zope.app.testing._compat import headers_factory
 from zope.app.appsetup.appsetup import multi_database
 from zope.app.debug import Debugger
 from zope.app.publication.http import HTTPPublication
-from zope.app.publication.zopepublication import ZopePublication
 from zope.app.publication.httpfactory import chooseClasses
-from zope.component.hooks import setSite, getSite
+from zope.app.publication.zopepublication import ZopePublication
+from zope.component.hooks import getSite
+from zope.component.hooks import setSite
+from zope.publisher.browser import BrowserRequest
+from zope.publisher.http import HTTPRequest
+from zope.publisher.interfaces import ISkinnable
+from zope.publisher.publish import publish
+from zope.publisher.skinnable import setDefaultSkin
+from zope.security.interfaces import Forbidden
+from zope.security.interfaces import Unauthorized
+
+import zope.app.testing.setup
+from zope import component
+from zope.app.testing._compat import headers_factory
 
 
-class ResponseWrapper(object):
+class ResponseWrapper:
     """A wrapper that adds several introspective methods to a response."""
 
     def __init__(self, response, path, request, omit=()):
@@ -73,13 +71,13 @@ class ResponseWrapper(object):
         headers = sorted([x
                           for x in self._response.getHeaders()
                           if x[0].lower() not in omit])
-        headers = '\n'.join([("%s: %s" % (n, v)) for (n, v) in headers])
-        statusline = '%s %s' % (self._response._request['SERVER_PROTOCOL'],
-                                self._response.getStatusString())
+        headers = '\n'.join([("{}: {}".format(n, v)) for (n, v) in headers])
+        statusline = '{} {}'.format(self._response._request['SERVER_PROTOCOL'],
+                                    self._response.getStatusString())
         if body:
-            return '%s\n%s\n\n%s' % (statusline, headers, body)
+            return '{}\n{}\n\n{}'.format(statusline, headers, body)
         else:
-            return '%s\n%s\n' % (statusline, headers)
+            return '{}\n{}\n'.format(statusline, headers)
 
     def getBody(self):
         """Returns the response body"""
@@ -129,7 +127,7 @@ class IManagerSetup(zope.interface.Interface):
         """
 
 
-class BaseDatabaseFactory(object):
+class BaseDatabaseFactory:
     """Factory object for passing to appsetup.multi_databases
 
     This class is an internal implementation detail, subject to change
@@ -159,7 +157,7 @@ class BaseDatabaseFactory(object):
         return DB(storage, database_name=name)
 
 
-class DerivedDatabaseFactory(object):
+class DerivedDatabaseFactory:
     """Factory object for passing to appsetup.multi_databases
 
     This class is an internal implementation detail, subject to change
@@ -184,7 +182,7 @@ class DerivedDatabaseFactory(object):
         return DB(self.storage, database_name=self.name)
 
 
-class FunctionalTestSetup(object):
+class FunctionalTestSetup:
     """Keeps shared state across several functional test cases."""
 
     __shared_state = {'_init': False}
@@ -210,7 +208,7 @@ class FunctionalTestSetup(object):
                 config_file = 'ftesting.zcml'
             if database_names is None:
                 database_names = ('unnamed',)
-            self.log = NativeStringIO()
+            self.log = io.StringIO()
             # Make it silent but keep the log available for debugging
             logging.root.addHandler(logging.StreamHandler(self.log))
 
@@ -219,7 +217,7 @@ class FunctionalTestSetup(object):
             configs = []
             if product_config:
                 configs = zope.app.appsetup.product.loadConfiguration(
-                    NativeStringIO(product_config))
+                    io.StringIO(product_config))
                 configs = [
                     zope.app.appsetup.product.FauxConfiguration(name, values)
                     for name, values in configs.items()]
@@ -410,13 +408,13 @@ class FunctionalTestCase(unittest.TestCase):
 
     def setUp(self):
         """Prepares for a functional test case."""
-        super(FunctionalTestCase, self).setUp()
+        super().setUp()
         FunctionalTestSetup().setUp()
 
     def tearDown(self):
         """Cleans up after a functional test case."""
         FunctionalTestSetup().tearDown()
-        super(FunctionalTestCase, self).tearDown()
+        super().tearDown()
 
     def getRootFolder(self):
         """Returns the Zope root folder."""
@@ -429,12 +427,12 @@ class FunctionalTestCase(unittest.TestCase):
         abort()
 
 
-class CookieHandler(object):
+class CookieHandler:
 
     def __init__(self, *args, **kw):
         # Somewhere to store cookies between consecutive requests
         self.cookies = SimpleCookie()
-        super(CookieHandler, self).__init__(*args, **kw)
+        super().__init__(*args, **kw)
 
     def httpCookie(self, path):
         """Return self.cookies as an HTTP_COOKIE environment value."""
@@ -542,32 +540,22 @@ class BrowserTestCase(CookieHandler, FunctionalTestCase):
         old_site = self.getSite()
         self.setSite(None)
 
-        try:
-            from html.parser import HTMLParser
-            NullFormatter = None
-        except ImportError:
-            from htmllib import HTMLParser
-            from formatter import NullFormatter
+        from html.parser import HTMLParser
 
         class SimpleHTMLParser(HTMLParser):
             def __init__(self, base):
-                if NullFormatter:
-                    HTMLParser.__init__(self, NullFormatter())
-                else:
-                    super(SimpleHTMLParser, self).__init__()
+                super().__init__()
                 self.base = base
                 self.anchorlist = []
 
             def do_base(self, attrs):
                 self.base = dict(attrs).get('href', self.base)
 
-            if sys.version_info[0] >= 3:
-                # Version 3 stopped automatically building the anchorlist
-                def handle_starttag(self, tag, attrs):
-                    if tag == 'a':
-                        attrs = dict(attrs)
-                        if 'href' in attrs:
-                            self.anchorlist.append(attrs['href'])
+            def handle_starttag(self, tag, attrs):
+                if tag == 'a':
+                    attrs = dict(attrs)
+                    if 'href' in attrs:
+                        self.anchorlist.append(attrs['href'])
 
         parser = SimpleHTMLParser(path)
         if bytes is not str and not isinstance(body, str):
@@ -620,7 +608,8 @@ class BrowserTestCase(CookieHandler, FunctionalTestCase):
                     request.close()
         if errors:
             self.fail("%s contains broken links:\n" % path
-                      + "\n".join(["  %s:\t%s" % (a, e) for a, e in errors]))
+                      + "\n".join(
+                          ["  {}:\t{}".format(a, e) for a, e in errors]))
 
 
 class HTTPTestCase(FunctionalTestCase):
@@ -692,7 +681,7 @@ def auth_header(header):
             u = ''
         if p is None:
             p = ''
-        user_pass = '%s:%s' % (u, p)
+        user_pass = '{}:{}'.format(u, p)
         encoder = getattr(base64, 'encodebytes', None)
         if encoder is None:
             encoder = getattr(base64, 'encodestring')
@@ -734,7 +723,8 @@ class SampleFunctionalTest(BrowserTestCase):
 
 def sample_test_suite():
     suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(SampleFunctionalTest))
+    suite.addTest(unittest.defaultTestLoader.loadTestsFromTestCase(
+        SampleFunctionalTest))
     return suite
 
 
@@ -754,7 +744,7 @@ class HTTPCaller(CookieHandler):
         request_string = request_string[line + 1:]
         method, path, protocol = command_line.split()
 
-        # If we don't feed bytes to Python 3, it gets stuck in a loop
+        # If we don't feed bytes, it gets stuck in a loop
         # and ultimately raises HTTPException: got more than 100 headers.
         instream = io.BytesIO(request_string.encode("latin-1")
                               if not isinstance(request_string, bytes)

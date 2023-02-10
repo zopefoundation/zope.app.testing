@@ -15,29 +15,30 @@
 
 """
 import sys
-import zope.component.interfaces
-from zope.site.site import LocalSiteManager
-from zope.site.folder import Folder, rootFolder
-from zope.app.testing.placelesssetup import tearDown as placelessTearDown
-from zope.app.testing.placelesssetup import setUp as placelessSetUp
-import zope.component.hooks
-from zope.interface import Interface
-from zope.interface.interfaces import IComponentLookup
-from zope.site.site import SiteManagerAdapter
-from zope.container.traversal import ContainerTraversable
-from zope.container.interfaces import ISimpleReadContainer
-from zope.traversing.interfaces import ITraversable
-from zope.app.dependable.interfaces import IDependable
-from zope.app.dependable import Dependable
-from zope.annotation.interfaces import IAttributeAnnotatable
+
 import zope.component
+import zope.component.hooks
+import zope.component.interfaces
 import zope.traversing.api
-
-from zope.testing.module import FakeModule
-
 # ------------------------------------------------------------------------
 # Annotations
 from zope.annotation.attribute import AttributeAnnotations
+from zope.annotation.interfaces import IAttributeAnnotatable
+from zope.app.dependable import Dependable
+from zope.app.dependable.interfaces import IDependable
+from zope.container.interfaces import ISimpleReadContainer
+from zope.container.traversal import ContainerTraversable
+from zope.interface import Interface
+from zope.interface.interfaces import IComponentLookup
+from zope.site.folder import Folder
+from zope.site.folder import rootFolder
+from zope.site.site import LocalSiteManager
+from zope.site.site import SiteManagerAdapter
+from zope.testing.module import FakeModule
+from zope.traversing.interfaces import ITraversable
+
+from zope.app.testing.placelesssetup import setUp as placelessSetUp
+from zope.app.testing.placelesssetup import tearDown as placelessTearDown
 
 
 def setUpAnnotations():
@@ -113,30 +114,30 @@ def buildSampleFolderTree():
     # folder1_1_1 folder1_1_2  folder1_2_1  folder2_1_1
 
     root = rootFolder()
-    root[u'folder1'] = Folder()
-    root[u'folder1'][u'folder1_1'] = Folder()
-    root[u'folder1'][u'folder1_1'][u'folder1_1_1'] = Folder()
-    root[u'folder1'][u'folder1_1'][u'folder1_1_2'] = Folder()
-    root[u'folder1'][u'folder1_2'] = Folder()
-    root[u'folder1'][u'folder1_2'][u'folder1_2_1'] = Folder()
-    root[u'folder2'] = Folder()
-    root[u'folder2'][u'folder2_1'] = Folder()
-    root[u'folder2'][u'folder2_1'][u'folder2_1_1'] = Folder()
-    root[u"\N{CYRILLIC SMALL LETTER PE}"
-         u"\N{CYRILLIC SMALL LETTER A}"
-         u"\N{CYRILLIC SMALL LETTER PE}"
-         u"\N{CYRILLIC SMALL LETTER KA}"
-         u"\N{CYRILLIC SMALL LETTER A}3"] = Folder()
-    root[u"\N{CYRILLIC SMALL LETTER PE}"
-         u"\N{CYRILLIC SMALL LETTER A}"
-         u"\N{CYRILLIC SMALL LETTER PE}"
-         u"\N{CYRILLIC SMALL LETTER KA}"
-         u"\N{CYRILLIC SMALL LETTER A}3"][
-        u"\N{CYRILLIC SMALL LETTER PE}"
-        u"\N{CYRILLIC SMALL LETTER A}"
-        u"\N{CYRILLIC SMALL LETTER PE}"
-        u"\N{CYRILLIC SMALL LETTER KA}"
-        u"\N{CYRILLIC SMALL LETTER A}3_1"] = Folder()
+    root['folder1'] = Folder()
+    root['folder1']['folder1_1'] = Folder()
+    root['folder1']['folder1_1']['folder1_1_1'] = Folder()
+    root['folder1']['folder1_1']['folder1_1_2'] = Folder()
+    root['folder1']['folder1_2'] = Folder()
+    root['folder1']['folder1_2']['folder1_2_1'] = Folder()
+    root['folder2'] = Folder()
+    root['folder2']['folder2_1'] = Folder()
+    root['folder2']['folder2_1']['folder2_1_1'] = Folder()
+    root["\N{CYRILLIC SMALL LETTER PE}"
+         "\N{CYRILLIC SMALL LETTER A}"
+         "\N{CYRILLIC SMALL LETTER PE}"
+         "\N{CYRILLIC SMALL LETTER KA}"
+         "\N{CYRILLIC SMALL LETTER A}3"] = Folder()
+    root["\N{CYRILLIC SMALL LETTER PE}"
+         "\N{CYRILLIC SMALL LETTER A}"
+         "\N{CYRILLIC SMALL LETTER PE}"
+         "\N{CYRILLIC SMALL LETTER KA}"
+         "\N{CYRILLIC SMALL LETTER A}3"][
+        "\N{CYRILLIC SMALL LETTER PE}"
+        "\N{CYRILLIC SMALL LETTER A}"
+        "\N{CYRILLIC SMALL LETTER PE}"
+        "\N{CYRILLIC SMALL LETTER KA}"
+        "\N{CYRILLIC SMALL LETTER A}3_1"] = Folder()
 
     return root
 

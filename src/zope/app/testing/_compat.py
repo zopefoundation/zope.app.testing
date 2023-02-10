@@ -12,27 +12,22 @@
 #
 ##############################################################################
 
-import io
-NativeStringIO = io.BytesIO if str is bytes else io.StringIO
 
-try:
-    import mimetools
-    headers_factory = mimetools.Message  # pragma: no cover
-except ImportError:
-    # adapt Python 3 HTTP headers to old API
-    from http import client
+from http import client
 
-    class OldMessage(client.HTTPMessage):
-        def __init__(self, **kwargs):
-            super(client.HTTPMessage, self).__init__(
-                **kwargs)  # pylint:disable=bad-super-call
-            self.status = ''
 
-        @property
-        def headers(self):
-            for key, value in self._headers:
-                yield '%s: %s\r\n' % (key, value)
+class OldMessage(client.HTTPMessage):
+    def __init__(self, **kwargs):
+        super(client.HTTPMessage, self).__init__(
+            **kwargs)  # pylint:disable=bad-super-call
+        self.status = ''
 
-    def headers_factory(fp):
-        ret = client.parse_headers(fp, _class=OldMessage)
-        return ret
+    @property
+    def headers(self):
+        for key, value in self._headers:
+            yield '{}: {}\r\n'.format(key, value)
+
+
+def headers_factory(fp):
+    ret = client.parse_headers(fp, _class=OldMessage)
+    return ret

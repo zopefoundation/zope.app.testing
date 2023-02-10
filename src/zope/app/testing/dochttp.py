@@ -14,7 +14,6 @@
 """Convert an http tcpwatch session to a doctest
 
 """
-from __future__ import print_function
 
 import errno
 import optparse
@@ -23,6 +22,7 @@ import re
 import sys
 
 from zope.app.testing._compat import headers_factory
+
 
 usage = """usage: %prog <options> directory
 
@@ -125,7 +125,7 @@ def dochttp(args=sys.argv[1:], default=None, output_fp=None):
                         response,
                         options.clean_redirects,
                         output_fp)
-                except IOError as e:
+                except OSError as e:
                     if e.errno == errno.EPIPE:
                         return
                     raise
@@ -160,7 +160,7 @@ def output_test(request, response, clean_redirects=False, output_fp=None):
           file=output_fp)
 
 
-class Message(object):
+class Message:
 
     # Always a native string
     start = ''
@@ -210,7 +210,7 @@ class Message(object):
         output = []
         if self.start:
             output.append(self.start)
-            headers = sorted(["%s: %s" % (name, v)
+            headers = sorted(["{}: {}".format(name, v)
                               for (name, v) in self.headers])
             output.extend(headers)
             output.append('')
