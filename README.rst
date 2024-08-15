@@ -10,8 +10,8 @@
    :target: https://pypi.org/project/zope.app.testing/
    :alt: Supported Python versions
 
-.. image:: https://travis-ci.com/zopefoundation/zope.app.testing.svg?branch=master
-   :target: https://travis-ci.com/zopefoundation/zope.app.testing
+.. image:: https://github.com/zopefoundation/zope.app.testing/actions/workflows/tests.yml/badge.svg
+   :target: https://github.com/zopefoundation/zope.app.testing/actions/workflows/tests.yml
    :alt: Build Status
 
 .. image:: https://coveralls.io/repos/github/zopefoundation/zope.app.testing/badge.svg
