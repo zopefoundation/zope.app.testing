@@ -71,13 +71,13 @@ class ResponseWrapper:
         headers = sorted([x
                           for x in self._response.getHeaders()
                           if x[0].lower() not in omit])
-        headers = '\n'.join([("{}: {}".format(n, v)) for (n, v) in headers])
+        headers = '\n'.join([(f"{n}: {v}") for (n, v) in headers])
         statusline = '{} {}'.format(self._response._request['SERVER_PROTOCOL'],
                                     self._response.getStatusString())
         if body:
-            return '{}\n{}\n\n{}'.format(statusline, headers, body)
+            return f'{statusline}\n{headers}\n\n{body}'
         else:
-            return '{}\n{}\n'.format(statusline, headers)
+            return f'{statusline}\n{headers}\n'
 
     def getBody(self):
         """Returns the response body"""
@@ -609,7 +609,7 @@ class BrowserTestCase(CookieHandler, FunctionalTestCase):
         if errors:
             self.fail("%s contains broken links:\n" % path
                       + "\n".join(
-                          ["  {}:\t{}".format(a, e) for a, e in errors]))
+                          [f"  {a}:\t{e}" for a, e in errors]))
 
 
 class HTTPTestCase(FunctionalTestCase):
@@ -681,7 +681,7 @@ def auth_header(header):
             u = ''
         if p is None:
             p = ''
-        user_pass = '{}:{}'.format(u, p)
+        user_pass = f'{u}:{p}'
         encoder = getattr(base64, 'encodebytes', None)
         if encoder is None:
             encoder = getattr(base64, 'encodestring')

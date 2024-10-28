@@ -210,7 +210,7 @@ class Message:
         output = []
         if self.start:
             output.append(self.start)
-            headers = sorted(["{}: {}".format(name, v)
+            headers = sorted([f"{name}: {v}"
                               for (name, v) in self.headers])
             output.extend(headers)
             output.append('')
