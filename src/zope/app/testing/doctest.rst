@@ -128,7 +128,7 @@ transaction before the HTTP request.
   >>> print(http(r"""
   ... POST /@@contents.html HTTP/1.1
   ... Authorization: Basic mgr:mgrpw
-  ... Content-Length: 73
+  ... Content-Length: 58
   ... Content-Type: application/x-www-form-urlencoded
   ...
   ... type_name=BrowserAdd__zope.site.folder.Folder&new_value=f1""",

@@ -45,7 +45,7 @@ Now, we'll add some items to the root folder:
   >>> print(http(r"""
   ... POST /@@contents.html HTTP/1.1
   ... Authorization: Basic bWdyOm1ncnB3
-  ... Content-Length: 73
+  ... Content-Length: 58
   ... Content-Type: application/x-www-form-urlencoded
   ...
   ... type_name=BrowserAdd__zope.site.folder.Folder&new_value=f1"""))
@@ -55,7 +55,7 @@ Now, we'll add some items to the root folder:
   >>> print(http(r"""
   ... POST /@@contents.html HTTP/1.1
   ... Authorization: Basic bWdyOm1ncnB3
-  ... Content-Length: 73
+  ... Content-Length: 58
   ... Content-Type: application/x-www-form-urlencoded
   ...
   ... type_name=BrowserAdd__zope.site.folder.Folder&new_value=f2"""))

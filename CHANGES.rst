@@ -5,7 +5,8 @@
 5.1 (unreleased)
 ================
 
-- Nothing changed yet.
+- Fix tests for ``multipart 1.x``
+  (`#14 <https://github.com/zopefoundation/zope.app.testing/issues/14>`_).
 
 
 5.0 (2023-02-10)
