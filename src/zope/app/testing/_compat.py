@@ -25,7 +25,7 @@ class OldMessage(client.HTTPMessage):
     @property
     def headers(self):
         for key, value in self._headers:
-            yield '{}: {}\r\n'.format(key, value)
+            yield f'{key}: {value}\r\n'
 
 
 def headers_factory(fp):

@@ -48,7 +48,7 @@ class ZopeTestTransport(xmlrpclib.Transport):
     handleErrors = True
 
     def request(self, host, handler, request_body, verbose=0):
-        request = "POST {} HTTP/1.0\n".format(handler)
+        request = f"POST {handler} HTTP/1.0\n"
         request += "Content-Length: %i\n" % len(request_body)
         request += "Content-Type: text/xml\n"
 

@@ -141,9 +141,6 @@ expected = r'''
 class FunctionalHTTPDocTest(unittest.TestCase):
     maxDiff = None
 
-    assertRaisesRegex = getattr(unittest.TestCase, 'assertRaisesRegex',
-                                unittest.TestCase.assertRaisesRegexp)
-
     def test_dochttp(self):
         capture = io.StringIO()
         dochttp(['-p', 'test', directory], output_fp=capture)
@@ -310,7 +307,7 @@ class GetCookies:
     """Get all cookies set."""
 
     def __call__(self):
-        cookies = sorted(['{}={}'.format(k, v)
+        cookies = sorted([f'{k}={v}'
                           for k, v in self.request.getCookies().items()])
         return ';'.join(cookies)
 

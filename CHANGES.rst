@@ -5,6 +5,10 @@
 5.1 (unreleased)
 ================
 
+- Add support for Python 3.12, 3.13.
+
+- Drop support for Python 3.7.
+
 - Fix tests for ``multipart 1.x``
   (`#14 <https://github.com/zopefoundation/zope.app.testing/issues/14>`_).
 
