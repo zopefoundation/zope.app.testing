@@ -22,7 +22,6 @@
 """
 import os
 
-from setuptools import find_packages
 from setuptools import setup
 
 
@@ -32,7 +31,7 @@ def read(*rnames):
 
 
 setup(name='zope.app.testing',
-      version='5.2.dev0',
+      version='6.0.dev0',
       author='Zope Foundation and Contributors',
       author_email='zope-dev@zope.dev',
       description='Zope Application Testing Support',
@@ -72,9 +71,6 @@ setup(name='zope.app.testing',
           'Sources': 'https://github.com/zopefoundation/zope.app.testing',
       },
       license='ZPL-2.1',
-      packages=find_packages('src'),
-      package_dir={'': 'src'},
-      namespace_packages=['zope', 'zope.app'],
       extras_require={
           'test': [
               'ZODB',
@@ -82,7 +78,7 @@ setup(name='zope.app.testing',
               'zope.login',
               'zope.publisher >= 3.12',
               'zope.securitypolicy',
-              'zope.testrunner',
+              'zope.testrunner >= 6.4',
           ],
       },
       python_requires='>=3.9',
