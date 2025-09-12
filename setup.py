@@ -31,7 +31,7 @@ def read(*rnames):
 
 
 setup(name='zope.app.testing',
-      version='6.0',
+      version='6.1.dev0',
       author='Zope Foundation and Contributors',
       author_email='zope-dev@zope.dev',
       description='Zope Application Testing Support',
