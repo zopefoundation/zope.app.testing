@@ -78,4 +78,3 @@ Keep-Alive: 300
 Connection: keep-alive
 Referer: http://localhost:8081/++etc++site/@@tasks.html
 Authorization: Basic bWdyOm1ncnB3
-
